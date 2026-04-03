@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -56,5 +57,27 @@ class User extends Authenticatable
         return $this->belongsToMany(Despensa::class, 'tienen', 'id_usuario', 'id_despensa')
             ->using(Tienen::class)
             ->withPivot('permiso_despensa');
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->rol === 'admin';
+    }
+
+    public function permisoEnLista(Lista $lista): ?string
+    {
+        if ($this->relationLoaded('listas')) {
+            /** @var Collection<int, Lista> $listas */
+            $listas = $this->getRelation('listas');
+            $listaRelacionada = $listas->firstWhere('id', $lista->id);
+
+            return $listaRelacionada?->pivot?->permiso_lista;
+        }
+
+        $listaRelacionada = $this->listas()
+            ->where('listas.id', $lista->id)
+            ->first();
+
+        return $listaRelacionada?->pivot?->permiso_lista;
     }
 }
