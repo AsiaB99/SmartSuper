@@ -14,6 +14,10 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::resource('listas', ListaController::class)->except(['show']);
+    Route::post('/listas/{lista}/finalizar', [ListaController::class, 'finalizar'])
+        ->name('listas.finalizar');
+    Route::get('/listas/{lista}/recomendacion', [ListaController::class, 'recomendacion'])
+        ->name('listas.recomendacion');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
