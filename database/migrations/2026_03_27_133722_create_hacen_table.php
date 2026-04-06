@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -11,17 +9,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('hacen', function (Blueprint $table) {
-            $table->foreignId('id_usuario')
-                ->constrained('users')
-                ->cascadeOnDelete();
-            $table->foreignId('id_lista')
-                ->constrained('listas')
-                ->cascadeOnDelete();
-            $table->enum('permiso_lista', ['owner', 'editor', 'viewer'])->default('owner');
-
-            $table->primary(['id_usuario', 'id_lista']);
-        });
+        // No-op intencional: la tabla ya se crea en 2026_03_27_133717_create_hacen_table.php.
     }
 
     /**
@@ -29,6 +17,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('hacen');
+        // No-op intencional: el rollback de la migración original elimina la tabla.
     }
 };
