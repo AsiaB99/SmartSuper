@@ -6,7 +6,7 @@ Aplicación web monolítica en Laravel para gestionar listas de la compra y desp
 
 Actualmente ya está implementado:
 
-- Modelos del dominio en español:
+- Modelos del dominio:
   - `Lista`, `Despensa`, `Producto`, `Seccion`, `Supermercado`
   - pivotes: `Hacen`, `Tienen`, `Formadas`, `Almacena`, `Venden`
 - Relaciones Eloquent explícitas con claves no estándar del dominio.
@@ -22,7 +22,7 @@ Actualmente ya está implementado:
 - PHP: 8.3+ (probado en 8.4 con Herd)
 - Base de datos objetivo: MySQL 8
 - Frontend: Blade + Vite + Tailwind CSS
-- Tests: PHPUnit
+
 
 ## Estructura relevante
 
@@ -32,14 +32,14 @@ Actualmente ya está implementado:
 - `resources/views/listas`: vistas del módulo de listas
 - `routes/web.php`: rutas web
 - `database/migrations`: esquema de base de datos
-- `contexto.md`: contexto funcional y reglas de negocio
+
 
 ## Requisitos previos
 
 - PHP 8.3+
 - Composer
 - Node.js y npm
-- MySQL (si trabajas con `DB_CONNECTION=mysql`)
+- MySQL
 
 ## Puesta en marcha
 
@@ -78,7 +78,6 @@ Esto genera `public/build/manifest.json`, requerido por `@vite(...)` en las vist
 
 - `composer run setup`: instalación completa inicial (deps, .env, key, migrate, assets)
 - `composer run dev`: stack local de desarrollo
-- `composer run test`: ejecutar tests
 
 ### npm
 
