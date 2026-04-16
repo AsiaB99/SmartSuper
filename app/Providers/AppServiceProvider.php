@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Despensa;
 use App\Models\Lista;
+use App\Policies\DespensaPolicy;
 use App\Policies\ListaPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -23,5 +25,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Lista::class, ListaPolicy::class);
+        Gate::policy(Despensa::class, DespensaPolicy::class);
     }
 }

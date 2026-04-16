@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreListaRequest;
 use App\Http\Requests\UpdateListaRequest;
 use App\Models\Lista;
+use App\Services\RecommendationService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -19,7 +20,7 @@ class ListaController extends Controller
     public function index(): View
     {
         /** @var \App\Models\User&Authenticatable $usuario */
-        $usuario = auth()->user();
+        $usuario = request()->user();
 
         $listas = Lista::query()
             ->when(! $usuario->isAdmin(), function ($query) use ($usuario) {
@@ -72,5 +73,30 @@ class ListaController extends Controller
         return redirect()
             ->route('listas.index')
             ->with('status', 'Lista eliminada correctamente.');
+    }
+
+    public function finalizar(Lista $lista): RedirectResponse
+    {
+        $this->authorize('update', $lista);
+
+        $lista->update([
+            'estado' => 'comprada',
+        ]);
+
+        return redirect()
+            ->route('listas.recomendacion', $lista)
+            ->with('status', 'Lista finalizada. Se ha calculado la recomendacion de supermercado.');
+    }
+
+    public function recomendacion(Lista $lista, RecommendationService $recommendationService): View
+    {
+        $this->authorize('view', $lista);
+
+        /** @var \App\Models\User&Authenticatable $usuario */
+        $usuario = request()->user();
+
+        $ranking = $recommendationService->recomendarSupermercados($lista, $usuario);
+
+        return view('listas.recomendacion', compact('lista', 'ranking'));
     }
 }
