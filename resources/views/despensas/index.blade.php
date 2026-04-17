@@ -20,6 +20,7 @@
                     <p>Creada: {{ optional($despensa->fecha_creacion)->format('d/m/Y H:i') ?? 'Sin fecha' }}</p>
                 </div>
                 <div class="row-actions">
+                    <a class="button button--ghost" href="{{ route('despensas.stock', $despensa) }}">Stock</a>
                     <a class="button button--ghost" href="{{ route('despensas.edit', $despensa) }}">Editar</a>
                     <form action="{{ route('despensas.destroy', $despensa) }}" method="POST" onsubmit="return confirm('¿Eliminar esta despensa?');">
                         @csrf
