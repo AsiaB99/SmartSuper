@@ -21,6 +21,11 @@
                     <p>Creada: {{ optional($lista->fecha_creacion)->format('d/m/Y H:i') ?? 'Sin fecha' }}</p>
                 </div>
                 <div class="row-actions">
+                    <form action="{{ route('listas.finalizar', $lista) }}" method="POST">
+                        @csrf
+                        <button class="button button--primary" type="submit">Finalizar lista</button>
+                    </form>
+                    <a class="button" href="{{ route('listas.recomendacion', $lista) }}">Recomendar super</a>
                     <a class="button button--ghost" href="{{ route('listas.edit', $lista) }}">Editar</a>
                     <form action="{{ route('listas.destroy', $lista) }}" method="POST" onsubmit="return confirm('¿Eliminar esta lista?');">
                         @csrf
