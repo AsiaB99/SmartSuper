@@ -144,3 +144,4 @@ class RecommendationService
         return $radioTierraKm * $c;
     }
 }
+}

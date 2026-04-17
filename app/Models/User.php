@@ -80,4 +80,21 @@ class User extends Authenticatable
 
         return $listaRelacionada?->pivot?->permiso_lista;
     }
+
+    public function permisoEnDespensa(Despensa $despensa): ?string
+    {
+        if ($this->relationLoaded('despensas')) {
+            /** @var Collection<int, Despensa> $despensas */
+            $despensas = $this->getRelation('despensas');
+            $despensaRelacionada = $despensas->firstWhere('id', $despensa->id);
+
+            return $despensaRelacionada?->pivot?->permiso_despensa;
+        }
+
+        $despensaRelacionada = $this->despensas()
+            ->where('despensas.id', $despensa->id)
+            ->first();
+
+        return $despensaRelacionada?->pivot?->permiso_despensa;
+    }
 }

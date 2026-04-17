@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DespensaController;
 use App\Http\Controllers\ListaController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,15 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::resource('listas', ListaController::class)->except(['show']);
+    Route::resource('despensas', DespensaController::class)->except(['show']);
+    Route::get('/despensas/{despensa}/stock', [DespensaController::class, 'stock'])
+        ->name('despensas.stock');
+    Route::post('/despensas/{despensa}/stock', [DespensaController::class, 'agregarProducto'])
+        ->name('despensas.stock.agregar');
+    Route::patch('/despensas/{despensa}/stock/{producto}', [DespensaController::class, 'actualizarStock'])
+        ->name('despensas.stock.actualizar');
+    Route::delete('/despensas/{despensa}/stock/{producto}', [DespensaController::class, 'quitarProducto'])
+        ->name('despensas.stock.quitar');
     Route::post('/listas/{lista}/finalizar', [ListaController::class, 'finalizar'])
         ->name('listas.finalizar');
     Route::get('/listas/{lista}/recomendacion', [ListaController::class, 'recomendacion'])
