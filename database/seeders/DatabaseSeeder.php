@@ -6,6 +6,7 @@ use App\Models\Producto;
 use App\Models\Seccion;
 use App\Models\Supermercado;
 use App\Models\User;
+use App\Models\Venden;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -126,6 +127,23 @@ class DatabaseSeeder extends Seeder
 
         foreach ($productos as $producto) {
             Producto::factory()->create($producto);
+        }
+
+        $todosProductos = Producto::query()->get(['id']);
+        $todosSupermercados = Supermercado::query()->get(['id']);
+
+        foreach ($todosProductos as $producto) {
+            foreach ($todosSupermercados as $supermercado) {
+                $precio = round((float) random_int(120, 1200) / 10, 2);
+
+                Venden::query()->create([
+                    'id_producto' => $producto->id,
+                    'id_super' => $supermercado->id,
+                    'precio' => $precio,
+                    'precio_unidad' => $precio,
+                    'unidad_ref' => 'unidad',
+                ]);
+            }
         }
     }
 }

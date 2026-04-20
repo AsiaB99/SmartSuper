@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\DespensaController;
 use App\Http\Controllers\ListaController;
+use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SupermercadoController;
+use App\Http\Controllers\VendenController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -32,6 +35,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::middleware('auth')->prefix('admin')->group(function () {
+    Route::resource('supermercados', SupermercadoController::class);
+    Route::resource('productos', ProductoController::class);
+    Route::get('precios', [VendenController::class, 'index'])->name('precios.index');
+    Route::get('precios/create', [VendenController::class, 'create'])->name('precios.create');
+    Route::post('precios', [VendenController::class, 'store'])->name('precios.store');
+    Route::get('precios/{producto}/{supermercado}/edit', [VendenController::class, 'edit'])->name('precios.edit');
+    Route::put('precios/{producto}/{supermercado}', [VendenController::class, 'update'])->name('precios.update');
+    Route::delete('precios/{producto}/{supermercado}', [VendenController::class, 'destroy'])->name('precios.destroy');
 });
 
 require __DIR__.'/auth.php';
