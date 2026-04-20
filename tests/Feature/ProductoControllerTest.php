@@ -1,0 +1,123 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Producto;
+use App\Models\Seccion;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class ProductoControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_guest_is_redirected_to_login_when_accessing_productos(): void
+    {
+        $response = $this->get(route('productos.index'));
+
+        $response->assertRedirect(route('login'));
+    }
+
+    public function test_non_admin_user_cannot_access_productos_index(): void
+    {
+        $user = User::factory()->create(['rol' => 'cliente']);
+
+        $response = $this->actingAs($user)->get(route('productos.index'));
+
+        $response->assertForbidden();
+    }
+
+    public function test_admin_can_view_productos_index(): void
+    {
+        $admin = User::factory()->create(['rol' => 'admin']);
+        Seccion::factory()->count(2)->create();
+        Producto::factory()->count(5)->create();
+
+        $response = $this->actingAs($admin)->get(route('productos.index'));
+
+        $response->assertOk();
+        $response->assertViewHas('productos');
+        $response->assertViewHas('secciones');
+    }
+
+    public function test_admin_can_create_producto(): void
+    {
+        $admin = User::factory()->create(['rol' => 'admin']);
+        $seccion = Seccion::factory()->create();
+
+        $response = $this->actingAs($admin)
+            ->post(route('productos.store'), [
+                'nombre_producto' => 'Producto Test',
+                'id_seccion' => $seccion->id,
+            ]);
+
+        $response->assertRedirect(route('productos.index'));
+        $this->assertDatabaseHas('productos', [
+            'nombre_producto' => 'Producto Test',
+            'id_seccion' => $seccion->id,
+        ]);
+    }
+
+    public function test_admin_can_update_producto(): void
+    {
+        $admin = User::factory()->create(['rol' => 'admin']);
+        $seccion = Seccion::factory()->create();
+        $producto = Producto::factory()->create();
+
+        $response = $this->actingAs($admin)
+            ->put(route('productos.update', $producto), [
+                'nombre_producto' => 'Producto Actualizado',
+                'id_seccion' => $seccion->id,
+            ]);
+
+        $response->assertRedirect(route('productos.index'));
+        $this->assertDatabaseHas('productos', [
+            'id' => $producto->id,
+            'nombre_producto' => 'Producto Actualizado',
+            'id_seccion' => $seccion->id,
+        ]);
+    }
+
+    public function test_admin_can_delete_producto(): void
+    {
+        $admin = User::factory()->create(['rol' => 'admin']);
+        $producto = Producto::factory()->create();
+
+        $response = $this->actingAs($admin)
+            ->delete(route('productos.destroy', $producto));
+
+        $response->assertRedirect(route('productos.index'));
+        $this->assertDatabaseMissing('productos', [
+            'id' => $producto->id,
+        ]);
+    }
+
+    public function test_producto_nombre_must_be_unique(): void
+    {
+        $admin = User::factory()->create(['rol' => 'admin']);
+        $seccion = Seccion::factory()->create();
+        Producto::factory()->create(['nombre_producto' => 'Producto Duplicado', 'id_seccion' => $seccion->id]);
+
+        $response = $this->actingAs($admin)
+            ->post(route('productos.store'), [
+                'nombre_producto' => 'Producto Duplicado',
+                'id_seccion' => $seccion->id,
+            ]);
+
+        $response->assertSessionHasErrors('nombre_producto');
+    }
+
+    public function test_seccion_must_exist_when_creating_producto(): void
+    {
+        $admin = User::factory()->create(['rol' => 'admin']);
+
+        $response = $this->actingAs($admin)
+            ->post(route('productos.store'), [
+                'nombre_producto' => 'Producto Test',
+                'id_seccion' => 9999,
+            ]);
+
+        $response->assertSessionHasErrors('id_seccion');
+    }
+}
