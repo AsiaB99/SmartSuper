@@ -38,6 +38,33 @@
                             <td>{{ number_format((float) $fila['coste_distancia'], 2, ',', '.') }} EUR</td>
                             <td><strong>{{ number_format((float) $fila['score'], 2, ',', '.') }} EUR</strong></td>
                         </tr>
+                        <tr>
+                            <td colspan="5">
+                                <details class="details-card" @if ($loop->first) open @endif>
+                                    <summary>Ver desglose de cesta ({{ $fila['items_cesta'] }} productos)</summary>
+                                    <table class="table table--compact">
+                                        <thead>
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th>Cantidad</th>
+                                                <th>Precio unitario</th>
+                                                <th>Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($fila['detalle_cesta'] as $detalle)
+                                                <tr>
+                                                    <td>{{ $detalle['nombre_producto'] }}</td>
+                                                    <td>{{ $detalle['cantidad'] }}</td>
+                                                    <td>{{ number_format((float) $detalle['precio_unitario'], 2, ',', '.') }} EUR</td>
+                                                    <td>{{ number_format((float) $detalle['subtotal'], 2, ',', '.') }} EUR</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </details>
+                            </td>
+                        </tr>
                     @endforeach
                 </tbody>
             </table>

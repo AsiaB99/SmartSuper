@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 class RecommendationService
 {
     /**
-     * @return array<int, array<string, float|int|string>>
+    * @return array<int, array<string, mixed>>
      */
     public function recomendarSupermercados(Lista $lista, User $usuario, float $costeKm = 0.12): array
     {
@@ -33,6 +33,11 @@ class RecommendationService
             static fn ($cantidad, $idProducto) => [(int) $idProducto => (int) $cantidad]
         );
 
+        $nombresProducto = DB::table('productos')
+            ->whereIn('id', $productosRequeridos)
+            ->pluck('nombre_producto', 'id')
+            ->mapWithKeys(static fn ($nombre, $id) => [(int) $id => (string) $nombre]);
+
         $supermercados = DB::table('supermercados')
             ->select('id', 'nombre_super', 'latitud', 'longitud')
             ->get()
@@ -50,6 +55,7 @@ class RecommendationService
             $precios,
             $supermercados,
             $cantidadPorProducto,
+            $nombresProducto,
             $productosRequeridos,
             (float) $usuario->latitud,
             (float) $usuario->longitud,
@@ -58,13 +64,14 @@ class RecommendationService
     }
 
     /**
-     * @param array<int, int> $productosRequeridos
-     * @return array<int, array<string, float|int|string>>
+      * @param array<int, int> $productosRequeridos
+      * @return array<int, array<string, mixed>>
      */
     private function construirRanking(
         Collection $precios,
         Collection $supermercados,
         Collection $cantidadPorProducto,
+          Collection $nombresProducto,
         array $productosRequeridos,
         float $latitudUsuario,
         float $longitudUsuario,
@@ -90,10 +97,28 @@ class RecommendationService
             }
 
             $totalCesta = 0.0;
+            $detalleCesta = [];
+            $preciosPorProducto = $preciosSuper->keyBy('id_producto');
 
-            foreach ($preciosSuper as $precioItem) {
-                $cantidad = (int) ($cantidadPorProducto->get((int) $precioItem->id_producto, 0));
-                $totalCesta += $cantidad * (float) $precioItem->precio;
+            foreach ($productosRequeridos as $idProducto) {
+                $precioItem = $preciosPorProducto->get($idProducto);
+
+                if ($precioItem === null) {
+                    continue;
+                }
+
+                $cantidad = (int) ($cantidadPorProducto->get($idProducto, 0));
+                $precioUnitario = (float) $precioItem->precio;
+                $subtotal = $cantidad * $precioUnitario;
+                $totalCesta += $subtotal;
+
+                $detalleCesta[] = [
+                    'id_producto' => $idProducto,
+                    'nombre_producto' => (string) $nombresProducto->get($idProducto, 'Producto '.$idProducto),
+                    'cantidad' => $cantidad,
+                    'precio_unitario' => round($precioUnitario, 2),
+                    'subtotal' => round($subtotal, 2),
+                ];
             }
 
             $distanciaKm = $this->haversineKm(
@@ -112,6 +137,8 @@ class RecommendationService
                 'distancia_km' => round($distanciaKm, 3),
                 'coste_distancia' => round($costeDistancia, 2),
                 'score' => round($score, 2),
+                'items_cesta' => count($detalleCesta),
+                'detalle_cesta' => $detalleCesta,
             ];
         }
 

@@ -127,6 +127,36 @@ class RecommendationServiceTest extends TestCase
         $this->assertLessThan($ranking[1]['score'], $ranking[0]['score']);
     }
 
+    public function test_includes_basket_detail_per_supermarket(): void
+    {
+        $usuario = User::factory()->create([
+            'latitud' => 40.00000000,
+            'longitud' => -3.00000000,
+        ]);
+
+        [$lista, $leche, $pan] = $this->crearListaConDosProductos();
+
+        $supermercado = Supermercado::query()->create([
+            'nombre_super' => 'Detalle OK',
+            'latitud' => 40.00000000,
+            'longitud' => -3.00000000,
+        ]);
+
+        DB::table('venden')->insert([
+            ['id_producto' => $leche->id, 'id_super' => $supermercado->id, 'precio' => 1.25],
+            ['id_producto' => $pan->id, 'id_super' => $supermercado->id, 'precio' => 0.80],
+        ]);
+
+        $ranking = app(RecommendationService::class)->recomendarSupermercados($lista, $usuario, 0.0);
+
+        $this->assertCount(1, $ranking);
+        $this->assertSame(2, $ranking[0]['items_cesta']);
+        $this->assertCount(2, $ranking[0]['detalle_cesta']);
+        $this->assertSame('Leche', $ranking[0]['detalle_cesta'][0]['nombre_producto']);
+        $this->assertSame(2, $ranking[0]['detalle_cesta'][0]['cantidad']);
+        $this->assertSame(2.5, $ranking[0]['detalle_cesta'][0]['subtotal']);
+    }
+
     /**
      * @return array{Lista, Producto}
      */
