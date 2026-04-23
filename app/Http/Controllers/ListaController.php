@@ -97,6 +97,24 @@ class ListaController extends Controller
 
         $ranking = $recommendationService->recomendarSupermercados($lista, $usuario);
 
-        return view('listas.recomendacion', compact('lista', 'ranking'));
+        $comparativaAhorro = null;
+
+        if (count($ranking) >= 2) {
+            $mejorOpcion = $ranking[0];
+            $segundaOpcion = $ranking[1];
+            $ahorroAbsoluto = max(0, (float) $segundaOpcion['score'] - (float) $mejorOpcion['score']);
+            $ahorroPorcentaje = (float) $segundaOpcion['score'] > 0
+                ? ($ahorroAbsoluto / (float) $segundaOpcion['score']) * 100
+                : 0.0;
+
+            $comparativaAhorro = [
+                'mejor_super' => (string) $mejorOpcion['nombre_super'],
+                'segunda_super' => (string) $segundaOpcion['nombre_super'],
+                'ahorro_absoluto' => round($ahorroAbsoluto, 2),
+                'ahorro_porcentaje' => round($ahorroPorcentaje, 2),
+            ];
+        }
+
+        return view('listas.recomendacion', compact('lista', 'ranking', 'comparativaAhorro'));
     }
 }

@@ -19,6 +19,15 @@
                 <p>Verifica que la lista tenga productos, que existan precios en supermercados y que tu usuario tenga latitud/longitud.</p>
             </div>
         @else
+            @if ($comparativaAhorro !== null)
+                <div class="tag-muted">
+                    Mejor opcion: <strong>{{ $comparativaAhorro['mejor_super'] }}</strong>.
+                    Ahorro frente a <strong>{{ $comparativaAhorro['segunda_super'] }}</strong>:
+                    <strong>{{ number_format((float) $comparativaAhorro['ahorro_absoluto'], 2, ',', '.') }} EUR</strong>
+                    ({{ number_format((float) $comparativaAhorro['ahorro_porcentaje'], 2, ',', '.') }}%).
+                </div>
+            @endif
+
             <table class="table">
                 <thead>
                     <tr>
