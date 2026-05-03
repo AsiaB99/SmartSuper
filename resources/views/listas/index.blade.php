@@ -21,6 +21,7 @@
                     <p>Creada: {{ optional($lista->fecha_creacion)->format('d/m/Y H:i') ?? 'Sin fecha' }}</p>
                 </div>
                 <div class="row-actions">
+                    <a class="button button--ghost" href="{{ route('listas.productos', $lista) }}">Productos</a>
                     <a class="button" href="{{ route('listas.recomendacion', $lista) }}">Recomendar super</a>
                     @can('update', $lista)
                         <form action="{{ route('listas.finalizar', $lista) }}" method="POST">

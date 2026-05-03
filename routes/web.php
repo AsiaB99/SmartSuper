@@ -30,6 +30,14 @@ Route::middleware('auth')->group(function () {
         ->name('despensas.stock.actualizar');
     Route::delete('/despensas/{despensa}/stock/{producto}', [DespensaController::class, 'quitarProducto'])
         ->name('despensas.stock.quitar');
+    Route::get('/listas/{lista}/productos', [ListaController::class, 'productos'])
+        ->name('listas.productos');
+    Route::post('/listas/{lista}/productos', [ListaController::class, 'agregarProducto'])
+        ->name('listas.productos.agregar');
+    Route::patch('/listas/{lista}/productos/{producto}', [ListaController::class, 'actualizarProducto'])
+        ->name('listas.productos.actualizar');
+    Route::delete('/listas/{lista}/productos/{producto}', [ListaController::class, 'quitarProducto'])
+        ->name('listas.productos.quitar');
     Route::post('/listas/{lista}/finalizar', [ListaController::class, 'finalizar'])
         ->name('listas.finalizar');
     Route::get('/listas/{lista}/recomendacion', [ListaController::class, 'recomendacion'])
