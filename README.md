@@ -4,17 +4,23 @@ Aplicación web monolítica en Laravel para gestionar listas de la compra y desp
 
 ## Estado actual del proyecto
 
-Actualmente ya está implementado:
+Estado verificado el 2026-05-03:
 
-- Modelos del dominio:
-  - `Lista`, `Despensa`, `Producto`, `Seccion`, `Supermercado`
+- Dominio implementado:
+  - entidades: `Lista`, `Despensa`, `Producto`, `Seccion`, `Supermercado`
   - pivotes: `Hacen`, `Tienen`, `Formadas`, `Almacena`, `Venden`
-- Relaciones Eloquent explícitas con claves no estándar del dominio.
-- CRUD base de listas de compra:
-  - listado, creación, edición y borrado
-  - validación con Form Requests
-- Rutas web para listas mediante resource routes.
-- Base de vistas Blade para el módulo de listas.
+- Flujos funcionales disponibles:
+  - CRUD de `listas` y `despensas`
+  - gestión de stock en despensas (alta, actualización y baja de producto)
+  - finalización de lista y vista de recomendación
+  - CRUD admin de `productos`, `supermercados` y `precios` (`venden`)
+- Seguridad/autorización:
+  - policies registradas para `Lista` y `Despensa`
+  - protección `auth` en rutas de aplicación
+  - restricción de acceso admin en controladores de catálogo/precios
+- Pruebas existentes:
+  - feature tests de autorización para listas/despensas y módulo admin
+  - tests de recomendación (feature + unit)
 
 ## Stack
 

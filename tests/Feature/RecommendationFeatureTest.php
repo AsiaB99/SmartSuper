@@ -67,6 +67,8 @@ class RecommendationFeatureTest extends TestCase
 
         $response->assertOk();
         $response->assertSeeTextInOrder(['Cercano', 'Lejano barato']);
+        $response->assertSeeText('Ahorro frente a');
+        $response->assertSeeText('Lejano barato');
         $response->assertSeeText('Ver desglose de cesta (2 productos)');
         $response->assertSeeText('Leche');
         $response->assertSeeText('Pan');
