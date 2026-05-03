@@ -106,4 +106,47 @@ class ListaAuthorizationTest extends TestCase
 
         $this->assertDatabaseMissing('listas', ['id' => $lista->id]);
     }
+
+    public function test_viewer_does_not_see_lista_management_actions_in_index(): void
+    {
+        $owner = User::factory()->create();
+        $viewer = User::factory()->create();
+        $lista = Lista::query()->create([
+            'nombre_lista' => 'Lista lectura',
+            'estado' => 'activa',
+            'fecha_creacion' => now(),
+        ]);
+
+        $lista->usuarios()->attach($owner->id, ['permiso_lista' => 'owner']);
+        $lista->usuarios()->attach($viewer->id, ['permiso_lista' => 'viewer']);
+
+        $response = $this->actingAs($viewer)->get(route('listas.index'));
+
+        $response->assertOk();
+        $response->assertSeeText('Recomendar super');
+        $response->assertDontSeeText('Finalizar lista');
+        $response->assertDontSeeText('Editar');
+        $response->assertDontSeeText('Eliminar');
+    }
+
+    public function test_editor_sees_only_allowed_lista_management_actions_in_index(): void
+    {
+        $owner = User::factory()->create();
+        $editor = User::factory()->create();
+        $lista = Lista::query()->create([
+            'nombre_lista' => 'Lista editor',
+            'estado' => 'activa',
+            'fecha_creacion' => now(),
+        ]);
+
+        $lista->usuarios()->attach($owner->id, ['permiso_lista' => 'owner']);
+        $lista->usuarios()->attach($editor->id, ['permiso_lista' => 'editor']);
+
+        $response = $this->actingAs($editor)->get(route('listas.index'));
+
+        $response->assertOk();
+        $response->assertSeeText('Finalizar lista');
+        $response->assertSeeText('Editar');
+        $response->assertDontSeeText('Eliminar');
+    }
 }

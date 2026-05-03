@@ -272,4 +272,44 @@ class DespensaAuthorizationTest extends TestCase
         $response->assertSeeText('Arroz redondo');
         $response->assertDontSeeText('Pasta integral');
     }
+
+    public function test_viewer_does_not_see_despensa_management_actions_in_index(): void
+    {
+        $owner = User::factory()->create();
+        $viewer = User::factory()->create();
+        $despensa = Despensa::query()->create([
+            'nombre_despensa' => 'Despensa lectura',
+            'fecha_creacion' => now(),
+        ]);
+
+        $despensa->usuarios()->attach($owner->id, ['permiso_despensa' => 'owner']);
+        $despensa->usuarios()->attach($viewer->id, ['permiso_despensa' => 'viewer']);
+
+        $response = $this->actingAs($viewer)->get(route('despensas.index'));
+
+        $response->assertOk();
+        $response->assertSeeText('Stock');
+        $response->assertDontSeeText('Editar');
+        $response->assertDontSeeText('Eliminar');
+    }
+
+    public function test_editor_sees_only_allowed_despensa_management_actions_in_index(): void
+    {
+        $owner = User::factory()->create();
+        $editor = User::factory()->create();
+        $despensa = Despensa::query()->create([
+            'nombre_despensa' => 'Despensa editor',
+            'fecha_creacion' => now(),
+        ]);
+
+        $despensa->usuarios()->attach($owner->id, ['permiso_despensa' => 'owner']);
+        $despensa->usuarios()->attach($editor->id, ['permiso_despensa' => 'editor']);
+
+        $response = $this->actingAs($editor)->get(route('despensas.index'));
+
+        $response->assertOk();
+        $response->assertSeeText('Stock');
+        $response->assertSeeText('Editar');
+        $response->assertDontSeeText('Eliminar');
+    }
 }

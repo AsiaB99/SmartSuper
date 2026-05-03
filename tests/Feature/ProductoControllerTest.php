@@ -19,13 +19,19 @@ class ProductoControllerTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    public function test_non_admin_user_cannot_access_productos_index(): void
+    public function test_non_admin_user_can_access_productos_index_in_read_only_mode(): void
     {
         $user = User::factory()->create(['rol' => 'cliente']);
+        Seccion::factory()->count(2)->create();
+        Producto::factory()->count(3)->create();
 
         $response = $this->actingAs($user)->get(route('productos.index'));
 
-        $response->assertForbidden();
+        $response->assertOk();
+        $response->assertDontSee(route('admin.productos.create'), false);
+        $response->assertDontSeeText('Nuevo producto');
+        $response->assertDontSeeText('Editar');
+        $response->assertDontSeeText('Eliminar');
     }
 
     public function test_admin_can_view_productos_index(): void
@@ -39,6 +45,7 @@ class ProductoControllerTest extends TestCase
         $response->assertOk();
         $response->assertViewHas('productos');
         $response->assertViewHas('secciones');
+        $response->assertSee(route('admin.productos.create'), false);
     }
 
     public function test_admin_can_create_producto(): void
@@ -47,7 +54,7 @@ class ProductoControllerTest extends TestCase
         $seccion = Seccion::factory()->create();
 
         $response = $this->actingAs($admin)
-            ->post(route('productos.store'), [
+            ->post(route('admin.productos.store'), [
                 'nombre_producto' => 'Producto Test',
                 'id_seccion' => $seccion->id,
             ]);
@@ -66,7 +73,7 @@ class ProductoControllerTest extends TestCase
         $producto = Producto::factory()->create();
 
         $response = $this->actingAs($admin)
-            ->put(route('productos.update', $producto), [
+            ->put(route('admin.productos.update', $producto), [
                 'nombre_producto' => 'Producto Actualizado',
                 'id_seccion' => $seccion->id,
             ]);
@@ -85,7 +92,7 @@ class ProductoControllerTest extends TestCase
         $producto = Producto::factory()->create();
 
         $response = $this->actingAs($admin)
-            ->delete(route('productos.destroy', $producto));
+            ->delete(route('admin.productos.destroy', $producto));
 
         $response->assertRedirect(route('productos.index'));
         $this->assertDatabaseMissing('productos', [
@@ -100,7 +107,7 @@ class ProductoControllerTest extends TestCase
         Producto::factory()->create(['nombre_producto' => 'Producto Duplicado', 'id_seccion' => $seccion->id]);
 
         $response = $this->actingAs($admin)
-            ->post(route('productos.store'), [
+            ->post(route('admin.productos.store'), [
                 'nombre_producto' => 'Producto Duplicado',
                 'id_seccion' => $seccion->id,
             ]);
@@ -113,11 +120,30 @@ class ProductoControllerTest extends TestCase
         $admin = User::factory()->create(['rol' => 'admin']);
 
         $response = $this->actingAs($admin)
-            ->post(route('productos.store'), [
+            ->post(route('admin.productos.store'), [
                 'nombre_producto' => 'Producto Test',
                 'id_seccion' => 9999,
             ]);
 
         $response->assertSessionHasErrors('id_seccion');
+    }
+
+    public function test_non_admin_user_cannot_access_admin_producto_management_routes(): void
+    {
+        $user = User::factory()->create(['rol' => 'cliente']);
+        $seccion = Seccion::factory()->create();
+        $producto = Producto::factory()->create();
+
+        $this->actingAs($user)->get(route('admin.productos.create'))->assertForbidden();
+        $this->actingAs($user)->post(route('admin.productos.store'), [
+            'nombre_producto' => 'Producto restringido',
+            'id_seccion' => $seccion->id,
+        ])->assertForbidden();
+        $this->actingAs($user)->get(route('admin.productos.edit', $producto))->assertForbidden();
+        $this->actingAs($user)->put(route('admin.productos.update', $producto), [
+            'nombre_producto' => 'Producto restringido',
+            'id_seccion' => $seccion->id,
+        ])->assertForbidden();
+        $this->actingAs($user)->delete(route('admin.productos.destroy', $producto))->assertForbidden();
     }
 }

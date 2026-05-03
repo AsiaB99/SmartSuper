@@ -21,13 +21,27 @@ class VendenControllerTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    public function test_non_admin_user_cannot_access_precios_index(): void
+    public function test_non_admin_user_can_access_precios_index_in_read_only_mode(): void
     {
         $user = User::factory()->create(['rol' => 'cliente']);
+        $seccion = Seccion::factory()->create();
+        $producto = Producto::factory()->create(['id_seccion' => $seccion->id]);
+        $supermercado = Supermercado::factory()->create();
+        Venden::query()->create([
+            'id_producto' => $producto->id,
+            'id_super' => $supermercado->id,
+            'precio' => 10.50,
+            'precio_unidad' => 10.50,
+            'unidad_ref' => 'unidad',
+        ]);
 
         $response = $this->actingAs($user)->get(route('precios.index'));
 
-        $response->assertForbidden();
+        $response->assertOk();
+        $response->assertDontSee(route('admin.precios.create'), false);
+        $response->assertDontSeeText('Nuevo precio');
+        $response->assertDontSeeText('Editar');
+        $response->assertDontSeeText('Eliminar');
     }
 
     public function test_admin_can_view_precios_index(): void
@@ -48,6 +62,7 @@ class VendenControllerTest extends TestCase
 
         $response->assertOk();
         $response->assertViewHas('precios');
+        $response->assertSee(route('admin.precios.create'), false);
     }
 
     public function test_admin_can_create_precio(): void
@@ -58,7 +73,7 @@ class VendenControllerTest extends TestCase
         $supermercado = Supermercado::factory()->create();
 
         $response = $this->actingAs($admin)
-            ->post(route('precios.store'), [
+            ->post(route('admin.precios.store'), [
                 'id_producto' => $producto->id,
                 'id_super' => $supermercado->id,
                 'precio' => 12.99,
@@ -89,7 +104,7 @@ class VendenControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin)
-            ->put(route('precios.update', [$producto->id, $supermercado->id]), [
+            ->put(route('admin.precios.update', [$producto->id, $supermercado->id]), [
                 'precio' => 18.49,
                 'precio_unidad' => 9.25,
                 'unidad_ref' => 'litro',
@@ -118,7 +133,7 @@ class VendenControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin)
-            ->delete(route('precios.destroy', [$producto->id, $supermercado->id]));
+            ->delete(route('admin.precios.destroy', [$producto->id, $supermercado->id]));
 
         $response->assertRedirect(route('precios.index'));
         $this->assertDatabaseMissing('venden', [
@@ -140,12 +155,37 @@ class VendenControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin)
-            ->post(route('precios.store'), [
+            ->post(route('admin.precios.store'), [
                 'id_producto' => $producto->id,
                 'id_super' => $supermercado->id,
                 'precio' => 15.20,
             ]);
 
         $response->assertSessionHasErrors('id_producto');
+    }
+
+    public function test_non_admin_user_cannot_access_admin_precio_management_routes(): void
+    {
+        $user = User::factory()->create(['rol' => 'cliente']);
+        $seccion = Seccion::factory()->create();
+        $producto = Producto::factory()->create(['id_seccion' => $seccion->id]);
+        $supermercado = Supermercado::factory()->create();
+        Venden::query()->create([
+            'id_producto' => $producto->id,
+            'id_super' => $supermercado->id,
+            'precio' => 15.00,
+        ]);
+
+        $this->actingAs($user)->get(route('admin.precios.create'))->assertForbidden();
+        $this->actingAs($user)->post(route('admin.precios.store'), [
+            'id_producto' => $producto->id,
+            'id_super' => $supermercado->id,
+            'precio' => 12.99,
+        ])->assertForbidden();
+        $this->actingAs($user)->get(route('admin.precios.edit', [$producto->id, $supermercado->id]))->assertForbidden();
+        $this->actingAs($user)->put(route('admin.precios.update', [$producto->id, $supermercado->id]), [
+            'precio' => 18.49,
+        ])->assertForbidden();
+        $this->actingAs($user)->delete(route('admin.precios.destroy', [$producto->id, $supermercado->id]))->assertForbidden();
     }
 }
