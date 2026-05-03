@@ -40,6 +40,38 @@
                 @enderror
             </fieldset>
 
+            <fieldset>
+                <label for="moneda">Moneda</label>
+                <input type="text" id="moneda" name="moneda" maxlength="3" value="{{ old('moneda', $precio->moneda ?? 'EUR') }}">
+                @error('moneda')
+                    <span class="error">{{ $message }}</span>
+                @enderror
+            </fieldset>
+
+            <fieldset>
+                <label for="fuente_precio">Fuente precio</label>
+                <input type="text" id="fuente_precio" name="fuente_precio" maxlength="50" value="{{ old('fuente_precio', $precio->fuente_precio) }}">
+                @error('fuente_precio')
+                    <span class="error">{{ $message }}</span>
+                @enderror
+            </fieldset>
+
+            <fieldset>
+                <label for="url_origen">URL origen</label>
+                <input type="url" id="url_origen" name="url_origen" maxlength="2048" value="{{ old('url_origen', $precio->url_origen) }}">
+                @error('url_origen')
+                    <span class="error">{{ $message }}</span>
+                @enderror
+            </fieldset>
+
+            <fieldset>
+                <label for="fecha_precio">Fecha precio</label>
+                <input type="date" id="fecha_precio" name="fecha_precio" value="{{ old('fecha_precio', $precio->fecha_precio) }}">
+                @error('fecha_precio')
+                    <span class="error">{{ $message }}</span>
+                @enderror
+            </fieldset>
+
             <div class="form-actions">
                 <button type="submit" class="button button--primary">Actualizar precio</button>
                 <a href="{{ route('precios.index') }}" class="button">Cancelar</a>

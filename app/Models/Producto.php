@@ -17,11 +17,22 @@ class Producto extends Model
 
     protected $fillable = [
         'id_seccion',
+        'codigo_barras',
         'nombre_producto',
         'marca',
         'formato',
+        'cantidad_envase',
+        'unidad_envase',
         'imagen',
+        'fuente_datos',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'cantidad_envase' => 'decimal:3',
+        ];
+    }
 
     public function seccion(): BelongsTo
     {
@@ -46,6 +57,15 @@ class Producto extends Model
     {
         return $this->belongsToMany(Supermercado::class, 'venden', 'id_producto', 'id_super')
             ->using(Venden::class)
-            ->withPivot(['precio', 'precio_unidad', 'unidad_ref', 'fecha_actualizacion']);
+            ->withPivot([
+                'precio',
+                'precio_unidad',
+                'unidad_ref',
+                'moneda',
+                'fuente_precio',
+                'url_origen',
+                'fecha_precio',
+                'fecha_actualizacion',
+            ]);
     }
 }
