@@ -3,13 +3,17 @@
 @section('title', 'Precios | Admin')
 
 @section('content')
+    @php($esAdmin = auth()->user()?->isAdmin() ?? false)
+
     <section class="hero-card">
         <div>
-            <p class="eyebrow">Admin</p>
+            <p class="eyebrow">{{ $esAdmin ? 'Admin' : 'Catalogo' }}</p>
             <h1>Precios por supermercado</h1>
-            <p class="hero-copy">Gestiona precios de producto en cada supermercado para mejorar recomendaciones.</p>
+            <p class="hero-copy">{{ $esAdmin ? 'Gestiona precios de producto en cada supermercado para mejorar recomendaciones.' : 'Consulta precios de producto en cada supermercado.' }}</p>
         </div>
-        <a class="button button--primary" href="{{ route('precios.create') }}">Nuevo precio</a>
+        @if ($esAdmin)
+            <a class="button button--primary" href="{{ route('admin.precios.create') }}">Nuevo precio</a>
+        @endif
     </section>
 
     <section class="panel-card">
@@ -26,14 +30,16 @@
                         @endif
                     </p>
                 </div>
-                <div class="row-actions">
-                    <a class="button button--ghost" href="{{ route('precios.edit', [$precio->id_producto, $precio->id_super]) }}">Editar</a>
-                    <form action="{{ route('precios.destroy', [$precio->id_producto, $precio->id_super]) }}" method="POST" onsubmit="return confirm('¿Eliminar este precio?');">
-                        @csrf
-                        @method('DELETE')
-                        <button class="button button--danger" type="submit">Eliminar</button>
-                    </form>
-                </div>
+                @if ($esAdmin)
+                    <div class="row-actions">
+                        <a class="button button--ghost" href="{{ route('admin.precios.edit', [$precio->id_producto, $precio->id_super]) }}">Editar</a>
+                        <form action="{{ route('admin.precios.destroy', [$precio->id_producto, $precio->id_super]) }}" method="POST" onsubmit="return confirm('¿Eliminar este precio?');">
+                            @csrf
+                            @method('DELETE')
+                            <button class="button button--danger" type="submit">Eliminar</button>
+                        </form>
+                    </div>
+                @endif
             </article>
         @empty
             <div class="empty-state">

@@ -7,6 +7,10 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="app-shell">
+    @auth
+        @include('layouts.navigation')
+    @endauth
+
     <main class="app-frame">
         @if (session('status'))
             <div class="alert-card alert-card--success">

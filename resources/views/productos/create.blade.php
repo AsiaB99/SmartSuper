@@ -12,7 +12,7 @@
     </section>
 
     <section class="panel-card">
-        <form action="{{ route('productos.store') }}" method="POST">
+        <form action="{{ route('admin.productos.store') }}" method="POST">
             @csrf
 
             <fieldset>

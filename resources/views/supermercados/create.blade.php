@@ -12,7 +12,7 @@
     </section>
 
     <section class="panel-card">
-        <form action="{{ route('supermercados.store') }}" method="POST">
+        <form action="{{ route('admin.supermercados.store') }}" method="POST">
             @csrf
 
             <fieldset>

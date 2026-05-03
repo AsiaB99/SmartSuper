@@ -11,17 +11,6 @@ use Illuminate\Http\RedirectResponse;
 
 class ProductoController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            if (! $request->user()?->isAdmin()) {
-                abort(403, 'Solo administradores pueden gestionar productos.');
-            }
-
-            return $next($request);
-        });
-    }
-
     public function index(): View
     {
         $productos = Producto::with('seccion')->orderBy('nombre_producto')->paginate(15);

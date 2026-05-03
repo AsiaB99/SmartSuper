@@ -3,15 +3,19 @@
 @section('title', 'Supermercados | Admin')
 
 @section('content')
+    @php($esAdmin = auth()->user()?->isAdmin() ?? false)
+
     <section class="hero-card">
         <div>
-            <p class="eyebrow">Admin</p>
+            <p class="eyebrow">{{ $esAdmin ? 'Admin' : 'Catalogo' }}</p>
             <h1>Supermercados</h1>
-            <p class="hero-copy">Gestiona la red de supermercados disponibles en el catálogo.</p>
+            <p class="hero-copy">{{ $esAdmin ? 'Gestiona la red de supermercados disponibles en el catálogo.' : 'Consulta la red de supermercados disponibles en el catálogo.' }}</p>
         </div>
         <div class="row-actions">
             <a class="button button--ghost" href="{{ route('precios.index') }}">Ver precios</a>
-            <a class="button button--primary" href="{{ route('supermercados.create') }}">Nuevo supermercado</a>
+            @if ($esAdmin)
+                <a class="button button--primary" href="{{ route('admin.supermercados.create') }}">Nuevo supermercado</a>
+            @endif
         </div>
     </section>
 
@@ -29,14 +33,16 @@
                     <p>Latitud: {{ $supermercado->latitud ?? 'No definida' }}</p>
                     <p>Longitud: {{ $supermercado->longitud ?? 'No definida' }}</p>
                 </div>
-                <div class="row-actions">
-                    <a class="button button--ghost" href="{{ route('supermercados.edit', $supermercado) }}">Editar</a>
-                    <form action="{{ route('supermercados.destroy', $supermercado) }}" method="POST" onsubmit="return confirm('¿Eliminar este supermercado?');">
-                        @csrf
-                        @method('DELETE')
-                        <button class="button button--danger" type="submit">Eliminar</button>
-                    </form>
-                </div>
+                @if ($esAdmin)
+                    <div class="row-actions">
+                        <a class="button button--ghost" href="{{ route('admin.supermercados.edit', $supermercado) }}">Editar</a>
+                        <form action="{{ route('admin.supermercados.destroy', $supermercado) }}" method="POST" onsubmit="return confirm('¿Eliminar este supermercado?');">
+                            @csrf
+                            @method('DELETE')
+                            <button class="button button--danger" type="submit">Eliminar</button>
+                        </form>
+                    </div>
+                @endif
             </article>
         @empty
             <div class="empty-state">

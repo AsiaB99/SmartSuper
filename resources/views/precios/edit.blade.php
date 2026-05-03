@@ -12,7 +12,7 @@
     </section>
 
     <section class="panel-card">
-        <form action="{{ route('precios.update', [$precio->id_producto, $precio->id_super]) }}" method="POST">
+        <form action="{{ route('admin.precios.update', [$precio->id_producto, $precio->id_super]) }}" method="POST">
             @csrf
             @method('PUT')
 

@@ -3,15 +3,19 @@
 @section('title', 'Productos | Admin')
 
 @section('content')
+    @php($esAdmin = auth()->user()?->isAdmin() ?? false)
+
     <section class="hero-card">
         <div>
-            <p class="eyebrow">Admin</p>
+            <p class="eyebrow">{{ $esAdmin ? 'Admin' : 'Catalogo' }}</p>
             <h1>Productos</h1>
-            <p class="hero-copy">Gestiona el catálogo de productos disponibles.</p>
+            <p class="hero-copy">{{ $esAdmin ? 'Gestiona el catálogo de productos disponibles.' : 'Consulta los productos disponibles en el catálogo.' }}</p>
         </div>
         <div class="row-actions">
             <a class="button button--ghost" href="{{ route('precios.index') }}">Ver precios</a>
-            <a class="button button--primary" href="{{ route('productos.create') }}">Nuevo producto</a>
+            @if ($esAdmin)
+                <a class="button button--primary" href="{{ route('admin.productos.create') }}">Nuevo producto</a>
+            @endif
         </div>
     </section>
 
@@ -28,14 +32,16 @@
                     <h2>{{ $producto->nombre_producto }}</h2>
                     <p>Sección: <strong>{{ $producto->seccion->nombre_seccion }}</strong></p>
                 </div>
-                <div class="row-actions">
-                    <a class="button button--ghost" href="{{ route('productos.edit', $producto) }}">Editar</a>
-                    <form action="{{ route('productos.destroy', $producto) }}" method="POST" onsubmit="return confirm('¿Eliminar este producto?');">
-                        @csrf
-                        @method('DELETE')
-                        <button class="button button--danger" type="submit">Eliminar</button>
-                    </form>
-                </div>
+                @if ($esAdmin)
+                    <div class="row-actions">
+                        <a class="button button--ghost" href="{{ route('admin.productos.edit', $producto) }}">Editar</a>
+                        <form action="{{ route('admin.productos.destroy', $producto) }}" method="POST" onsubmit="return confirm('¿Eliminar este producto?');">
+                            @csrf
+                            @method('DELETE')
+                            <button class="button button--danger" type="submit">Eliminar</button>
+                        </form>
+                    </div>
+                @endif
             </article>
         @empty
             <div class="empty-state">

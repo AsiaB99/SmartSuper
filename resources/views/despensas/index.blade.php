@@ -21,12 +21,16 @@
                 </div>
                 <div class="row-actions">
                     <a class="button button--ghost" href="{{ route('despensas.stock', $despensa) }}">Stock</a>
-                    <a class="button button--ghost" href="{{ route('despensas.edit', $despensa) }}">Editar</a>
-                    <form action="{{ route('despensas.destroy', $despensa) }}" method="POST" onsubmit="return confirm('¿Eliminar esta despensa?');">
-                        @csrf
-                        @method('DELETE')
-                        <button class="button button--danger" type="submit">Eliminar</button>
-                    </form>
+                    @can('update', $despensa)
+                        <a class="button button--ghost" href="{{ route('despensas.edit', $despensa) }}">Editar</a>
+                    @endcan
+                    @can('delete', $despensa)
+                        <form action="{{ route('despensas.destroy', $despensa) }}" method="POST" onsubmit="return confirm('¿Eliminar esta despensa?');">
+                            @csrf
+                            @method('DELETE')
+                            <button class="button button--danger" type="submit">Eliminar</button>
+                        </form>
+                    @endcan
                 </div>
             </article>
         @empty

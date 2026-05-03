@@ -10,17 +10,6 @@ use Illuminate\Http\RedirectResponse;
 
 class SupermercadoController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            if (! $request->user()?->isAdmin()) {
-                abort(403, 'Solo administradores pueden gestionar supermercados.');
-            }
-
-            return $next($request);
-        });
-    }
-
     public function index(): View
     {
         $supermercados = Supermercado::orderBy('nombre_super')->paginate(15);

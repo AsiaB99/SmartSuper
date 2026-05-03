@@ -19,6 +19,9 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->group(function () {
     Route::resource('listas', ListaController::class)->except(['show']);
     Route::resource('despensas', DespensaController::class)->except(['show']);
+    Route::resource('supermercados', SupermercadoController::class)->only(['index']);
+    Route::resource('productos', ProductoController::class)->only(['index']);
+    Route::get('precios', [VendenController::class, 'index'])->name('precios.index');
     Route::get('/despensas/{despensa}/stock', [DespensaController::class, 'stock'])
         ->name('despensas.stock');
     Route::post('/despensas/{despensa}/stock', [DespensaController::class, 'agregarProducto'])
@@ -37,10 +40,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware('auth')->prefix('admin')->group(function () {
-    Route::resource('supermercados', SupermercadoController::class);
-    Route::resource('productos', ProductoController::class);
-    Route::get('precios', [VendenController::class, 'index'])->name('precios.index');
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('supermercados', SupermercadoController::class)
+        ->except(['index', 'show']);
+    Route::resource('productos', ProductoController::class)
+        ->except(['index', 'show']);
     Route::get('precios/create', [VendenController::class, 'create'])->name('precios.create');
     Route::post('precios', [VendenController::class, 'store'])->name('precios.store');
     Route::get('precios/{producto}/{supermercado}/edit', [VendenController::class, 'edit'])->name('precios.edit');

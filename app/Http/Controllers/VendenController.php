@@ -13,17 +13,6 @@ use Illuminate\Support\Facades\DB;
 
 class VendenController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            if (! $request->user()?->isAdmin()) {
-                abort(403, 'Solo administradores pueden gestionar precios.');
-            }
-
-            return $next($request);
-        });
-    }
-
     public function index(): View
     {
         $precios = DB::table('venden as v')
