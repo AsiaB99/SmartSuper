@@ -15,8 +15,8 @@ class StoreSupermercadoRequest extends FormRequest
     {
         return [
             'nombre_super' => 'required|string|max:255|unique:supermercados',
-            'latitud' => 'nullable|numeric|between:-90,90',
-            'longitud' => 'nullable|numeric|between:-180,180',
+            'latitud' => 'required|numeric|between:-90,90',
+            'longitud' => 'required|numeric|between:-180,180',
         ];
     }
 }
