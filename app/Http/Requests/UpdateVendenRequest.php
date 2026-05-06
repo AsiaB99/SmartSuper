@@ -17,10 +17,6 @@ class UpdateVendenRequest extends FormRequest
             'precio' => ['required', 'numeric', 'min:0'],
             'precio_unidad' => ['nullable', 'numeric', 'min:0'],
             'unidad_ref' => ['nullable', 'string', 'max:20'],
-            'moneda' => ['nullable', 'string', 'size:3'],
-            'fuente_precio' => ['nullable', 'string', 'max:50'],
-            'url_origen' => ['nullable', 'url', 'max:2048'],
-            'fecha_precio' => ['nullable', 'date'],
         ];
     }
 }

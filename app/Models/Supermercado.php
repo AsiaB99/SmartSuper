@@ -33,15 +33,6 @@ class Supermercado extends Model
     {
         return $this->belongsToMany(Producto::class, 'venden', 'id_super', 'id_producto')
             ->using(Venden::class)
-            ->withPivot([
-                'precio',
-                'precio_unidad',
-                'unidad_ref',
-                'moneda',
-                'fuente_precio',
-                'url_origen',
-                'fecha_precio',
-                'fecha_actualizacion',
-            ]);
+            ->withPivot(['precio', 'precio_unidad', 'unidad_ref', 'fecha_actualizacion']);
     }
 }

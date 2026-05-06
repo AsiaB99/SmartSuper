@@ -16,13 +16,6 @@ class UpdateProductoRequest extends FormRequest
         return [
             'nombre_producto' => 'required|string|max:255|unique:productos,nombre_producto,' . $this->producto->id,
             'id_seccion' => 'required|exists:secciones,id',
-            'codigo_barras' => 'nullable|string|max:32|unique:productos,codigo_barras,' . $this->producto->id,
-            'marca' => 'nullable|string|max:50',
-            'formato' => 'nullable|string|max:50',
-            'cantidad_envase' => 'nullable|numeric|min:0',
-            'unidad_envase' => 'nullable|string|max:20',
-            'imagen' => 'nullable|string|max:255',
-            'fuente_datos' => 'nullable|string|max:50',
         ];
     }
 }

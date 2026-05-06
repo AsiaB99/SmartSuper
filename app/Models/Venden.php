@@ -19,7 +19,6 @@ class Venden extends Pivot
         return [
             'precio' => 'decimal:2',
             'precio_unidad' => 'decimal:2',
-            'fecha_precio' => 'date',
             'fecha_actualizacion' => 'datetime',
         ];
     }
