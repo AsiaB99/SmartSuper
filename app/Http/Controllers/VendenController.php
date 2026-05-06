@@ -9,29 +9,72 @@ use App\Models\Supermercado;
 use App\Models\Venden;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class VendenController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $precios = DB::table('venden as v')
-            ->join('productos as p', 'p.id', '=', 'v.id_producto')
-            ->join('supermercados as s', 's.id', '=', 'v.id_super')
-            ->select([
-                'v.id_producto',
-                'v.id_super',
-                'v.precio',
-                'v.precio_unidad',
-                'v.unidad_ref',
-                'v.fecha_actualizacion',
-                'p.nombre_producto',
-                's.nombre_super',
-            ])
-            ->orderByDesc('v.fecha_actualizacion')
-            ->paginate(20);
+        $busqueda = trim((string) $request->string('busqueda'));
 
-        return view('precios.index', compact('precios'));
+        $productos = Producto::query()
+            ->whereExists(function ($query): void {
+                $query->select(DB::raw(1))
+                    ->from('venden')
+                    ->whereColumn('venden.id_producto', 'productos.id');
+            })
+            ->when($busqueda !== '', function ($query) use ($busqueda): void {
+                $query->where('nombre_producto', 'like', "%{$busqueda}%");
+            })
+            ->orderBy('nombre_producto')
+            ->limit(8)
+            ->get(['id', 'nombre_producto', 'marca', 'formato']);
+
+        $productoId = $request->integer('producto');
+
+        if ($productoId === 0) {
+            $productoId = null;
+        }
+
+        if ($productoId === null && $productos->isNotEmpty()) {
+            $productoId = (int) $productos->first()->id;
+        }
+
+        $precios = collect();
+        $productoSeleccionado = null;
+
+        if ($productoId !== null) {
+            $productoSeleccionado = Producto::query()
+                ->find($productoId, ['id', 'nombre_producto', 'marca', 'formato']);
+
+            if ($productoSeleccionado !== null) {
+                $precios = DB::table('venden as v')
+                    ->join('supermercados as s', 's.id', '=', 'v.id_super')
+                    ->where('v.id_producto', $productoId)
+                    ->select([
+                        'v.id_producto',
+                        'v.id_super',
+                        'v.precio',
+                        'v.precio_unidad',
+                        'v.unidad_ref',
+                        'v.fecha_actualizacion',
+                        's.nombre_super',
+                        's.direccion',
+                    ])
+                    ->orderBy('v.precio')
+                    ->get();
+            }
+        }
+
+        return view('precios.index', [
+            'busqueda' => $busqueda,
+            'productoId' => $productoId,
+            'productoSeleccionado' => $productoSeleccionado,
+            'productos' => $productos,
+            'precios' => $precios,
+            'mejorPrecio' => $precios->min('precio'),
+        ]);
     }
 
     public function create(): View

@@ -8,20 +8,21 @@ use App\Http\Controllers\SupermercadoController;
 use App\Http\Controllers\VendenController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return redirect()->route('listas.index');
-});
+Route::view('/', 'dashboard');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
+})->name('dashboard');
+
+Route::get('supermercados', [SupermercadoController::class, 'index'])
+    ->name('supermercados.index');
+Route::get('precios', [VendenController::class, 'index'])
+    ->name('precios.index');
 
 Route::middleware('auth')->group(function () {
     Route::resource('listas', ListaController::class)->except(['show']);
     Route::resource('despensas', DespensaController::class)->except(['show']);
-    Route::resource('supermercados', SupermercadoController::class)->only(['index']);
     Route::resource('productos', ProductoController::class)->only(['index']);
-    Route::get('precios', [VendenController::class, 'index'])->name('precios.index');
     Route::get('/despensas/{despensa}/stock', [DespensaController::class, 'stock'])
         ->name('despensas.stock');
     Route::post('/despensas/{despensa}/stock', [DespensaController::class, 'agregarProducto'])
