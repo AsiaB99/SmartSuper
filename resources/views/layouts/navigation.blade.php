@@ -1,16 +1,17 @@
 <nav x-data="{ open: false }" class="sticky top-0 z-40 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.10)]">
     <div class="ss-container">
         <div class="flex min-h-[70px] items-center justify-between gap-4">
-            <div class="flex items-center gap-8">
+            <div class="flex flex-1 items-center justify-center gap-8">
                 <div class="shrink-0">
-                    <a href="{{ route('dashboard') }}" class="flex items-baseline text-ink-900 transition duration-300 hover:scale-105 hover:text-brand-500">
+                    <a href="{{ route('dashboard') }}" class="flex items-baseline gap-2 text-ink-900 transition duration-300 hover:scale-105 hover:text-brand-500">
+                        <x-ui.icon name="shopping-cart" class="h-6 w-6 self-center text-brand-500" />
                         <span class="font-display text-[1.75rem] font-semibold leading-none">Smart</span>
                         <span class="font-display text-[1.75rem] font-semibold leading-none text-brand-500 underline">Super</span>
                         <span class="sr-only">Inicio</span>
                     </a>
                 </div>
 
-                <div class="hidden items-center gap-1 lg:flex">
+                <div class="hidden items-center justify-center gap-1 lg:flex text-lg">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard') || request()->is('/')">
                         Inicio
                     </x-nav-link>

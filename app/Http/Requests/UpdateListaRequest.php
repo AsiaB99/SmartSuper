@@ -17,6 +17,8 @@ class UpdateListaRequest extends FormRequest
             'nombre_lista' => ['required', 'string', 'max:50'],
             'estado' => ['required', 'in:activa,comprada'],
             'fecha_creacion' => ['nullable', 'date'],
+            'usuarios_editores' => ['nullable', 'array'],
+            'usuarios_editores.*' => ['bail', 'string', 'max:50', 'alpha_dash', 'distinct'],
         ];
     }
 }

@@ -10,6 +10,7 @@ use App\Models\Despensa;
 use App\Models\Lista;
 use App\Models\Producto;
 use App\Models\Supermercado;
+use App\Models\User;
 use App\Services\RecommendationService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\View\View;
@@ -65,9 +66,18 @@ class ListaController extends Controller
             ->with('status', 'Lista creada correctamente.');
     }
 
-    public function edit(Lista $lista): View
+    public function edit(Request $request, Lista $lista): JsonResponse|RedirectResponse
     {
-        return view('listas.edit', compact('lista'));
+        /** @var \App\Models\User&Authenticatable $usuario */
+        $usuario = $request->user();
+
+        if (! $request->expectsJson() && ! $request->ajax()) {
+            return redirect()
+                ->route('listas.index')
+                ->with('status', 'La edición de listas se realiza desde el modal de la pantalla Mis Listas.');
+        }
+
+        return response()->json($this->obtenerDatosEdicion($lista, $usuario));
     }
 
     public function show(Lista $lista): View
@@ -77,6 +87,18 @@ class ListaController extends Controller
         $lista->load([
             'productos' => fn ($query) => $query->orderBy('nombre_producto'),
             'supermercadoElegido:id,nombre_super',
+            'usuarios' => fn ($query) => $query
+                ->select('users.id', 'users.name', 'users.nombre_usuario')
+                ->orderByRaw("
+                    case hacen.permiso_lista
+                        when 'owner' then 1
+                        when 'editor' then 2
+                        when 'viewer' then 3
+                        else 4
+                    end
+                ")
+                ->orderBy('users.nombre_usuario')
+                ->orderBy('users.name'),
         ]);
 
         return view('listas.show', compact('lista'));
@@ -84,7 +106,62 @@ class ListaController extends Controller
 
     public function update(UpdateListaRequest $request, Lista $lista): RedirectResponse
     {
-        $lista->update($request->validated());
+        /** @var \App\Models\User&Authenticatable $usuario */
+        $usuario = $request->user();
+        $permisoLista = $usuario->permisoEnLista($lista);
+        $puedeAsignarEditores = $usuario->isAdmin() || $permisoLista === 'owner';
+
+        $data = $request->validated();
+        $editoresNuevos = collect($data['usuarios_editores'] ?? [])
+            ->map(fn ($nombreUsuario) => trim((string) $nombreUsuario))
+            ->filter(fn ($nombreUsuario) => $nombreUsuario !== '')
+            ->unique()
+            ->values()
+            ->all();
+
+        unset($data['usuarios_editores']);
+
+        $lista->update($data);
+
+        if ($puedeAsignarEditores && $editoresNuevos !== []) {
+            $owners = $lista->usuarios()
+                ->wherePivot('permiso_lista', 'owner')
+                ->get(['users.id', 'users.nombre_usuario']);
+
+            $idsOwner = $owners
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            $usuariosEncontrados = User::query()
+                ->whereIn('nombre_usuario', $editoresNuevos)
+                ->get(['id', 'nombre_usuario']);
+
+            $nombresEncontrados = $usuariosEncontrados
+                ->pluck('nombre_usuario')
+                ->filter()
+                ->values()
+                ->all();
+
+            $nombresNoEncontrados = collect($editoresNuevos)
+                ->reject(fn ($nombreUsuario) => in_array($nombreUsuario, $nombresEncontrados, true))
+                ->values();
+
+            if ($nombresNoEncontrados->isNotEmpty()) {
+                throw ValidationException::withMessages([
+                    'usuarios_editores' => ['No existen usuarios con estos nombres: '.$nombresNoEncontrados->implode(', ').'.'],
+                ]);
+            }
+
+            $payloadEditores = $usuariosEncontrados
+                ->reject(fn (User $editor) => in_array((int) $editor->id, $idsOwner, true))
+                ->mapWithKeys(fn (User $editor) => [(int) $editor->id => ['permiso_lista' => 'editor']])
+                ->all();
+
+            if ($payloadEditores !== []) {
+                $lista->usuarios()->syncWithoutDetaching($payloadEditores);
+            }
+        }
 
         return redirect()
             ->route('listas.index')
@@ -98,6 +175,36 @@ class ListaController extends Controller
         return redirect()
             ->route('listas.index')
             ->with('status', 'Lista eliminada correctamente.');
+    }
+
+    /**
+     * @return array{lista: array{id: int, nombre_lista: string, estado: string}, puedeAsignarEditores: bool, usuariosEditoresActuales: array<int, string>}
+     */
+    private function obtenerDatosEdicion(Lista $lista, User $usuario): array
+    {
+        $permisoLista = $usuario->permisoEnLista($lista);
+        $puedeAsignarEditores = $usuario->isAdmin() || $permisoLista === 'owner';
+        $usuariosEditoresActuales = [];
+
+        if ($puedeAsignarEditores) {
+            $usuariosEditoresActuales = $lista->usuarios()
+                ->wherePivot('permiso_lista', 'editor')
+                ->orderBy('nombre_usuario')
+                ->pluck('users.nombre_usuario')
+                ->filter()
+                ->values()
+                ->all();
+        }
+
+        return [
+            'lista' => [
+                'id' => $lista->id,
+                'nombre_lista' => $lista->nombre_lista,
+                'estado' => $lista->estado,
+            ],
+            'puedeAsignarEditores' => $puedeAsignarEditores,
+            'usuariosEditoresActuales' => $usuariosEditoresActuales,
+        ];
     }
 
     public function productos(Request $request, Lista $lista): View|JsonResponse

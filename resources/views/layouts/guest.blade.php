@@ -20,9 +20,7 @@
             {{ $slot }}
         </main>
 
-        <footer class="bg-[var(--color-footer-oscuro)] px-4 py-5 text-center text-sm text-white/85">
-            © 2025 SmartSuper. Desarrollado por Asia Bosch Dwiyanti.
-        </footer>
+        <x-layouts.footer />
     </body>
 </html>
 

@@ -21,4 +21,21 @@
             @error('fecha_creacion')<small class="text-sm font-medium text-rose-600">{{ $message }}</small>@enderror
         </label>
     @endif
+
+    @if (($puedeAsignarEditores ?? false))
+        <label class="grid gap-2 md:col-span-2">
+            <span class="text-sm font-semibold text-ink-700">Añadir usuarios con permiso de edición</span>
+            <select class="ss-input min-h-40" name="usuarios_editores[]" multiple>
+                @forelse (($usuariosDisponibles ?? collect()) as $usuarioDisponible)
+                    <option value="{{ $usuarioDisponible->id }}" @selected(collect(old('usuarios_editores', []))->contains($usuarioDisponible->id))>
+                        {{ $usuarioDisponible->nombre_usuario ?? 'sin_usuario' }} - {{ $usuarioDisponible->name }} ({{ $usuarioDisponible->email }})
+                    </option>
+                @empty
+                    <option value="" disabled>No hay usuarios disponibles para añadir.</option>
+                @endforelse
+            </select>
+            @error('usuarios_editores')<small class="text-sm font-medium text-rose-600">{{ $message }}</small>@enderror
+            @error('usuarios_editores.*')<small class="text-sm font-medium text-rose-600">{{ $message }}</small>@enderror
+        </label>
+    @endif
 </div>

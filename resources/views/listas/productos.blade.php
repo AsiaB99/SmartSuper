@@ -121,7 +121,7 @@
                     @endforelse
                 </section>
 
-                <aside class="h-fit rounded-[15px] border-t-[5px] border-accent-500 bg-white p-10 shadow-[0_10px_30px_rgba(0,0,0,0.08)] lg:sticky lg:top-24">
+                <x-listas.resumen-aside class="p-10">
                     <h2 class="text-2xl font-semibold text-ink-900">Resumen</h2>
                     <p class="mt-3 text-sm text-ink-600">Productos en lista:</p>
                     <p class="mt-3 text-3xl font-bold text-ink-900 text-center">{{ $lista->productos->count() }}</p>
@@ -142,7 +142,7 @@
                        href="{{ $puedeEditar ? route('listas.recomendacion', $lista) : '#' }}">
                         Ver recomendación
                     </a>
-                </aside>
+                </x-listas.resumen-aside>
             </div>
         </div>
     </section>

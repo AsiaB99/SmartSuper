@@ -34,7 +34,7 @@
                     @endforelse
                 </section>
 
-                <aside class="h-fit rounded-[15px] border-t-[5px] border-accent-500 bg-white p-10 shadow-[0_10px_30px_rgba(0,0,0,0.08)] lg:sticky lg:top-24">
+                <x-listas.resumen-aside class="p-10">
                     <h2 class="text-2xl font-semibold text-ink-900">Resumen</h2>
                     <p class="mt-8 text-sm text-ink-600">Estado:</p>
                     <p class="mt-2 text-xl font-semibold text-ink-900">{{ ucfirst($lista->estado) }}</p>
@@ -44,7 +44,28 @@
                         <p class="mt-6 text-sm text-ink-600">Supermercado elegido:</p>
                         <p class="mt-2 text-base font-semibold text-ink-900">{{ $lista->supermercadoElegido->nombre_super }}</p>
                     @endif
-                </aside>
+                    <p class="mt-6 text-sm text-ink-600">Participan en esta lista:</p>
+                    <div class="mt-3 grid gap-3">
+                        @foreach ($lista->usuarios as $usuarioParticipante)
+                            @php($permiso = $usuarioParticipante->pivot->permiso_lista)
+                            <article class="rounded-[12px] border border-[var(--color-borde-suave)] bg-white/70 px-4 py-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-sm font-semibold text-ink-900">
+                                            {{ $usuarioParticipante->nombre_usuario ?: $usuarioParticipante->name }}
+                                        </p>
+                                        @if ($usuarioParticipante->nombre_usuario)
+                                            <p class="text-xs text-ink-500">{{ $usuarioParticipante->name }}</p>
+                                        @endif
+                                    </div>
+                                    <span class="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] {{ $permiso === 'owner' ? 'bg-brand-50 text-brand-700' : ($permiso === 'editor' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700') }}">
+                                        {{ $permiso === 'owner' ? 'Owner' : ($permiso === 'editor' ? 'Editor' : 'Viewer') }}
+                                    </span>
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+                </x-listas.resumen-aside>
             </div>
         </div>
     </section>

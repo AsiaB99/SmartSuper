@@ -21,6 +21,12 @@
             </div>
 
             <div>
+                <x-input-label for="nombre_usuario" value="Nombre de usuario" />
+                <x-text-input id="nombre_usuario" class="ss-input mt-2 block w-full" type="text" name="nombre_usuario" :value="old('nombre_usuario')" required autocomplete="nickname" />
+                <x-input-error :messages="$errors->get('nombre_usuario')" class="mt-2 text-sm text-rose-600" />
+            </div>
+
+            <div>
                 <x-input-label for="email" value="Email" />
                 <x-text-input id="email" class="ss-input mt-2 block w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
                 <x-input-error :messages="$errors->get('email')" class="mt-2 text-sm text-rose-600" />

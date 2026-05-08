@@ -23,5 +23,7 @@
 
         @yield('content')
     </main>
+
+    <x-layouts.footer />
 </body>
 </html>

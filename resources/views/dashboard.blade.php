@@ -44,7 +44,7 @@
                 @foreach ($features as $feature)
                     <article class="ss-card ss-card-hover text-center">
                         <div class="ss-icon-bubble">
-                            <x-ui.icon :name="$feature['icon']" class="h-12 w-12" />
+                            <x-ui.icon :name="$feature['icon']" class="h-36 w-36" />
                         </div>
                         <h3 class="text-xl font-semibold text-ink-900">{{ $feature['title'] }}</h3>
                         <p class="mt-4 text-sm leading-7 text-ink-600">{{ $feature['text'] }}</p>
@@ -100,33 +100,4 @@
             </div>
         </section>
     @endauth
-
-    <footer class="ss-footer">
-        <div class="ss-container grid gap-8 py-10 md:grid-cols-3">
-            <div>
-                <h2 class="text-xl font-semibold text-brand-500">SmartSuper</h2>
-                <p class="mt-3 text-sm leading-7 text-white/85">Tu asistente de compra inteligente para combatir la inflación.</p>
-            </div>
-            <div>
-                <h3 class="font-semibold text-brand-500">Enlaces</h3>
-                <ul class="mt-3 space-y-2 text-sm text-white/85">
-                    <li><a href="#" class="hover:underline">Aviso Legal</a></li>
-                    <li><a href="#" class="hover:underline">Privacidad</a></li>
-                    <li><a href="#" class="hover:underline">Contacto</a></li>
-                </ul>
-            </div>
-            <div>
-                <h3 class="font-semibold text-brand-500">Síguenos</h3>
-                <div class="mt-3 flex gap-4 text-white/85">
-                    <span>Instagram</span>
-                    <span>Twitter</span>
-                    <span>Facebook</span>
-                </div>
-            </div>
-        </div>
-        <div class="bg-[var(--color-footer-oscuro)] px-5 py-5 text-center text-sm text-white/85">
-            &copy; 2025 SmartSuper. Desarrollado por Asia Bosch Dwiyanti.
-        </div>
-    </footer>
 @endsection
-
