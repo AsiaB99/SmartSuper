@@ -19,7 +19,7 @@
                 <form class="grid gap-5" action="{{ route('listas.update', $lista) }}" method="POST">
                     @csrf
                     @method('PUT')
-                    @include('listas.partials.form', ['lista' => $lista])
+                    @include('listas.partials.form', ['lista' => $lista, 'mostrarFechaCreacion' => true])
                     <div class="flex flex-wrap gap-3">
                         <button class="ss-btn-green" type="submit">Guardar cambios</button>
                         <a class="ss-btn-outline" href="{{ route('listas.index') }}">Volver</a>

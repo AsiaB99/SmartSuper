@@ -5,17 +5,13 @@
 @section('content')
     <section class="ss-section bg-fondo-claro">
         <div class="ss-container">
-            <div class="mb-8 flex flex-wrap items-center justify-between gap-5">
+            <div class="mb-8">
                 <div>
                     <h1 class="ss-title text-left">Mi Lista</h1>
                     <p class="mt-2 max-w-2xl text-sm leading-7 text-ink-600">
                         Organiza tus compras, revisa productos y calcula la mejor recomendación de supermercado.
                     </p>
                 </div>
-                <a class="ss-btn-green" href="{{ route('listas.create') }}">
-                    <x-ui.icon name="plus" class="h-4 w-4" />
-                    <span>Nueva lista</span>
-                </a>
             </div>
 
             <div class="grid gap-10 lg:grid-cols-[1fr_330px]">
@@ -40,10 +36,7 @@
                                 <a class="ss-btn-outline" href="{{ route('listas.productos', $lista) }}">Productos</a>
                                 <a class="ss-btn-outline" href="{{ route('listas.recomendacion', $lista) }}">Recomendar super</a>
                                 @can('update', $lista)
-                                    <form action="{{ route('listas.finalizar', $lista) }}" method="POST">
-                                        @csrf
-                                        <button class="ss-btn-green" type="submit">Finalizar</button>
-                                    </form>
+                                    <a class="ss-btn-green" href="{{ route('listas.finalizar.confirmar', $lista) }}">Finalizar</a>
                                     <a class="ss-btn-outline" href="{{ route('listas.edit', $lista) }}">Editar</a>
                                 @endcan
                                 @can('delete', $lista)

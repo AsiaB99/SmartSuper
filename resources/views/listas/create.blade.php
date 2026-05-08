@@ -18,7 +18,7 @@
 
                 <form class="grid gap-5" action="{{ route('listas.store') }}" method="POST">
                     @csrf
-                    @include('listas.partials.form', ['lista' => null])
+                    @include('listas.partials.form', ['lista' => null, 'mostrarFechaCreacion' => false])
                     <div class="flex flex-wrap gap-3">
                         <button class="ss-btn-green" type="submit">Guardar lista</button>
                         <a class="ss-btn-outline" href="{{ route('listas.index') }}">Volver</a>

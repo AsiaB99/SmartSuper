@@ -14,9 +14,11 @@
         @error('estado')<small class="text-sm font-medium text-rose-600">{{ $message }}</small>@enderror
     </label>
 
-    <label class="grid gap-2">
-        <span class="text-sm font-semibold text-ink-700">Fecha de creación</span>
-        <input class="ss-input" type="datetime-local" name="fecha_creacion" value="{{ old('fecha_creacion', $lista?->fecha_creacion?->format('Y-m-d\TH:i') ?? now()->format('Y-m-d\TH:i')) }}">
-        @error('fecha_creacion')<small class="text-sm font-medium text-rose-600">{{ $message }}</small>@enderror
-    </label>
+    @if (($mostrarFechaCreacion ?? true))
+        <label class="grid gap-2">
+            <span class="text-sm font-semibold text-ink-700">Fecha de creación</span>
+            <input class="ss-input" type="datetime-local" name="fecha_creacion" value="{{ old('fecha_creacion', $lista?->fecha_creacion?->format('Y-m-d\TH:i') ?? now()->format('Y-m-d\TH:i')) }}">
+            @error('fecha_creacion')<small class="text-sm font-medium text-rose-600">{{ $message }}</small>@enderror
+        </label>
+    @endif
 </div>

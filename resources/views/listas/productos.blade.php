@@ -110,10 +110,10 @@
                         <x-ui.icon name="shopping-cart" class="mr-1 inline h-4 w-4" />
                         Listo para calcular recomendación.
                     </div>
-                    <form action="{{ route('listas.finalizar', $lista) }}" method="POST">
-                        @csrf
-                        <button class="ss-btn-green w-full" type="submit" @disabled(! $puedeEditar)>Finalizar Compra</button>
-                    </form>
+                    <a class="ss-btn-green w-full text-center {{ ! $puedeEditar ? 'pointer-events-none opacity-60' : '' }}"
+                       href="{{ $puedeEditar ? route('listas.finalizar.confirmar', $lista) : '#' }}">
+                        Finalizar Compra
+                    </a>
                 </aside>
             </div>
         </div>

@@ -27,9 +27,11 @@
                         Mi Despensa
                     </x-nav-link>
                     @auth
+                    @if (Auth::user()->isAdmin())
                         <x-nav-link :href="route('productos.index')" :active="request()->routeIs('productos.*') || request()->routeIs('admin.productos.*')">
                             Productos
                         </x-nav-link>
+                    @endif
                     @endauth
                 </div>
             </div>
@@ -113,9 +115,11 @@
                 Mi Despensa
             </x-responsive-nav-link>
             @auth
+            @if (Auth::user()->isAdmin())
                 <x-responsive-nav-link :href="route('productos.index')" :active="request()->routeIs('productos.*') || request()->routeIs('admin.productos.*')">
                     Productos
                 </x-responsive-nav-link>
+            @endif
             @endauth
         </div>
 
