@@ -60,7 +60,12 @@
     }
 
     .ss-icon-bubble {
-        @apply mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full text-brand-500;
+        @apply mx-auto mb-5 flex h-28 w-28 items-center justify-center rounded-full text-brand-500;
+    }
+
+    .ss-icon-bubble svg {
+        width: 5.5rem;
+        height: 5.5rem;
     }
 
     .ss-footer {

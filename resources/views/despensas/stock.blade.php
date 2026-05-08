@@ -56,6 +56,7 @@
                     @php
                         $stock = (int) $producto->pivot->stock;
                         $nivel = min(100, max(8, $stock * 20));
+                        $nivelClass = "w-[{$nivel}%]";
                         $estado = $stock <= 1 ? __('despensas.stock.low') : ($stock <= 3 ? __('despensas.stock.medium') : __('despensas.stock.high'));
                         $barClass = $stock <= 1 ? 'bg-[var(--color-alerta-roja)]' : ($stock <= 3 ? 'bg-[#f1c40f]' : 'bg-brand-500');
                         $textClass = $stock <= 1 ? 'text-[var(--color-alerta-roja)]' : ($stock <= 3 ? 'text-[#b7950b]' : 'text-brand-500');
@@ -73,7 +74,7 @@
 
                         <div class="text-4xl font-bold text-ink-900">{{ $stock }} <span class="text-base font-normal text-ink-400">{{ __('common.units_short') }}</span></div>
                         <div class="my-3 h-[10px] overflow-hidden rounded-full bg-[var(--color-barra-suave)]">
-                            <div class="{{ $barClass }} h-full rounded-full" style="width: {{ $nivel }}%;"></div>
+                            <div class="{{ $barClass }} {{ $nivelClass }} h-full rounded-full"></div>
                         </div>
                         <p class="{{ $textClass }} text-sm font-bold">{{ $estado }}</p>
 
@@ -103,4 +104,3 @@
         </div>
     </section>
 @endsection
-

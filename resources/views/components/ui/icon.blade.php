@@ -20,6 +20,7 @@
     ];
 
     $icon = $map[$name] ?? 'circle';
+    $defaultSizeClass = $attributes->has('class') ? '' : 'h-5 w-5';
 @endphp
 
-<x-dynamic-component :component="'lucide-' . $icon" {{ $attributes->merge(['class' => 'h-5 w-5']) }} />
+<x-dynamic-component :component="'lucide-' . $icon" {{ $attributes->merge(['class' => $defaultSizeClass]) }} />

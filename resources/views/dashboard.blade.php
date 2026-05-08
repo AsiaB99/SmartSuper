@@ -44,7 +44,7 @@
                 @foreach ($features as $feature)
                     <article class="ss-card ss-card-hover text-center">
                         <div class="ss-icon-bubble">
-                            <x-ui.icon :name="$feature['icon']" class="h-36 w-36" />
+                            <x-ui.icon :name="$feature['icon']" class="h-24 w-24" />
                         </div>
                         <h3 class="text-xl font-semibold text-ink-900">{{ $feature['title'] }}</h3>
                         <p class="mt-4 text-sm leading-7 text-ink-600">{{ $feature['text'] }}</p>
