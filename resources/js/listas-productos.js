@@ -1,0 +1,279 @@
+const escapeHtml = (value) => value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+
+export const initListaProductosSearch = () => {
+    const form = document.getElementById('buscador-catalogo-lista');
+    const input = document.getElementById('busqueda-productos-lista');
+    const suggestionsBox = document.getElementById('sugerencias-productos-lista');
+    const catalogoWrapper = document.querySelector('[data-catalogo-wrapper]');
+
+    if (!form || !input || !suggestionsBox || !catalogoWrapper) {
+        return;
+    }
+
+    let debounceTimer;
+    let activeController;
+    let suggestionController;
+    let currentSuggestions = [];
+    let activeIndex = -1;
+
+    const buildCatalogUrl = (query = input.value.trim(), page = null) => {
+        const endpoint = new URL(form.dataset.catalogoUrl, window.location.origin);
+
+        if (query !== '') {
+            endpoint.searchParams.set('q', query);
+        }
+
+        if (page) {
+            endpoint.searchParams.set('page', page);
+        }
+
+        return endpoint.toString();
+    };
+
+    const closeSuggestions = () => {
+        suggestionsBox.classList.add('hidden');
+        suggestionsBox.innerHTML = '';
+        input.setAttribute('aria-expanded', 'false');
+        currentSuggestions = [];
+        activeIndex = -1;
+    };
+
+    const setActiveSuggestion = (index) => {
+        activeIndex = index;
+
+        Array.from(suggestionsBox.querySelectorAll('[data-suggestion-index]')).forEach((element, itemIndex) => {
+            element.classList.toggle('bg-brand-50', itemIndex === activeIndex);
+        });
+    };
+
+    const renderSuggestions = (suggestions) => {
+        currentSuggestions = suggestions;
+
+        if (currentSuggestions.length === 0) {
+            closeSuggestions();
+            return;
+        }
+
+        suggestionsBox.innerHTML = `
+            <ul class="py-2" role="listbox" aria-label="Sugerencias de búsqueda">
+                ${currentSuggestions.map((suggestion, index) => `
+                    <li>
+                        <button
+                            type="button"
+                            class="flex w-full items-center px-4 py-3 text-left transition hover:bg-brand-50"
+                            data-suggestion-index="${index}"
+                        >
+                            <span class="truncate text-sm font-medium text-ink-900">${escapeHtml(suggestion)}</span>
+                        </button>
+                    </li>
+                `).join('')}
+            </ul>
+        `;
+
+        suggestionsBox.classList.remove('hidden');
+        input.setAttribute('aria-expanded', 'true');
+        setActiveSuggestion(-1);
+    };
+
+    const cargarCatalogo = async (url) => {
+        activeController?.abort();
+        activeController = new AbortController();
+
+        const response = await fetch(url, {
+            signal: activeController.signal,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+
+        if (typeof data.catalogo === 'string') {
+            catalogoWrapper.innerHTML = data.catalogo;
+        }
+    };
+
+    const applySearch = (query) => {
+        const normalizedQuery = query.trim();
+        input.value = normalizedQuery;
+        const url = buildCatalogUrl(normalizedQuery);
+        window.history.replaceState({}, '', url);
+        cargarCatalogo(url).catch(() => {});
+    };
+
+    const fetchSuggestions = async (query) => {
+        suggestionController?.abort();
+        suggestionController = new AbortController();
+
+        const endpoint = new URL(form.dataset.sugerenciasUrl, window.location.origin);
+        endpoint.searchParams.set('q', query);
+
+        const response = await fetch(endpoint.toString(), {
+            signal: suggestionController.signal,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            return [];
+        }
+
+        return response.json();
+    };
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        closeSuggestions();
+        applySearch(input.value);
+    });
+
+    input.addEventListener('input', () => {
+        const query = input.value.trim();
+
+        if (query.length < 2) {
+            closeSuggestions();
+            clearTimeout(debounceTimer);
+            applySearch(query);
+            return;
+        }
+
+        clearTimeout(debounceTimer);
+        debounceTimer = window.setTimeout(async () => {
+            const suggestions = await fetchSuggestions(query).catch(() => []);
+
+            if (input.value.trim() !== query) {
+                return;
+            }
+
+            renderSuggestions(Array.isArray(suggestions) ? suggestions : []);
+            applySearch(query);
+        }, 180);
+    });
+
+    input.addEventListener('keydown', (event) => {
+        if (currentSuggestions.length === 0) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                closeSuggestions();
+                applySearch(input.value);
+            }
+
+            return;
+        }
+
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            setActiveSuggestion((activeIndex + 1) % currentSuggestions.length);
+            return;
+        }
+
+        if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            setActiveSuggestion(activeIndex <= 0 ? currentSuggestions.length - 1 : activeIndex - 1);
+            return;
+        }
+
+        if (event.key === 'Escape') {
+            closeSuggestions();
+            return;
+        }
+
+        if (event.key === 'Enter') {
+            event.preventDefault();
+
+            if (activeIndex >= 0) {
+                input.value = currentSuggestions[activeIndex];
+            }
+
+            closeSuggestions();
+            applySearch(input.value);
+        }
+    });
+
+    suggestionsBox.addEventListener('click', (event) => {
+        const trigger = event.target.closest('[data-suggestion-index]');
+
+        if (!trigger) {
+            return;
+        }
+
+        const suggestion = currentSuggestions[Number(trigger.dataset.suggestionIndex)];
+
+        if (!suggestion) {
+            return;
+        }
+
+        closeSuggestions();
+        applySearch(suggestion);
+    });
+
+    catalogoWrapper.addEventListener('click', (event) => {
+        const link = event.target.closest('[data-catalogo-paginacion] a');
+
+        if (!link) {
+            return;
+        }
+
+        event.preventDefault();
+        const url = new URL(link.href);
+        input.value = url.searchParams.get('q') ?? '';
+        window.history.replaceState({}, '', url.toString());
+        closeSuggestions();
+        cargarCatalogo(url.toString()).catch(() => {});
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!form.contains(event.target)) {
+            closeSuggestions();
+        }
+    });
+};
+
+export const initUserLocationCapture = () => {
+    const form = document.getElementById('form-ubicacion-usuario');
+    const button = document.getElementById('btn-usar-ubicacion');
+    const latitudInput = document.getElementById('ubicacion-latitud');
+    const longitudInput = document.getElementById('ubicacion-longitud');
+
+    if (!form || !button || !latitudInput || !longitudInput) {
+        return;
+    }
+
+    button.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+            return;
+        }
+
+        button.setAttribute('disabled', 'disabled');
+        button.textContent = 'Obteniendo ubicación...';
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                latitudInput.value = String(position.coords.latitude);
+                longitudInput.value = String(position.coords.longitude);
+                form.submit();
+            },
+            () => {
+                button.removeAttribute('disabled');
+                button.textContent = 'No se pudo obtener ubicación';
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0,
+            }
+        );
+    });
+};

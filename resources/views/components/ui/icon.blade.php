@@ -6,6 +6,7 @@
         'arrow-right-end-on-rectangle' => 'log-out',
         'bars-3' => 'menu',
         'clipboard-document-list' => 'clipboard-list',
+        'eye' => 'eye',
         'list-bullet' => 'list',
         'magnifying-glass' => 'search',
         'map-pin' => 'map-pin',

@@ -32,7 +32,7 @@
                 <section class="grid gap-5">
                     @foreach ($ranking as $fila)
                         <article class="overflow-hidden rounded-[15px] bg-white shadow-[0_5px_15px_rgba(0,0,0,0.05)] transition duration-300 hover:-translate-y-1">
-                            <div class="grid gap-4 p-5 md:grid-cols-[1fr_repeat(4,auto)] md:items-center">
+                            <div class="grid gap-4 p-5 md:grid-cols-[1fr_repeat(5,auto)] md:items-center">
                                 <div>
                                     <h2 class="text-xl font-semibold text-ink-900">{{ $fila['nombre_super'] }}</h2>
                                     <p class="mt-1 text-sm text-ink-500">{{ $fila['items_cesta'] }} productos en cesta</p>
@@ -52,6 +52,21 @@
                                 <div class="rounded-[10px] bg-brand-50 px-4 py-3 text-right">
                                     <p class="text-xs font-semibold uppercase text-brand-600">Score final</p>
                                     <p class="text-2xl font-bold text-brand-600">{{ number_format((float) $fila['score'], 2, ',', '.') }} €</p>
+                                </div>
+                                <div class="text-right">
+                                    @if ((int) $lista->id_supermercado_elegido === (int) $fila['id_super'])
+                                        <div class="rounded-[10px] bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
+                                            Elegido
+                                        </div>
+                                    @else
+                                        <form action="{{ route('listas.recomendacion.elegir', $lista) }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="id_supermercado" value="{{ (int) $fila['id_super'] }}">
+                                            <button class="ss-btn-green inline-flex w-full justify-center px-4 py-2.5 text-sm md:w-auto" type="submit">
+                                                Elegir y finalizar
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                             </div>
 

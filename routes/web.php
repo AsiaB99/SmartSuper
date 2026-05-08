@@ -8,11 +8,8 @@ use App\Http\Controllers\SupermercadoController;
 use App\Http\Controllers\VendenController;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'dashboard');
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->name('dashboard');
+Route::view('/', 'dashboard')->name('dashboard');
+Route::redirect('/dashboard', '/');
 
 Route::get('supermercados', [SupermercadoController::class, 'index'])
     ->name('supermercados.index');
@@ -20,9 +17,11 @@ Route::get('precios', [VendenController::class, 'index'])
     ->name('precios.index');
 
 Route::middleware('auth')->group(function () {
-    Route::resource('listas', ListaController::class)->except(['show']);
+    Route::resource('listas', ListaController::class);
     Route::resource('despensas', DespensaController::class)->except(['show']);
-    Route::resource('productos', ProductoController::class)->only(['index']);
+    Route::resource('productos', ProductoController::class)
+        ->only(['index'])
+        ->middleware('admin');
     Route::get('/despensas/{despensa}/stock', [DespensaController::class, 'stock'])
         ->name('despensas.stock');
     Route::post('/despensas/{despensa}/stock', [DespensaController::class, 'agregarProducto'])
@@ -33,19 +32,26 @@ Route::middleware('auth')->group(function () {
         ->name('despensas.stock.quitar');
     Route::get('/listas/{lista}/productos', [ListaController::class, 'productos'])
         ->name('listas.productos');
+    Route::get('/listas/{lista}/productos/sugerencias', [ListaController::class, 'sugerenciasProductos'])
+        ->name('listas.productos.sugerencias');
     Route::post('/listas/{lista}/productos', [ListaController::class, 'agregarProducto'])
         ->name('listas.productos.agregar');
     Route::patch('/listas/{lista}/productos/{producto}', [ListaController::class, 'actualizarProducto'])
         ->name('listas.productos.actualizar');
     Route::delete('/listas/{lista}/productos/{producto}', [ListaController::class, 'quitarProducto'])
         ->name('listas.productos.quitar');
+    Route::get('/listas/{lista}/finalizar', [ListaController::class, 'confirmarFinalizacion'])
+        ->name('listas.finalizar.confirmar');
     Route::post('/listas/{lista}/finalizar', [ListaController::class, 'finalizar'])
         ->name('listas.finalizar');
     Route::get('/listas/{lista}/recomendacion', [ListaController::class, 'recomendacion'])
         ->name('listas.recomendacion');
+    Route::post('/listas/{lista}/recomendacion/elegir', [ListaController::class, 'elegirSupermercado'])
+        ->name('listas.recomendacion.elegir');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/location', [ProfileController::class, 'updateLocation'])->name('profile.location.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
