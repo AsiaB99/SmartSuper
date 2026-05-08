@@ -16,7 +16,6 @@ class StoreListaRequest extends FormRequest
         return [
             'nombre_lista' => ['required', 'string', 'max:50'],
             'estado' => ['required', 'in:activa,comprada'],
-            'fecha_creacion' => ['nullable', 'date'],
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Lista extends Model
@@ -17,6 +18,7 @@ class Lista extends Model
     protected $fillable = [
         'nombre_lista',
         'estado',
+        'id_supermercado_elegido',
         'fecha_creacion',
     ];
 
@@ -25,6 +27,11 @@ class Lista extends Model
         return [
             'fecha_creacion' => 'datetime',
         ];
+    }
+
+    public function supermercadoElegido(): BelongsTo
+    {
+        return $this->belongsTo(Supermercado::class, 'id_supermercado_elegido');
     }
 
     public function usuarios(): BelongsToMany
