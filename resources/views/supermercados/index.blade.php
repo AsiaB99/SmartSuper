@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Supermercados | SmartSuper')
+@section('title', __('supermercados.index.meta_title'))
 
 @section('content')
     @php
@@ -19,21 +19,24 @@
 
     <section class="ss-section bg-fondo-claro">
         <div class="ss-container">
-            <div class="mb-10 flex flex-wrap items-center justify-between gap-5">
-                <h1 class="ss-title text-left">Supermercados Cercanos</h1>
-                <div class="flex flex-wrap items-center gap-3">
+            <section class="mb-12 rounded-[20px] bg-white p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+                <h1 class="text-4xl font-semibold text-ink-900">{{ __('supermercados.index.title') }}</h1>
+                <p class="mx-auto mt-4 max-w-3xl text-lg leading-7 text-ink-600">
+                    {{ __('supermercados.index.subtitle') }}
+                </p>
+                <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
                     <a href="{{ route('precios.index') }}" class="ss-btn-outline">
                         <x-ui.icon name="magnifying-glass" class="h-4 w-4" />
-                        <span>Comparador</span>
+                        <span>{{ __('nav.comparator') }}</span>
                     </a>
                     @if ($esAdmin)
                         <a href="{{ route('admin.supermercados.create') }}" class="ss-btn-green">
                             <x-ui.icon name="plus" class="h-4 w-4" />
-                            <span>Nuevo supermercado</span>
+                            <span>{{ __('supermercados.index.new') }}</span>
                         </a>
                     @endif
                 </div>
-            </div>
+            </section>
 
             <form method="GET" action="{{ route('supermercados.index') }}" class="mb-8 flex flex-wrap gap-3 rounded-[20px] bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
                 <input
@@ -42,9 +45,9 @@
                     type="search"
                     value="{{ $busqueda }}"
                     class="ss-input min-w-[260px] flex-1"
-                    placeholder="Nombre o dirección"
+                    placeholder="{{ __('supermercados.index.search_placeholder') }}"
                 >
-                <button type="submit" class="ss-btn-green">Buscar</button>
+                <button type="submit" class="ss-btn-green">{{ __('common.search') }}</button>
             </form>
 
             <section class="relative mb-10 h-[400px] w-full overflow-hidden rounded-[20px] border-4 border-white bg-[#dff2e8] shadow-[0_10px_30px_rgba(0,0,0,0.10)]">
@@ -52,7 +55,7 @@
                 <div class="absolute left-0 top-1/3 h-10 w-full rotate-[-8deg] bg-white/70 shadow-soft"></div>
                 <div class="absolute left-1/4 top-0 h-full w-10 rotate-[12deg] bg-white/60 shadow-soft"></div>
                 <div class="absolute bottom-5 left-5 rounded-[10px] bg-white/95 px-4 py-3 shadow-soft">
-                    <p class="text-sm font-semibold text-brand-600">{{ $supermercadosMapa->count() }} ubicaciones</p>
+                    <p class="text-sm font-semibold text-brand-600">{{ __('supermercados.index.locations_count', ['count' => $supermercadosMapa->count()]) }}</p>
                 </div>
                 @forelse ($markers as $marker)
                     <div
@@ -67,8 +70,8 @@
                 @empty
                     <div class="absolute inset-0 flex items-center justify-center p-8 text-center">
                         <div class="rounded-[10px] bg-white/95 px-6 py-5 shadow-soft">
-                            <h2 class="text-lg font-semibold text-ink-900">Sin ubicaciones para mostrar</h2>
-                            <p class="mt-2 text-sm text-ink-600">Añade o busca supermercados con coordenadas para verlos aquí.</p>
+                            <h2 class="text-lg font-semibold text-ink-900">{{ __('supermercados.index.map_empty.title') }}</h2>
+                            <p class="mt-2 text-sm text-ink-600">{{ __('supermercados.index.map_empty.text') }}</p>
                         </div>
                     </div>
                 @endforelse
@@ -82,7 +85,7 @@
                     @endphp
                     <article class="flex flex-col overflow-hidden rounded-[15px] bg-white shadow-[0_5px_15px_rgba(0,0,0,0.05)] transition duration-300 hover:-translate-y-2 hover:shadow-[0_15px_30px_rgba(0,0,0,0.10)]">
                         <div class="relative flex h-[120px] items-center justify-center bg-[var(--color-superficie-suave)] p-5">
-                            <span class="absolute right-3 top-3 rounded-full bg-black/70 px-3 py-1 text-xs font-bold text-white">Cerca</span>
+                            <span class="absolute right-3 top-3 rounded-full bg-black/70 px-3 py-1 text-xs font-bold text-white">{{ __('supermercados.index.near') }}</span>
                             @if ($logo && file_exists(public_path($logo)))
                                 <img src="{{ asset($logo) }}" alt="Logo {{ $supermercado->nombre_super }}" class="max-h-[60px] max-w-[160px] object-contain drop-shadow" loading="lazy">
                             @else
@@ -93,14 +96,14 @@
                             <h2 class="text-xl font-semibold text-ink-900">{{ $supermercado->nombre_super }}</h2>
                             <p class="text-sm text-ink-600">
                                 <x-ui.icon name="map-pin" class="mr-1 inline h-4 w-4 text-brand-600" />
-                                {{ $supermercado->direccion ?? 'Dirección no definida' }}
+                                {{ $supermercado->direccion ?? __('common.address_undefined') }}
                             </p>
-                            <a href="{{ route('precios.index') }}" class="ss-btn-outline mt-auto">Ver ofertas</a>
+                            <a href="{{ route('precios.index') }}" class="ss-btn-outline mt-auto">{{ __('supermercados.index.view_offers') }}</a>
                         </div>
                     </article>
                 @empty
                     <div class="rounded-[10px] border border-dashed border-brand-200 bg-white p-6 sm:col-span-2 lg:col-span-3">
-                        <h2 class="text-xl font-semibold text-ink-900">No hay supermercados para esa búsqueda</h2>
+                        <h2 class="text-xl font-semibold text-ink-900">{{ __('supermercados.index.empty_search') }}</h2>
                     </div>
                 @endforelse
             </section>
@@ -111,21 +114,21 @@
                         <article class="flex flex-wrap items-center justify-between gap-4 rounded-[10px] border border-[var(--color-borde-suave)] bg-[var(--color-superficie-suave)] p-5">
                             <div>
                                 <h2 class="text-xl font-semibold text-ink-900">{{ $supermercado->nombre_super }}</h2>
-                                <p class="mt-2 text-sm text-ink-600">Latitud: {{ $supermercado->latitud ?? 'No definida' }}</p>
-                                <p class="text-sm text-ink-600">Longitud: {{ $supermercado->longitud ?? 'No definida' }}</p>
+                                <p class="mt-2 text-sm text-ink-600">{{ __('common.latitude') }}: {{ $supermercado->latitud ?? __('common.no_date_f') }}</p>
+                                <p class="text-sm text-ink-600">{{ __('common.longitude') }}: {{ $supermercado->longitud ?? __('common.no_date_f') }}</p>
                             </div>
                             <div class="flex flex-wrap items-center gap-3">
-                                <a href="{{ route('admin.supermercados.edit', $supermercado) }}" class="ss-btn-outline">Editar</a>
-                                <form action="{{ route('admin.supermercados.destroy', $supermercado) }}" method="POST" onsubmit="return confirm('¿Eliminar este supermercado?');">
+                                <a href="{{ route('admin.supermercados.edit', $supermercado) }}" class="ss-btn-outline">{{ __('common.edit') }}</a>
+                                <form action="{{ route('admin.supermercados.destroy', $supermercado) }}" method="POST" onsubmit="return confirm('{{ __('supermercados.index.delete_confirm') }}');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center rounded-[10px] bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500">Eliminar</button>
+                                    <button type="submit" class="inline-flex items-center rounded-[10px] bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500">{{ __('common.delete') }}</button>
                                 </form>
                             </div>
                         </article>
                     @empty
                         <div class="rounded-[10px] border border-dashed border-brand-200 bg-white p-6">
-                            <h2 class="text-xl font-semibold text-ink-900">No hay supermercados</h2>
+                            <h2 class="text-xl font-semibold text-ink-900">{{ __('supermercados.index.empty.title') }}</h2>
                         </div>
                     @endforelse
                     {{ $supermercados->links() }}

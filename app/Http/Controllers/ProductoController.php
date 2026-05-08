@@ -32,7 +32,7 @@ class ProductoController extends Controller
 
         return redirect()
             ->route('productos.index')
-            ->with('status', 'Producto creado exitosamente.');
+            ->with('status', __('flash.productos.created'));
     }
 
     public function edit(Producto $producto): View
@@ -48,7 +48,7 @@ class ProductoController extends Controller
 
         return redirect()
             ->route('productos.index')
-            ->with('status', 'Producto actualizado exitosamente.');
+            ->with('status', __('flash.productos.updated'));
     }
 
     public function destroy(Producto $producto): RedirectResponse
@@ -57,6 +57,6 @@ class ProductoController extends Controller
 
         return redirect()
             ->route('productos.index')
-            ->with('status', 'Producto eliminado exitosamente.');
+            ->with('status', __('flash.productos.deleted'));
     }
 }

@@ -60,7 +60,7 @@ export const initListaProductosSearch = () => {
         }
 
         suggestionsBox.innerHTML = `
-            <ul class="py-2" role="listbox" aria-label="Sugerencias de búsqueda">
+            <ul class="py-2" role="listbox" aria-label="${document.documentElement.dataset.searchSuggestionsLabel ?? 'Search suggestions'}">
                 ${currentSuggestions.map((suggestion, index) => `
                     <li>
                         <button
@@ -257,7 +257,7 @@ export const initUserLocationCapture = () => {
         }
 
         button.setAttribute('disabled', 'disabled');
-        button.textContent = 'Obteniendo ubicación...';
+        button.textContent = button.dataset.loadingText ?? '...';
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -267,7 +267,7 @@ export const initUserLocationCapture = () => {
             },
             () => {
                 button.removeAttribute('disabled');
-                button.textContent = 'No se pudo obtener ubicación';
+                button.textContent = button.dataset.errorText ?? 'Error';
             },
             {
                 enableHighAccuracy: true,

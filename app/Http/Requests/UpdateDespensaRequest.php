@@ -15,7 +15,8 @@ class UpdateDespensaRequest extends FormRequest
     {
         return [
             'nombre_despensa' => ['required', 'string', 'max:50'],
-            'fecha_creacion' => ['nullable', 'date'],
+            'usuarios_editores' => ['nullable', 'array'],
+            'usuarios_editores.*' => ['bail', 'string', 'max:50', 'alpha_dash', 'distinct'],
         ];
     }
 }

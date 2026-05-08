@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'SmartSuper | Compara y ahorra')
+@section('title', __('dashboard.meta_title'))
 
 @section('content')
     @php
         $features = [
-            ['icon' => 'magnifying-glass', 'title' => 'Comparador Inteligente', 'text' => 'Busca productos y compara precios por unidad de medida en tiempo real.'],
-            ['icon' => 'list-bullet', 'title' => 'Gestión de Listas', 'text' => 'Crea, edita y optimiza tus cestas de la compra fácilmente.'],
-            ['icon' => 'map-pin', 'title' => 'Geolocalización', 'text' => 'Encuentra el supermercado más barato cerca de tu ubicación.'],
-            ['icon' => 'archive-box', 'title' => 'Gestión de Despensa', 'text' => 'Gestiona el stock de tu cocina y evita comprar productos que ya tienes.'],
+            ['icon' => 'magnifying-glass', 'title' => __('dashboard.features.compare.title'), 'text' => __('dashboard.features.compare.text')],
+            ['icon' => 'list-bullet', 'title' => __('dashboard.features.lists.title'), 'text' => __('dashboard.features.lists.text')],
+            ['icon' => 'map-pin', 'title' => __('dashboard.features.location.title'), 'text' => __('dashboard.features.location.text')],
+            ['icon' => 'archive-box', 'title' => __('dashboard.features.pantry.title'), 'text' => __('dashboard.features.pantry.text')],
         ];
 
         $supermercados = [
@@ -25,20 +25,20 @@
 
     <section id="inicio" class="flex min-h-[80vh] items-center justify-center bg-[linear-gradient(rgba(0,0,0,0.50),rgba(0,0,0,0.50)),url('https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center px-5 text-center text-white">
         <div class="max-w-4xl">
-            <h1 class="font-display text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">Compara precios. Ahorra más. Compra mejor.</h1>
+            <h1 class="font-display text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">{{ __('dashboard.hero.title') }}</h1>
             <p class="mx-auto mt-5 max-w-2xl text-base leading-8 sm:text-xl">
-                Crea tu lista de la compra y descubre qué supermercados tienen los mejores precios para ti.
+                {{ __('dashboard.hero.subtitle') }}
             </p>
             <a href="{{ route('listas.index') }}" class="ss-btn-primary mt-8">
                 <x-ui.icon name="list-bullet" class="h-5 w-5" />
-                <span>Empieza tu lista</span>
+                <span>{{ __('dashboard.hero.cta') }}</span>
             </a>
         </div>
     </section>
 
     <section id="features" class="ss-section bg-white">
         <div class="ss-container">
-            <h2 class="ss-title">¿Cómo funciona?</h2>
+            <h2 class="ss-title">{{ __('dashboard.features.title') }}</h2>
 
             <div class="mt-10 grid gap-8 md:grid-cols-2 xl:grid-cols-4">
                 @foreach ($features as $feature)
@@ -55,7 +55,7 @@
     </section>
 
     <section id="supermercados" class="ss-section overflow-hidden bg-fondo-claro">
-        <h2 class="ss-title">Supermercados Integrados</h2>
+        <h2 class="ss-title">{{ __('dashboard.supermarkets.title') }}</h2>
 
         <div class="mt-10 overflow-hidden py-5">
             <div class="flex w-max animate-[smart-scroll_30s_linear_infinite] gap-5 px-5">
@@ -83,19 +83,19 @@
         <section class="ss-section bg-white">
             <div class="ss-container grid gap-6 md:grid-cols-3">
                 <a href="{{ route('listas.index') }}" class="ss-card ss-card-hover">
-                    <p class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-600">Mi Lista</p>
-                    <h2 class="mt-3 text-xl font-semibold text-ink-900">Planificar la compra</h2>
-                    <p class="mt-2 text-sm leading-7 text-ink-600">Crea o revisa listas activas y prepara recomendaciones.</p>
+                    <p class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-600">{{ __('dashboard.auth.list.label') }}</p>
+                    <h2 class="mt-3 text-xl font-semibold text-ink-900">{{ __('dashboard.auth.list.title') }}</h2>
+                    <p class="mt-2 text-sm leading-7 text-ink-600">{{ __('dashboard.auth.list.text') }}</p>
                 </a>
                 <a href="{{ route('despensas.index') }}" class="ss-card ss-card-hover">
-                    <p class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-600">Mi Despensa</p>
-                    <h2 class="mt-3 text-xl font-semibold text-ink-900">Controlar stock</h2>
-                    <p class="mt-2 text-sm leading-7 text-ink-600">Consulta lo que tienes antes de volver a comprar.</p>
+                    <p class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-600">{{ __('dashboard.auth.pantry.label') }}</p>
+                    <h2 class="mt-3 text-xl font-semibold text-ink-900">{{ __('dashboard.auth.pantry.title') }}</h2>
+                    <p class="mt-2 text-sm leading-7 text-ink-600">{{ __('dashboard.auth.pantry.text') }}</p>
                 </a>
                 <a href="{{ route('precios.index') }}" class="ss-card ss-card-hover">
-                    <p class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-600">Comparador</p>
-                    <h2 class="mt-3 text-xl font-semibold text-ink-900">Decidir con precio real</h2>
-                    <p class="mt-2 text-sm leading-7 text-ink-600">Compara un producto entre varios supermercados.</p>
+                    <p class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-600">{{ __('dashboard.auth.comparator.label') }}</p>
+                    <h2 class="mt-3 text-xl font-semibold text-ink-900">{{ __('dashboard.auth.comparator.title') }}</h2>
+                    <p class="mt-2 text-sm leading-7 text-ink-600">{{ __('dashboard.auth.comparator.text') }}</p>
                 </a>
             </div>
         </section>

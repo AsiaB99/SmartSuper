@@ -74,7 +74,7 @@ class SupermercadoController extends Controller
 
         return redirect()
             ->route('supermercados.index')
-            ->with('status', 'Supermercado creado exitosamente.');
+            ->with('status', __('flash.supermercados.created'));
     }
 
     public function edit(Supermercado $supermercado): View
@@ -88,7 +88,7 @@ class SupermercadoController extends Controller
 
         return redirect()
             ->route('supermercados.index')
-            ->with('status', 'Supermercado actualizado exitosamente.');
+            ->with('status', __('flash.supermercados.updated'));
     }
 
     public function destroy(Supermercado $supermercado): RedirectResponse
@@ -97,6 +97,6 @@ class SupermercadoController extends Controller
 
         return redirect()
             ->route('supermercados.index')
-            ->with('status', 'Supermercado eliminado exitosamente.');
+            ->with('status', __('flash.supermercados.deleted'));
     }
 }

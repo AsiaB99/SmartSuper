@@ -63,7 +63,7 @@ class ListaController extends Controller
 
         return redirect()
             ->route('listas.index')
-            ->with('status', 'Lista creada correctamente.');
+            ->with('status', __('flash.listas.created'));
     }
 
     public function edit(Request $request, Lista $lista): JsonResponse|RedirectResponse
@@ -74,7 +74,7 @@ class ListaController extends Controller
         if (! $request->expectsJson() && ! $request->ajax()) {
             return redirect()
                 ->route('listas.index')
-                ->with('status', 'La edición de listas se realiza desde el modal de la pantalla Mis Listas.');
+                ->with('status', __('flash.listas.edit_from_modal'));
         }
 
         return response()->json($this->obtenerDatosEdicion($lista, $usuario));
@@ -149,7 +149,7 @@ class ListaController extends Controller
 
             if ($nombresNoEncontrados->isNotEmpty()) {
                 throw ValidationException::withMessages([
-                    'usuarios_editores' => ['No existen usuarios con estos nombres: '.$nombresNoEncontrados->implode(', ').'.'],
+                    'usuarios_editores' => [__('flash.listas.editors_not_found', ['names' => $nombresNoEncontrados->implode(', ')])],
                 ]);
             }
 
@@ -165,7 +165,7 @@ class ListaController extends Controller
 
         return redirect()
             ->route('listas.index')
-            ->with('status', 'Lista actualizada correctamente.');
+            ->with('status', __('flash.listas.updated'));
     }
 
     public function destroy(Lista $lista): RedirectResponse
@@ -174,7 +174,7 @@ class ListaController extends Controller
 
         return redirect()
             ->route('listas.index')
-            ->with('status', 'Lista eliminada correctamente.');
+            ->with('status', __('flash.listas.deleted'));
     }
 
     /**
@@ -271,8 +271,8 @@ class ListaController extends Controller
         ]);
 
         $mensaje = $cantidadActual > 0
-            ? 'Producto ya existente: se ha sumado la cantidad.'
-            : 'Producto añadido a la lista.';
+            ? __('flash.listas.product_merged')
+            : __('flash.listas.product_added');
 
         return redirect()
             ->route('listas.productos', $lista)
@@ -300,7 +300,7 @@ class ListaController extends Controller
 
         return redirect()
             ->route('listas.productos', $lista)
-            ->with('status', 'Producto de la lista actualizado correctamente.');
+            ->with('status', __('flash.listas.product_updated'));
     }
 
     public function quitarProducto(Lista $lista, Producto $producto): RedirectResponse
@@ -311,7 +311,7 @@ class ListaController extends Controller
 
         return redirect()
             ->route('listas.productos', $lista)
-            ->with('status', 'Producto quitado de la lista.');
+            ->with('status', __('flash.listas.product_removed'));
     }
 
     public function finalizar(Lista $lista): RedirectResponse
@@ -335,7 +335,7 @@ class ListaController extends Controller
             if ($despensaId <= 0) {
                 return redirect()
                     ->back()
-                    ->withErrors(['id_despensa' => 'Selecciona una despensa para continuar.'])
+                    ->withErrors(['id_despensa' => __('flash.listas.select_pantry')])
                     ->withInput();
             }
 
@@ -363,8 +363,8 @@ class ListaController extends Controller
         }
 
         $mensaje = $agregarADespensa
-            ? 'Lista finalizada y productos agregados a la despensa.'
-            : 'Lista finalizada. Se ha calculado la recomendacion de supermercado.';
+            ? __('flash.listas.finished_with_pantry')
+            : __('flash.listas.finished_without_pantry');
 
         return redirect()
             ->route('listas.recomendacion', $lista)
@@ -434,7 +434,7 @@ class ListaController extends Controller
 
         if ($usuario->latitud === null || $usuario->longitud === null) {
             throw ValidationException::withMessages([
-                'ubicacion' => 'Necesitas compartir tu ubicación para elegir una recomendación.',
+                'ubicacion' => __('flash.listas.location_required'),
             ]);
         }
 
@@ -444,7 +444,7 @@ class ListaController extends Controller
 
         if (! $idsDisponibles->contains($idSupermercado)) {
             throw ValidationException::withMessages([
-                'id_supermercado' => 'La opción seleccionada no está disponible para esta lista.',
+                'id_supermercado' => __('flash.listas.recommendation_unavailable'),
             ]);
         }
 
@@ -455,7 +455,7 @@ class ListaController extends Controller
 
         return redirect()
             ->route('listas.finalizar.confirmar', $lista)
-            ->with('status', 'Supermercado seleccionado: '.$supermercado->nombre_super.'. Ya puedes finalizar la compra.');
+            ->with('status', __('flash.listas.supermarket_selected', ['name' => $supermercado->nombre_super]));
     }
 
     private function aplicarBusquedaProducto(Builder $query, string $busqueda): void

@@ -77,6 +77,6 @@ class ProfileController extends Controller
 
         return redirect()
             ->back()
-            ->with('status', 'Ubicación actualizada correctamente.');
+            ->with('status', __('flash.profile.location_updated'));
     }
 }

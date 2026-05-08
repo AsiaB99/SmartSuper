@@ -96,7 +96,7 @@ class VendenController extends Controller
 
         return redirect()
             ->route('precios.index')
-            ->with('status', 'Precio creado correctamente.');
+            ->with('status', __('flash.precios.created'));
     }
 
     public function edit(int $producto, int $supermercado): View
@@ -118,7 +118,7 @@ class VendenController extends Controller
 
         return redirect()
             ->route('precios.index')
-            ->with('status', 'Precio actualizado correctamente.');
+            ->with('status', __('flash.precios.updated'));
     }
 
     public function destroy(int $producto, int $supermercado): RedirectResponse
@@ -130,6 +130,6 @@ class VendenController extends Controller
 
         return redirect()
             ->route('precios.index')
-            ->with('status', 'Precio eliminado correctamente.');
+            ->with('status', __('flash.precios.deleted'));
     }
 }

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Mi Lista | SmartSuper')
+@section('title', __('listas.index.meta_title'))
 
 @section('content')
     @php($tieneAccionesEdicion = $listas->contains(fn ($lista) => auth()->user()?->can('update', $lista)))
@@ -9,9 +9,9 @@
     <section class="ss-section bg-fondo-claro">
         <div class="ss-container">
             <section class="mb-12 rounded-[20px] bg-white p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
-                <h1 class="text-4xl font-semibold text-ink-900">Mis Listas</h1>
+                <h1 class="text-4xl font-semibold text-ink-900">{{ __('listas.index.title') }}</h1>
                 <p class="mx-auto mt-4 max-w-3xl text-lg leading-7 text-ink-600">
-                    Organiza tus compras, revisa productos y calcula la mejor recomendación de supermercado.
+                    {{ __('listas.index.subtitle') }}
                 </p>
             </section>
 
@@ -26,21 +26,21 @@
                                 </div>
                                 <div>
                                     <h2 class="text-xl font-semibold text-ink-900">{{ $lista->nombre_lista }}</h2>
-                                    <p class="mt-1 text-sm text-ink-500">Creada: {{ optional($lista->fecha_creacion)->format('d/m/Y H:i') ?? 'Sin fecha' }}</p>
+                                    <p class="mt-1 text-sm text-ink-500">{{ __('listas.index.created_at') }} {{ optional($lista->fecha_creacion)->format('d/m/Y H:i') ?? __('common.no_date') }}</p>
                                     <span class="mt-2 inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $estaComprada ? 'bg-[var(--color-exito-suave)] text-brand-600' : 'bg-accent-100 text-accent-800' }}">
-                                        {{ ucfirst($lista->estado) }}
+                                        {{ __('common.states.' . $lista->estado) }}
                                     </span>
                                 </div>
                             </div>
 
                             <div class="flex flex-wrap items-center gap-3">
-                                <a class="ss-btn-outline inline-flex items-center justify-center" href="{{ route('listas.show', $lista) }}" aria-label="Ver {{ $lista->nombre_lista }}" title="Ver lista">
+                                <a class="ss-btn-outline inline-flex items-center justify-center" href="{{ route('listas.show', $lista) }}" aria-label="{{ __('listas.index.view_label', ['name' => $lista->nombre_lista]) }}" title="{{ __('listas.index.view_title') }}">
                                     <x-ui.icon name="eye" class="h-5 w-5" />
                                 </a>
-                                <a class="ss-btn-outline" href="{{ route('listas.productos', $lista) }}">Añadir productos</a>
-                                <a class="ss-btn-outline" href="{{ route('listas.recomendacion', $lista) }}">Recomendar super</a>
+                                <a class="ss-btn-outline" href="{{ route('listas.productos', $lista) }}">{{ __('listas.index.add_products') }}</a>
+                                <a class="ss-btn-outline" href="{{ route('listas.recomendacion', $lista) }}">{{ __('listas.index.recommend') }}</a>
                                 @can('update', $lista)
-                                    <a class="ss-btn-green" href="{{ route('listas.finalizar.confirmar', $lista) }}">Finalizar</a>
+                                    <a class="ss-btn-green" href="{{ route('listas.finalizar.confirmar', $lista) }}">{{ __('listas.index.finish') }}</a>
                                     <button
                                         class="ss-btn-outline inline-flex items-center justify-center"
                                         type="button"
@@ -49,11 +49,11 @@
                                         data-edit-data-url="{{ route('listas.edit', $lista) }}"
                                         data-lista-nombre="{{ $lista->nombre_lista }}"
                                         data-lista-estado="{{ $lista->estado }}"
-                                        aria-label="Editar {{ $lista->nombre_lista }}"
-                                        title="Editar"
+                                        aria-label="{{ __('listas.index.edit_title') }} {{ $lista->nombre_lista }}"
+                                        title="{{ __('listas.index.edit_title') }}"
                                     >
                                         <x-ui.icon name="pencil-square" class="h-5 w-5" />
-                                        <span class="sr-only">Editar</span>
+                                        <span class="sr-only">{{ __('listas.index.edit_sr') }}</span>
                                     </button>
                                 @endcan
                                 @can('delete', $lista)
@@ -65,8 +65,8 @@
                                             type="button"
                                             data-delete-lista
                                             data-lista-nombre="{{ $lista->nombre_lista }}"
-                                            aria-label="Eliminar {{ $lista->nombre_lista }}"
-                                            title="Eliminar"
+                                            aria-label="{{ __('listas.index.delete_label', ['name' => $lista->nombre_lista]) }}"
+                                            title="{{ __('common.delete') }}"
                                         >
                                             <x-ui.icon name="trash" class="h-5 w-5" />
                                         </button>
@@ -76,21 +76,21 @@
                         </article>
                     @empty
                         <div class="rounded-[10px] border border-dashed border-brand-200 bg-white p-6">
-                            <h2 class="text-xl font-semibold text-ink-900">No hay listas todavía</h2>
-                            <p class="mt-2 text-sm leading-7 text-ink-600">Crea la primera lista para empezar a estructurar el flujo de compra.</p>
+                            <h2 class="text-xl font-semibold text-ink-900">{{ __('listas.index.empty.title') }}</h2>
+                            <p class="mt-2 text-sm leading-7 text-ink-600">{{ __('listas.index.empty.text') }}</p>
                         </div>
                     @endforelse
                 </section>
 
                 <x-listas.resumen-aside class="p-8">
-                    <h2 class="text-2xl font-semibold text-ink-900">Resumen</h2>
-                    <p class="mt-3 text-sm text-ink-600">Listas guardadas:</p>
+                    <h2 class="text-2xl font-semibold text-ink-900">{{ __('common.summary') }}</h2>
+                    <p class="mt-3 text-sm text-ink-600">{{ __('listas.index.summary.count') }}</p>
                     <p class="mt-1 text-3xl font-bold text-ink-900 text-center">{{ $listas->count() }}</p>
                     <div class="my-2 rounded-[10px] bg-[var(--color-info-suave)] p-3 text-sm font-semibold text-brand-600 text-center">
                         <x-ui.icon name="shopping-cart" class="mr-1 inline h-4 w-4" />
-                        Entra en una lista para ajustar cantidades.
+                        {{ __('listas.index.summary.tip') }}
                     </div>
-                    <a class="ss-btn-green w-full" href="{{ route('listas.create') }}">Crear lista</a>
+                    <a class="ss-btn-green w-full my-1" href="{{ route('listas.create') }}">{{ __('listas.index.create') }}</a>
                 </x-listas.resumen-aside>
             </div>
         </div>
@@ -99,13 +99,13 @@
     @if ($tieneAccionesEliminacion)
         <dialog id="delete-lista-dialog" class="w-full max-w-md rounded-[15px] border border-[var(--color-borde-suave)] p-0 shadow-[0_20px_40px_rgba(0,0,0,0.15)] backdrop:bg-black/40">
             <div class="p-6">
-                <h2 class="text-xl font-semibold text-ink-900">Confirmar eliminación</h2>
+                <h2 class="text-xl font-semibold text-ink-900">{{ __('listas.delete.title') }}</h2>
                 <p class="mt-3 text-sm leading-6 text-ink-600">
-                    Vas a eliminar la lista <strong id="delete-lista-nombre"></strong>. Esta acción no se puede deshacer.
+                    {{ __('listas.delete.text', ['name' => '__LIST__']) }}
                 </p>
                 <div class="mt-6 flex justify-end gap-3">
-                    <button id="delete-lista-cancel" type="button" class="rounded-[10px] bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500">Cancelar</button>
-                    <button id="delete-lista-confirm" type="button" class="rounded-[10px] bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500">Eliminar</button>
+                    <button id="delete-lista-cancel" type="button" class="rounded-[10px] border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-800 transition hover:border-brand-200 hover:text-brand-800">{{ __('common.cancel') }}</button>
+                    <button id="delete-lista-confirm" type="button" class="rounded-[10px] bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500">{{ __('common.delete') }}</button>
                 </div>
             </div>
         </dialog>
@@ -116,10 +116,10 @@
             <div class="p-6 sm:p-7">
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <h2 class="text-xl font-semibold text-ink-900">Editar lista</h2>
-                        <p class="mt-2 text-sm leading-6 text-ink-600">Actualiza los datos de la lista.</p>
+                        <h2 class="text-xl font-semibold text-ink-900">{{ __('listas.edit.modal_title') }}</h2>
+                        <p class="mt-2 text-sm leading-6 text-ink-600">{{ __('listas.edit.modal_text') }}</p>
                     </div>
-                    <button id="edit-lista-close" type="button" class="rounded-full border border-ink-200 p-2 text-ink-500 transition hover:border-brand-200 hover:text-brand-600" aria-label="Cerrar modal de edición">
+                    <button id="edit-lista-close" type="button" class="rounded-full border border-ink-200 p-2 text-ink-500 transition hover:border-brand-200 hover:text-brand-600" aria-label="{{ __('listas.edit.close_aria') }}">
                         <x-ui.icon name="x-mark" class="h-5 w-5" />
                     </button>
                 </div>
@@ -129,63 +129,76 @@
                     @method('PUT')
 
                     <label class="grid gap-2">
-                        <span class="text-sm font-semibold text-ink-700">Nombre de la lista</span>
+                        <span class="text-sm font-semibold text-ink-700">{{ __('listas.edit.name') }}</span>
                         <input id="edit-lista-nombre" class="ss-input" type="text" name="nombre_lista" maxlength="50" required>
                     </label>
 
                     <label class="grid gap-2">
-                        <span class="text-sm font-semibold text-ink-700">Estado</span>
+                        <span class="text-sm font-semibold text-ink-700">{{ __('listas.edit.state') }}</span>
                         <select id="edit-lista-estado" class="ss-input" name="estado" required>
-                            <option value="activa">Activa</option>
-                            <option value="comprada">Comprada</option>
+                            <option value="activa">{{ __('common.states.activa') }}</option>
+                            <option value="comprada">{{ __('common.states.comprada') }}</option>
                         </select>
                     </label>
 
-                    <section id="edit-lista-usuarios-section" class="hidden grid gap-3">
+                    <section id="edit-lista-usuarios-section" class="grid gap-3">
                         <div class="flex items-center justify-between gap-3">
-                            <span class="text-sm font-semibold text-ink-700">Añadir usuarios con permiso de edición</span>
-                            <span class="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">Solo owner o admin</span>
+                            <span class="text-sm font-semibold text-ink-700">{{ __('listas.edit.editors') }}</span>
+                            <span class="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">{{ __('listas.edit.owner_or_admin') }}</span>
                         </div>
 
                         <div class="rounded-[14px] border border-ink-200 bg-white px-3 py-2 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
                             <div id="edit-lista-selected-users" class="flex flex-wrap gap-2"></div>
                             <label class="block">
-                                <span class="sr-only">Buscar usuarios para añadir</span>
+                                <span class="sr-only">{{ __('listas.edit.search_users') }}</span>
                                 <input
                                     id="edit-lista-usuarios-search"
                                     class="h-10 w-full border-0 bg-transparent px-0 py-0 text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-0"
                                     type="text"
                                     autocomplete="off"
-                                    placeholder="Escribe un nombre de usuario y pulsa Enter"
+                                    placeholder="{{ __('listas.edit.search_placeholder') }}"
                                 >
                             </label>
                         </div>
 
                         <p id="edit-lista-empty-state" class="text-xs text-ink-500">
-                            Todavía no has añadido colaboradores.
+                            {{ __('listas.edit.empty') }}
                         </p>
 
                         <div id="edit-lista-hidden-inputs"></div>
 
                         <p id="edit-lista-usuarios-help" class="text-xs leading-5 text-ink-600">
-                            Introduce nombres de usuario exactos. Cada usuario añadido se guardará como editor.
+                            {{ __('listas.edit.help') }}
                         </p>
                     </section>
 
                     <p id="edit-lista-usuarios-error" class="hidden rounded-[12px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"></p>
 
                     <div class="flex justify-end gap-3">
-                        <button id="edit-lista-cancel" type="button" class="rounded-[10px] bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500">Cancelar</button>
-                        <button id="edit-lista-submit" type="submit" class="ss-btn-outline border-brand-300 text-brand-600 hover:bg-brand-500 hover:text-white">Guardar cambios</button>
+                        <button id="edit-lista-cancel" type="button" class="rounded-[10px] border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-800 transition hover:border-brand-200 hover:text-brand-800">{{ __('common.cancel') }}</button>
+                        <button id="edit-lista-submit" type="submit" class="ss-btn-outline border-brand-300 text-brand-600 hover:bg-brand-500 hover:text-white">{{ __('common.save_changes') }}</button>
                     </div>
                 </form>
             </div>
         </dialog>
     @endif
 
+    <script id="listas-translations" type="application/json">
+        {!! json_encode([
+            'deleteText' => __('listas.delete.text', ['name' => '__LIST__']),
+            'removeUserAria' => __('listas.edit.remove_user_aria', ['user' => '__USER__']),
+            'invalidUsername' => __('listas.edit.errors.invalid_username'),
+            'duplicateUsername' => __('listas.edit.errors.duplicate_username'),
+            'loadData' => __('listas.edit.errors.load_data'),
+            'loadCollaborators' => __('listas.edit.errors.load_collaborators'),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+    </script>
+
     <script>
         (() => {
+            const translations = JSON.parse(document.getElementById('listas-translations')?.textContent ?? '{}');
             const deleteDialog = document.getElementById('delete-lista-dialog');
+            const deleteDialogText = deleteDialog?.querySelector('p');
             const deleteListaNombre = document.getElementById('delete-lista-nombre');
             const deleteConfirmButton = document.getElementById('delete-lista-confirm');
             const deleteCancelButton = document.getElementById('delete-lista-cancel');
@@ -196,6 +209,10 @@
                     button.addEventListener('click', () => {
                         currentDeleteForm = button.closest('form');
                         deleteListaNombre.textContent = button.dataset.listaNombre ?? '';
+                        if (deleteDialogText) {
+                            deleteDialogText.innerHTML = translations.deleteText
+                                .replace('__LIST__', `<strong>${button.dataset.listaNombre ?? ''}</strong>`);
+                        }
                         deleteDialog.showModal();
                     });
                 });
@@ -275,7 +292,7 @@
                                 type="button"
                                 class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white text-brand-700 transition hover:bg-brand-100"
                                 data-remove-username="${escapeHtml(nombreUsuario)}"
-                                aria-label="Quitar ${escapeHtml(nombreUsuario)}"
+                                aria-label="${translations.removeUserAria.replace('__USER__', escapeHtml(nombreUsuario))}"
                             >
                                 &times;
                             </button>
@@ -338,12 +355,12 @@
                 }
 
                 if (!/^[A-Za-z0-9_-]+$/.test(nombreUsuario)) {
-                    mostrarErrorUsuarios('El nombre de usuario solo puede contener letras, números, guiones y guiones bajos.');
+                    mostrarErrorUsuarios(translations.invalidUsername);
                     return;
                 }
 
                 if (userPickerState.selectedUsers.includes(nombreUsuario)) {
-                    mostrarErrorUsuarios('Ese nombre de usuario ya está añadido.');
+                    mostrarErrorUsuarios(translations.duplicateUsername);
                     usuariosSearch.value = '';
                     return;
                 }
@@ -403,13 +420,13 @@
                             });
 
                             if (!response.ok) {
-                                throw new Error('No se pudieron cargar los datos de edición.');
+                                throw new Error(translations.loadData);
                             }
 
                             const payload = await response.json();
                             fillEditModal(button, payload);
                         } catch (error) {
-                            mostrarErrorUsuarios('No se pudieron cargar los colaboradores actuales ahora mismo. Puedes seguir editando nombre y estado.');
+                            mostrarErrorUsuarios(translations.loadCollaborators);
                         } finally {
                             editSubmitButton?.removeAttribute('disabled');
                         }
