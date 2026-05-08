@@ -3,17 +3,29 @@
 @section('title', 'Editar despensa | SmartSuper')
 
 @section('content')
-    <section class="panel-card form-card">
-        <div class="section-heading">
-            <p class="eyebrow">Editar despensa</p>
-            <h1>Actualizar despensa</h1>
-        </div>
+    <section class="ss-section bg-fondo-claro">
+        <div class="ss-container">
+            <section class="mx-auto max-w-3xl rounded-[20px] bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+                <div class="mb-6 flex items-center gap-4">
+                    <div class="flex h-[60px] w-[60px] items-center justify-center rounded-[10px] bg-brand-50 text-brand-500">
+                        <x-ui.icon name="archive-box" class="h-8 w-8" />
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold uppercase text-brand-600">Editar despensa</p>
+                        <h1 class="text-3xl font-semibold text-ink-900">Actualizar despensa</h1>
+                    </div>
+                </div>
 
-        <form class="stack-form" action="{{ route('despensas.update', $despensa) }}" method="POST">
-            @csrf
-            @method('PUT')
-            @include('despensas.partials.form', ['despensa' => $despensa])
-            <button class="button button--primary" type="submit">Guardar cambios</button>
-        </form>
+                <form class="grid gap-5" action="{{ route('despensas.update', $despensa) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    @include('despensas.partials.form', ['despensa' => $despensa])
+                    <div class="flex flex-wrap gap-3">
+                        <button class="ss-btn-green" type="submit">Guardar cambios</button>
+                        <a class="ss-btn-outline" href="{{ route('despensas.index') }}">Volver</a>
+                    </div>
+                </form>
+            </section>
+        </div>
     </section>
 @endsection

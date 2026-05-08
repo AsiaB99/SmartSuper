@@ -3,102 +3,103 @@
 @section('title', 'Stock despensa | SmartSuper')
 
 @section('content')
-    <section class="hero-card">
-        <div>
-            <p class="eyebrow">SmartSuper</p>
-            <h1>Stock de despensa</h1>
-            <p class="hero-copy">Despensa: {{ $despensa->nombre_despensa }}</p>
-        </div>
-        <a class="button button--ghost" href="{{ route('despensas.index') }}">Volver</a>
-    </section>
-
-    <section class="panel-card">
-        <form class="toolbar-search" action="{{ route('despensas.stock', $despensa) }}" method="GET">
-            <label class="field">
-                <span>Buscar producto</span>
-                <input type="search" name="q" value="{{ $busqueda }}" placeholder="Ej: arroz, pasta, leche">
-            </label>
-            <button class="button button--ghost" type="submit">Buscar</button>
-            @if ($busqueda !== '')
-                <a class="button button--ghost" href="{{ route('despensas.stock', $despensa) }}">Limpiar</a>
-            @endif
-        </form>
-    </section>
-
-    @if ($puedeEditar)
-        <section class="panel-card form-card">
-            <div class="section-heading">
-                <p class="eyebrow">Añadir producto</p>
-                <h2>Incrementar stock</h2>
-            </div>
-
-            <form class="stack-form" action="{{ route('despensas.stock.agregar', $despensa) }}" method="POST">
-                @csrf
-                <div class="field-grid">
-                    <label class="field">
-                        <span>Producto</span>
-                        <select name="id_producto" required>
-                            <option value="">Selecciona producto</option>
-                            @foreach ($productos as $producto)
-                                <option value="{{ $producto->id }}" @selected((int) old('id_producto') === $producto->id)>
-                                    {{ $producto->nombre_producto }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('id_producto')<small>{{ $message }}</small>@enderror
-                    </label>
-
-                    <label class="field">
-                        <span>Cantidad a añadir</span>
-                        <input type="number" name="stock" min="1" step="1" value="{{ old('stock', 1) }}" required>
-                        @error('stock')<small>{{ $message }}</small>@enderror
-                    </label>
-                </div>
-
-                <button class="button button--primary" type="submit">Añadir al stock</button>
-            </form>
-        </section>
-    @else
-        <section class="panel-card">
-            <p class="tag-muted">Modo solo lectura. Permiso viewer: puedes consultar stock, no editar.</p>
-        </section>
-    @endif
-
-    <section class="panel-card">
-        <div class="section-heading">
-            <p class="eyebrow">Inventario</p>
-            <h2>Productos en despensa</h2>
-        </div>
-
-        @forelse ($despensa->productos as $producto)
-            <article class="list-row">
+    <section class="ss-section bg-fondo-claro">
+        <div class="ss-container">
+            <div class="mb-8 flex flex-wrap items-center justify-between gap-5">
                 <div>
-                    <h3>{{ $producto->nombre_producto }}</h3>
-                    <p>Stock actual: {{ (int) $producto->pivot->stock }}</p>
+                    <h1 class="ss-title text-left">Inventario de Casa</h1>
+                    <p class="mt-2 text-sm text-ink-600">Despensa: {{ $despensa->nombre_despensa }}</p>
                 </div>
-
-                <div class="row-actions">
-                    @if ($puedeEditar)
-                        <form action="{{ route('despensas.stock.actualizar', [$despensa, $producto]) }}" method="POST" class="row-actions">
-                            @csrf
-                            @method('PATCH')
-                            <input type="number" name="stock" min="0" step="1" value="{{ (int) $producto->pivot->stock }}" required>
-                            <button class="button button--ghost" type="submit">Ajustar</button>
-                        </form>
-
-                        <form action="{{ route('despensas.stock.quitar', [$despensa, $producto]) }}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <button class="button button--danger" type="submit">Quitar</button>
-                        </form>
-                    @endif
-                </div>
-            </article>
-        @empty
-            <div class="empty-state">
-                <h3>Sin productos</h3>
-                <p>Añade productos para empezar control de stock.</p>
+                <a class="ss-btn-outline" href="{{ route('despensas.index') }}">Volver</a>
             </div>
-        @endforelse
+
+            <form class="mb-6 flex flex-wrap items-end gap-3 rounded-[15px] bg-white p-5 shadow-[0_5px_15px_rgba(0,0,0,0.05)]" action="{{ route('despensas.stock', $despensa) }}" method="GET">
+                <label class="grid min-w-[260px] flex-1 gap-2">
+                    <span class="text-sm font-semibold text-ink-700">Buscar producto</span>
+                    <input class="ss-input" type="search" name="q" value="{{ $busqueda }}" placeholder="Ej: arroz, pasta, leche">
+                </label>
+                <button class="ss-btn-outline" type="submit">Buscar</button>
+                @if ($busqueda !== '')
+                    <a class="ss-btn-outline" href="{{ route('despensas.stock', $despensa) }}">Limpiar</a>
+                @endif
+            </form>
+
+            @if ($puedeEditar)
+                <section class="mb-8 rounded-[15px] bg-white p-6 shadow-[0_5px_15px_rgba(0,0,0,0.05)]">
+                    <h2 class="text-2xl font-semibold text-ink-900">Incrementar stock</h2>
+                    <form class="mt-5 grid gap-5 md:grid-cols-[1fr_180px_auto]" action="{{ route('despensas.stock.agregar', $despensa) }}" method="POST">
+                        @csrf
+                        <label class="grid gap-2">
+                            <span class="text-sm font-semibold text-ink-700">Producto</span>
+                            <select class="ss-input" name="id_producto" required>
+                                <option value="">Selecciona producto</option>
+                                @foreach ($productos as $producto)
+                                    <option value="{{ $producto->id }}" @selected((int) old('id_producto') === $producto->id)>
+                                        {{ $producto->nombre_producto }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('id_producto')<small class="text-sm font-medium text-rose-600">{{ $message }}</small>@enderror
+                        </label>
+                        <label class="grid gap-2">
+                            <span class="text-sm font-semibold text-ink-700">Cantidad a añadir</span>
+                            <input class="ss-input" type="number" name="stock" min="1" step="1" value="{{ old('stock', 1) }}" required>
+                            @error('stock')<small class="text-sm font-medium text-rose-600">{{ $message }}</small>@enderror
+                        </label>
+                        <button class="ss-btn-green self-end" type="submit">Añadir</button>
+                    </form>
+                </section>
+            @endif
+
+            <section class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                @forelse ($despensa->productos as $producto)
+                    @php
+                        $stock = (int) $producto->pivot->stock;
+                        $nivel = min(100, max(8, $stock * 20));
+                        $estado = $stock <= 1 ? '¡Se acaba!' : ($stock <= 3 ? 'Stock medio' : 'Stock alto');
+                        $barClass = $stock <= 1 ? 'bg-[#e74c3c]' : ($stock <= 3 ? 'bg-[#f1c40f]' : 'bg-brand-500');
+                        $textClass = $stock <= 1 ? 'text-[#e74c3c]' : ($stock <= 3 ? 'text-[#b7950b]' : 'text-brand-500');
+                    @endphp
+                    <article class="flex flex-col rounded-[15px] bg-white p-6 shadow-[0_5px_15px_rgba(0,0,0,0.05)] transition duration-300 hover:-translate-y-1 {{ $stock <= 1 ? 'border-2 border-[#ffecec] bg-[#fffafa]' : '' }}">
+                        <div class="mb-4 flex items-center gap-4">
+                            <div class="flex h-[50px] w-[50px] items-center justify-center rounded-full border-2 border-[#eee] bg-brand-50 text-brand-500">
+                                <x-ui.icon name="archive-box" class="h-6 w-6" />
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-semibold text-ink-900">{{ $producto->nombre_producto }}</h2>
+                                <p class="text-xs text-ink-400">{{ collect([$producto->marca, $producto->formato])->filter()->join(' · ') ?: 'Básico' }}</p>
+                            </div>
+                        </div>
+
+                        <div class="text-4xl font-bold text-ink-900">{{ $stock }} <span class="text-base font-normal text-ink-400">uds.</span></div>
+                        <div class="my-3 h-[10px] overflow-hidden rounded-full bg-[#f1f2f6]">
+                            <div class="{{ $barClass }} h-full rounded-full" style="width: {{ $nivel }}%;"></div>
+                        </div>
+                        <p class="{{ $textClass }} text-sm font-bold">{{ $estado }}</p>
+
+                        @if ($puedeEditar)
+                            <div class="mt-5 flex flex-wrap gap-3">
+                                <form action="{{ route('despensas.stock.actualizar', [$despensa, $producto]) }}" method="POST" class="flex flex-1 gap-2">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input class="ss-input w-24" type="number" name="stock" min="0" step="1" value="{{ $stock }}" required>
+                                    <button class="ss-btn-outline flex-1" type="submit">Ajustar</button>
+                                </form>
+                                <form action="{{ route('despensas.stock.quitar', [$despensa, $producto]) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="rounded-[8px] bg-rose-600 px-4 py-3 font-semibold text-white transition hover:bg-rose-500" type="submit">Quitar</button>
+                                </form>
+                            </div>
+                        @endif
+                    </article>
+                @empty
+                    <div class="rounded-[10px] border border-dashed border-brand-200 bg-white p-6 md:col-span-2 lg:col-span-3">
+                        <h2 class="text-xl font-semibold text-ink-900">Sin productos</h2>
+                        <p class="mt-2 text-sm leading-7 text-ink-600">Añade productos para empezar control de stock.</p>
+                    </div>
+                @endforelse
+            </section>
+        </div>
     </section>
 @endsection
