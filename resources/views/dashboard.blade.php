@@ -124,8 +124,9 @@
                 </div>
             </div>
         </div>
-        <div class="bg-[#22303f] px-5 py-5 text-center text-sm text-white/85">
+        <div class="bg-[var(--color-footer-oscuro)] px-5 py-5 text-center text-sm text-white/85">
             &copy; 2025 SmartSuper. Desarrollado por Asia Bosch Dwiyanti.
         </div>
     </footer>
 @endsection
+

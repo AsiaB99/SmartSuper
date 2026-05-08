@@ -5,53 +5,53 @@
 @section('content')
     @php($esAdmin = auth()->user()?->isAdmin() ?? false)
 
-    <section class="hero-card">
+    <section class="flex flex-wrap items-center justify-between gap-6 rounded-lg border border-white/70 bg-white/85 p-6 shadow-soft">
         <div>
-            <p class="eyebrow">{{ $esAdmin ? 'Admin' : 'Catalogo' }}</p>
-            <h1>Productos</h1>
-            <p class="hero-copy">{{ $esAdmin ? 'Gestiona el catálogo de productos disponibles.' : 'Consulta los productos disponibles en el catálogo.' }}</p>
+            <p class="text-sm font-semibold uppercase text-brand-700">{{ $esAdmin ? 'Admin' : 'Catalogo' }}</p>
+            <h1 class="mt-2 font-display text-4xl text-ink-900">Productos</h1>
+            <p class="mt-3 max-w-2xl text-sm leading-7 text-ink-600">{{ $esAdmin ? 'Gestiona el catálogo de productos disponibles.' : 'Consulta los productos disponibles en el catálogo.' }}</p>
         </div>
-        <div class="row-actions">
-            <a class="button button--ghost" href="{{ route('precios.index') }}">Ver precios</a>
+        <div class="flex flex-wrap items-center gap-3">
+            <a class="inline-flex items-center rounded-full border border-brand-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-800 shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-50" href="{{ route('precios.index') }}">Ver precios</a>
             @if ($esAdmin)
-                <a class="button button--primary" href="{{ route('admin.productos.create') }}">Nuevo producto</a>
+                <a class="inline-flex items-center rounded-full bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-700" href="{{ route('admin.productos.create') }}">Nuevo producto</a>
             @endif
         </div>
     </section>
 
     @if (session('status'))
-        <div class="alert alert--success">
+        <div class="rounded-lg border border-brand-200 bg-brand-50 px-5 py-4 text-sm font-medium text-brand-800 shadow-soft">
             {{ session('status') }}
         </div>
     @endif
 
-    <section class="panel-card">
+    <section class="grid gap-4 rounded-lg border border-white/70 bg-white/85 p-5 shadow-soft">
         @forelse ($productos as $producto)
-            <article class="list-row">
+            <article class="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-brand-100 bg-mist/70 p-5">
                 <div>
-                    <h2>{{ $producto->nombre_producto }}</h2>
-                    <p>Sección: <strong>{{ $producto->seccion->nombre_seccion }}</strong></p>
+                    <h2 class="text-xl font-semibold text-ink-900">{{ $producto->nombre_producto }}</h2>
+                    <p class="mt-2 text-sm text-ink-600">Sección: <strong class="text-ink-900">{{ $producto->seccion->nombre_seccion }}</strong></p>
                 </div>
                 @if ($esAdmin)
-                    <div class="row-actions">
-                        <a class="button button--ghost" href="{{ route('admin.productos.edit', $producto) }}">Editar</a>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <a class="inline-flex items-center rounded-full border border-brand-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-800 shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-50" href="{{ route('admin.productos.edit', $producto) }}">Editar</a>
                         <form action="{{ route('admin.productos.destroy', $producto) }}" method="POST" onsubmit="return confirm('¿Eliminar este producto?');">
                             @csrf
                             @method('DELETE')
-                            <button class="button button--danger" type="submit">Eliminar</button>
+                            <button class="inline-flex items-center rounded-full bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-rose-500" type="submit">Eliminar</button>
                         </form>
                     </div>
                 @endif
             </article>
         @empty
-            <div class="empty-state">
-                <h2>No hay productos</h2>
-                <p>Crea el primero para empezar a armar el catálogo.</p>
+            <div class="rounded-lg border border-dashed border-brand-200 bg-white p-6">
+                <h2 class="text-xl font-semibold text-ink-900">No hay productos</h2>
+                <p class="mt-2 text-sm leading-7 text-ink-600">Crea el primero para empezar a armar el catálogo.</p>
             </div>
         @endforelse
     </section>
 
-    <div class="pagination">
+    <div class="rounded-lg border border-white/70 bg-white/80 p-4 shadow-soft">
         {{ $productos->links() }}
     </div>
 @endsection

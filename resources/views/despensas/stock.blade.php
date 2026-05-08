@@ -57,12 +57,12 @@
                         $stock = (int) $producto->pivot->stock;
                         $nivel = min(100, max(8, $stock * 20));
                         $estado = $stock <= 1 ? '¡Se acaba!' : ($stock <= 3 ? 'Stock medio' : 'Stock alto');
-                        $barClass = $stock <= 1 ? 'bg-[#e74c3c]' : ($stock <= 3 ? 'bg-[#f1c40f]' : 'bg-brand-500');
-                        $textClass = $stock <= 1 ? 'text-[#e74c3c]' : ($stock <= 3 ? 'text-[#b7950b]' : 'text-brand-500');
+                        $barClass = $stock <= 1 ? 'bg-[var(--color-alerta-roja)]' : ($stock <= 3 ? 'bg-[#f1c40f]' : 'bg-brand-500');
+                        $textClass = $stock <= 1 ? 'text-[var(--color-alerta-roja)]' : ($stock <= 3 ? 'text-[#b7950b]' : 'text-brand-500');
                     @endphp
                     <article class="flex flex-col rounded-[15px] bg-white p-6 shadow-[0_5px_15px_rgba(0,0,0,0.05)] transition duration-300 hover:-translate-y-1 {{ $stock <= 1 ? 'border-2 border-[#ffecec] bg-[#fffafa]' : '' }}">
                         <div class="mb-4 flex items-center gap-4">
-                            <div class="flex h-[50px] w-[50px] items-center justify-center rounded-full border-2 border-[#eee] bg-brand-50 text-brand-500">
+                            <div class="flex h-[50px] w-[50px] items-center justify-center rounded-full border-2 border-[var(--color-borde-suave)] bg-brand-50 text-brand-500">
                                 <x-ui.icon name="archive-box" class="h-6 w-6" />
                             </div>
                             <div>
@@ -72,7 +72,7 @@
                         </div>
 
                         <div class="text-4xl font-bold text-ink-900">{{ $stock }} <span class="text-base font-normal text-ink-400">uds.</span></div>
-                        <div class="my-3 h-[10px] overflow-hidden rounded-full bg-[#f1f2f6]">
+                        <div class="my-3 h-[10px] overflow-hidden rounded-full bg-[var(--color-barra-suave)]">
                             <div class="{{ $barClass }} h-full rounded-full" style="width: {{ $nivel }}%;"></div>
                         </div>
                         <p class="{{ $textClass }} text-sm font-bold">{{ $estado }}</p>
@@ -103,3 +103,4 @@
         </div>
     </section>
 @endsection
+

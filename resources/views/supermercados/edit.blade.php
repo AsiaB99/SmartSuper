@@ -3,46 +3,46 @@
 @section('title', 'Editar supermercado | Admin')
 
 @section('content')
-    <section class="hero-card">
+    <section class="flex flex-wrap items-center justify-between gap-6 rounded-lg border border-white/70 bg-white/85 p-6 shadow-soft">
         <div>
-            <p class="eyebrow">Admin</p>
-            <h1>Editar supermercado</h1>
-            <p class="hero-copy">Actualiza los datos del supermercado seleccionado.</p>
+            <p class="text-sm font-semibold uppercase text-brand-700">Admin</p>
+            <h1 class="mt-2 font-display text-4xl text-ink-900">Editar supermercado</h1>
+            <p class="mt-3 text-sm leading-7 text-ink-600">Actualiza los datos del supermercado seleccionado.</p>
         </div>
     </section>
 
-    <section class="panel-card">
-        <form action="{{ route('admin.supermercados.update', $supermercado) }}" method="POST">
+    <section class="mx-auto mt-6 max-w-3xl rounded-lg border border-white/70 bg-white/85 p-6 shadow-soft">
+        <form action="{{ route('admin.supermercados.update', $supermercado) }}" method="POST" class="grid gap-5">
             @csrf
             @method('PUT')
 
-            <fieldset>
-                <label for="nombre_super">Nombre del supermercado</label>
-                <input type="text" id="nombre_super" name="nombre_super" value="{{ old('nombre_super', $supermercado->nombre_super) }}" required>
+            <fieldset class="grid gap-2">
+                <label class="text-sm font-semibold text-ink-700" for="nombre_super">Nombre del supermercado</label>
+                <input class="rounded-lg border border-brand-100 bg-white px-4 py-3 text-ink-900 focus:border-brand-400 focus:ring-brand-300" type="text" id="nombre_super" name="nombre_super" value="{{ old('nombre_super', $supermercado->nombre_super) }}" required>
                 @error('nombre_super')
-                    <span class="error">{{ $message }}</span>
+                    <span class="text-sm font-medium text-rose-600">{{ $message }}</span>
                 @enderror
             </fieldset>
 
-            <fieldset>
-                <label for="latitud">Latitud</label>
-                <input type="number" id="latitud" name="latitud" step="0.000001" value="{{ old('latitud', $supermercado->latitud) }}">
+            <fieldset class="grid gap-2">
+                <label class="text-sm font-semibold text-ink-700" for="latitud">Latitud</label>
+                <input class="rounded-lg border border-brand-100 bg-white px-4 py-3 text-ink-900 focus:border-brand-400 focus:ring-brand-300" type="number" id="latitud" name="latitud" step="0.000001" value="{{ old('latitud', $supermercado->latitud) }}">
                 @error('latitud')
-                    <span class="error">{{ $message }}</span>
+                    <span class="text-sm font-medium text-rose-600">{{ $message }}</span>
                 @enderror
             </fieldset>
 
-            <fieldset>
-                <label for="longitud">Longitud</label>
-                <input type="number" id="longitud" name="longitud" step="0.000001" value="{{ old('longitud', $supermercado->longitud) }}">
+            <fieldset class="grid gap-2">
+                <label class="text-sm font-semibold text-ink-700" for="longitud">Longitud</label>
+                <input class="rounded-lg border border-brand-100 bg-white px-4 py-3 text-ink-900 focus:border-brand-400 focus:ring-brand-300" type="number" id="longitud" name="longitud" step="0.000001" value="{{ old('longitud', $supermercado->longitud) }}">
                 @error('longitud')
-                    <span class="error">{{ $message }}</span>
+                    <span class="text-sm font-medium text-rose-600">{{ $message }}</span>
                 @enderror
             </fieldset>
 
-            <div class="form-actions">
-                <button type="submit" class="button button--primary">Actualizar supermercado</button>
-                <a href="{{ route('supermercados.index') }}" class="button">Cancelar</a>
+            <div class="flex flex-wrap items-center gap-3">
+                <button type="submit" class="inline-flex items-center rounded-full bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-700">Actualizar supermercado</button>
+                <a href="{{ route('supermercados.index') }}" class="inline-flex items-center rounded-full border border-ink-200 bg-white px-5 py-3 text-sm font-semibold text-ink-800 shadow-soft transition hover:-translate-y-0.5 hover:border-brand-200 hover:text-brand-800">Cancelar</a>
             </div>
         </form>
     </section>

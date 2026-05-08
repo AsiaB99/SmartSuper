@@ -70,7 +70,7 @@
                                     <form action="{{ route('listas.productos.actualizar', [$lista, $producto]) }}" method="POST" class="flex flex-wrap items-center gap-3">
                                         @csrf
                                         @method('PATCH')
-                                        <div class="flex items-center gap-3 rounded-full border border-[#eee] bg-white p-1">
+                                        <div class="flex items-center gap-3 rounded-full border border-[var(--color-borde-suave)] bg-white p-1">
                                             <input class="w-20 border-0 bg-transparent px-3 py-2 text-center font-semibold focus:ring-0" type="number" name="cantidad" min="1" step="1" value="{{ (int) $producto->pivot->cantidad }}" required>
                                         </div>
                                         <label class="inline-flex items-center gap-2 text-sm font-medium text-ink-700">
@@ -89,7 +89,7 @@
                                     </form>
                                 </div>
                             @else
-                                <div class="rounded-full border border-[#eee] px-5 py-2 font-semibold">
+                                <div class="rounded-full border border-[var(--color-borde-suave)] px-5 py-2 font-semibold">
                                     {{ (int) $producto->pivot->cantidad }}
                                 </div>
                             @endif
@@ -106,7 +106,7 @@
                     <h2 class="text-2xl font-semibold text-ink-900">Resumen</h2>
                     <p class="mt-4 text-sm text-ink-600">Productos en lista:</p>
                     <p class="text-5xl font-bold text-ink-900">{{ $lista->productos->count() }}</p>
-                    <div class="my-5 rounded-[10px] bg-[#dff9fb] p-3 text-sm font-semibold text-brand-600">
+                    <div class="my-5 rounded-[10px] bg-[var(--color-info-suave)] p-3 text-sm font-semibold text-brand-600">
                         <x-ui.icon name="shopping-cart" class="mr-1 inline h-4 w-4" />
                         Listo para calcular recomendación.
                     </div>
@@ -119,3 +119,4 @@
         </div>
     </section>
 @endsection
+

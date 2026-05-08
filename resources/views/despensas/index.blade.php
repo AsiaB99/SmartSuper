@@ -22,7 +22,7 @@
                 @forelse ($despensas as $despensa)
                     <article class="flex flex-col rounded-[15px] bg-white p-6 shadow-[0_5px_15px_rgba(0,0,0,0.05)] transition duration-300 hover:-translate-y-1">
                         <div class="mb-4 flex items-center gap-4">
-                            <div class="flex h-[50px] w-[50px] items-center justify-center rounded-full border-2 border-[#eee] bg-brand-50 text-brand-500">
+                            <div class="flex h-[50px] w-[50px] items-center justify-center rounded-full border-2 border-[var(--color-borde-suave)] bg-brand-50 text-brand-500">
                                 <x-ui.icon name="archive-box" class="h-6 w-6" />
                             </div>
                             <div>
@@ -31,7 +31,7 @@
                             </div>
                         </div>
 
-                        <div class="my-3 h-[10px] overflow-hidden rounded-full bg-[#f1f2f6]">
+                        <div class="my-3 h-[10px] overflow-hidden rounded-full bg-[var(--color-barra-suave)]">
                             <div class="h-full w-2/3 rounded-full bg-brand-500"></div>
                         </div>
                         <p class="text-sm font-bold text-brand-500">Inventario disponible</p>
@@ -60,3 +60,4 @@
         </div>
     </section>
 @endsection
+

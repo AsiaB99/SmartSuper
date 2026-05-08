@@ -9,11 +9,18 @@
     --texto-oscuro: #333;
     --texto-claro: #fff;
     --fondo-claro: #f4f4f4;
+    --color-borde-suave: #eee;
+    --color-superficie-suave: #f9f9f9;
+    --color-info-suave: #dff9fb;
+    --color-footer-oscuro: #22303f;
+    --color-barra-suave: #f1f2f6;
+    --color-alerta-roja: #e74c3c;
+    --color-exito-suave: #e8f5e9;
 }
 
 @layer components {
     .ss-page {
-        @apply bg-[#f4f4f4] text-ink-900;
+        @apply bg-[var(--fondo-claro)] text-ink-900;
     }
 
     .ss-container {
@@ -49,7 +56,7 @@
     }
 
     .ss-input {
-        @apply rounded-[10px] border-2 border-[#eee] bg-white px-4 py-3 text-sm text-ink-900 shadow-sm focus:border-brand-500 focus:ring-brand-500;
+        @apply rounded-[10px] border-2 border-[var(--color-borde-suave)] bg-white px-4 py-3 text-sm text-ink-900 shadow-sm focus:border-brand-500 focus:ring-brand-500;
     }
 
     .ss-icon-bubble {
@@ -80,3 +87,5 @@
         animation: none !important;
     }
 }
+
+

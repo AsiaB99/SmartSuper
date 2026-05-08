@@ -30,7 +30,7 @@
                                 <div>
                                     <h2 class="text-xl font-semibold text-ink-900">{{ $lista->nombre_lista }}</h2>
                                     <p class="mt-1 text-sm text-ink-500">Creada: {{ optional($lista->fecha_creacion)->format('d/m/Y H:i') ?? 'Sin fecha' }}</p>
-                                    <span class="mt-2 inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $estaComprada ? 'bg-[#e8f5e9] text-brand-600' : 'bg-accent-100 text-accent-800' }}">
+                                    <span class="mt-2 inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $estaComprada ? 'bg-[var(--color-exito-suave)] text-brand-600' : 'bg-accent-100 text-accent-800' }}">
                                         {{ ucfirst($lista->estado) }}
                                     </span>
                                 </div>
@@ -67,7 +67,7 @@
                     <h2 class="text-2xl font-semibold text-ink-900">Resumen</h2>
                     <p class="mt-4 text-sm text-ink-600">Listas guardadas:</p>
                     <p class="text-5xl font-bold text-ink-900">{{ $listas->count() }}</p>
-                    <div class="my-5 rounded-[10px] bg-[#dff9fb] p-3 text-sm font-semibold text-brand-600">
+                    <div class="my-5 rounded-[10px] bg-[var(--color-info-suave)] p-3 text-sm font-semibold text-brand-600">
                         <x-ui.icon name="shopping-cart" class="mr-1 inline h-4 w-4" />
                         Entra en una lista para ajustar cantidades.
                     </div>
@@ -77,3 +77,4 @@
         </div>
     </section>
 @endsection
+

@@ -23,7 +23,7 @@
                     <section class="mb-8 rounded-[15px] border-t-[5px] border-accent-500 bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
                         <p class="text-sm text-ink-600">Mejor opción:</p>
                         <h2 class="mt-1 text-3xl font-semibold text-ink-900">{{ $comparativaAhorro['mejor_super'] }}</h2>
-                        <div class="mt-4 inline-flex rounded-[10px] bg-[#dff9fb] px-4 py-3 text-sm font-semibold text-brand-600">
+                        <div class="mt-4 inline-flex rounded-[10px] bg-[var(--color-info-suave)] px-4 py-3 text-sm font-semibold text-brand-600">
                             Ahorras {{ number_format((float) $comparativaAhorro['ahorro_absoluto'], 2, ',', '.') }} € frente a {{ $comparativaAhorro['segunda_super'] }}
                         </div>
                     </section>
@@ -55,10 +55,10 @@
                                 </div>
                             </div>
 
-                            <details class="border-t border-[#eee] bg-[#f9f9f9] p-5" @if ($loop->first) open @endif>
+                            <details class="border-t border-[var(--color-borde-suave)] bg-[var(--color-superficie-suave)] p-5" @if ($loop->first) open @endif>
                                 <summary class="cursor-pointer list-none text-sm font-semibold text-brand-600">Ver desglose de cesta</summary>
-                                <div class="mt-4 overflow-hidden rounded-[10px] border border-[#eee] bg-white">
-                                    <table class="min-w-full divide-y divide-[#eee] text-sm text-ink-700">
+                                <div class="mt-4 overflow-hidden rounded-[10px] border border-[var(--color-borde-suave)] bg-white">
+                                    <table class="min-w-full divide-y divide-[var(--color-borde-suave)] text-sm text-ink-700">
                                         <thead class="bg-brand-50 text-left text-xs font-semibold uppercase text-ink-600">
                                             <tr>
                                                 <th class="px-4 py-3">Producto</th>
@@ -67,7 +67,7 @@
                                                 <th class="px-4 py-3">Subtotal</th>
                                             </tr>
                                         </thead>
-                                        <tbody class="divide-y divide-[#eee]">
+                                        <tbody class="divide-y divide-[var(--color-borde-suave)]">
                                             @foreach ($fila['detalle_cesta'] as $detalle)
                                                 <tr>
                                                     <td class="px-4 py-3">{{ $detalle['nombre_producto'] }}</td>
@@ -87,3 +87,4 @@
         </div>
     </section>
 @endsection
+
