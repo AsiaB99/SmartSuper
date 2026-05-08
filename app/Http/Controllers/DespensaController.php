@@ -151,6 +151,11 @@ class DespensaController extends Controller
 
         $busqueda = trim((string) $request->query('q', ''));
         $puedeEditar = $request->user()?->can('update', $despensa) ?? false;
+        $stockBaseQuery = $despensa->productos();
+
+        $totalProductos = (clone $stockBaseQuery)->count();
+        $productosBajos = (clone $stockBaseQuery)->wherePivot('stock', '<=', 1)->count();
+        $unidadesTotales = (clone $stockBaseQuery)->sum('almacena.stock');
 
         $despensa->load([
             'productos' => fn ($query) => $query
@@ -160,13 +165,18 @@ class DespensaController extends Controller
                 ->orderBy('nombre_producto'),
         ]);
         $productos = Producto::query()
-            ->when($busqueda !== '', function ($query) use ($busqueda) {
-                $query->where('nombre_producto', 'like', '%'.$busqueda.'%');
-            })
             ->orderBy('nombre_producto')
             ->get();
 
-        return view('despensas.stock', compact('despensa', 'productos', 'busqueda', 'puedeEditar'));
+        return view('despensas.stock', compact(
+            'despensa',
+            'productos',
+            'busqueda',
+            'puedeEditar',
+            'totalProductos',
+            'productosBajos',
+            'unidadesTotales',
+        ));
     }
 
     public function agregarProducto(StoreStockDespensaRequest $request, Despensa $despensa): RedirectResponse
