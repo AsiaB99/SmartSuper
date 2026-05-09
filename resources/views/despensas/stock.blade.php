@@ -3,7 +3,7 @@
 @section('title', __('despensas.stock.meta_title'))
 
 @section('content')
-    <section class="ss-section bg-fondo-claro">
+    <section class="ss-section">
         <div class="ss-container">
             <section class="mb-8 overflow-hidden rounded-[24px] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
                 <div class="ss-header-gradient px-6 py-7 sm:px-8">
@@ -228,3 +228,4 @@
         </dialog>
     @endif
 @endsection
+

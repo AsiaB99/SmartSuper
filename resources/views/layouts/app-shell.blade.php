@@ -14,7 +14,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(36,157,107,0.18),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(232,142,16,0.12),_transparent_28%),linear-gradient(180deg,_#f7f3ec_0%,_#edf4f2_100%)] text-ink-900">
+        <div class="min-h-screen ss-page-gradient text-ink-900">
             @include('layouts.navigation')
 
             @isset($header)
@@ -25,7 +25,7 @@
                 </header>
             @endisset
 
-            <main class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            <main class="relative mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                 {{ $slot }}
             </main>
         </div>

@@ -9,15 +9,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+@php($esInicioPrincipal = request()->routeIs('dashboard'))
+
 <body
     class="ss-page min-h-screen font-sans"
     data-search-suggestions-label="{{ __('js.search_suggestions') }}"
 >
     @include('layouts.navigation')
 
-    <main class="mx-auto flex w-full flex-col">
+    <main class="relative mx-auto flex w-full flex-col {{ $esInicioPrincipal ? 'bg-transparent' : 'ss-page-gradient' }}">
+
         @if (session('status'))
-            <div class="ss-container pt-6" x-data="{ show: true }" x-init="setTimeout(() => show = false, 2800)">
+            <div class="relative ss-container pt-6" x-data="{ show: true }" x-init="setTimeout(() => show = false, 2800)">
                 <div
                     x-show="show"
                     x-transition:enter="transition ease-out duration-300"
@@ -33,7 +36,9 @@
             </div>
         @endif
 
-        @yield('content')
+        <div class="relative">
+            @yield('content')
+        </div>
     </main>
 
     <x-layouts.footer />

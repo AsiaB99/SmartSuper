@@ -13,14 +13,15 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="min-h-screen bg-white font-sans text-ink-900 antialiased">
+    <body class="min-h-screen ss-page-gradient font-sans text-ink-900 antialiased">
         @include('layouts.navigation')
 
-        <main class="flex min-h-[calc(100vh-70px)] w-full items-center justify-center bg-[linear-gradient(rgba(0,0,0,0.60),rgba(0,0,0,0.60)),url('https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center px-4 py-10">
-            {{ $slot }}
+        <main class="relative flex min-h-[calc(100vh-70px)] w-full items-center justify-center px-4 py-10">
+            <div class="relative w-full">
+                {{ $slot }}
+            </div>
         </main>
 
         <x-layouts.footer />
     </body>
 </html>
-

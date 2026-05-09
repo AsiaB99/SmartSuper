@@ -78,6 +78,10 @@
     }
 
     .ss-header-gradient {
+        @apply bg-white;
+    }
+
+    .ss-page-gradient {
         background-image:
             radial-gradient(circle at top left, rgba(43, 122, 120, 0.18), transparent 48%),
             radial-gradient(circle at 78% 18%, rgba(243, 156, 18, 0.22), transparent 42%),

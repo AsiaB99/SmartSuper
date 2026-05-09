@@ -1,17 +1,14 @@
 <section class="space-y-6">
     <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            Eliminar cuenta
-        </h2>
-
         <p class="mt-1 text-sm text-gray-600">
             Cuando elimines tu cuenta, todos sus recursos y datos se borrarán de forma permanente. Antes de eliminarla, guarda la información que quieras conservar.
         </p>
     </header>
 
     <x-danger-button
+        type="button"
         x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
+        x-on:click="$dispatch('open-modal', 'confirm-user-deletion')"
     >Eliminar cuenta</x-danger-button>
 
     <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>

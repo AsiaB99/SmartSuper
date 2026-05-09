@@ -3,7 +3,7 @@
 @section('title', __('listas.recommendation.meta_title'))
 
 @section('content')
-    <section class="ss-section bg-fondo-claro">
+    <section class="ss-section">
         <div class="ss-container">
             <div class="mb-8 flex flex-wrap items-center justify-between gap-5">
                 <div>
@@ -102,4 +102,5 @@
         </div>
     </section>
 @endsection
+
 

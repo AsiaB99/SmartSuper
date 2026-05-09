@@ -1,9 +1,5 @@
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            Actualizar contraseña
-        </h2>
-
         <p class="mt-1 text-sm text-gray-600">
             Asegúrate de usar una contraseña larga y aleatoria para mantener tu cuenta segura.
         </p>

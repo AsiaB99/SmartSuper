@@ -27,16 +27,14 @@
     const translations = JSON.parse(document.getElementById('listas-translations')?.textContent ?? '{}');
     const deleteDialog = document.getElementById('delete-lista-dialog');
     const deleteDialogText = deleteDialog?.querySelector('p');
-    const deleteListaNombre = document.getElementById('delete-lista-nombre');
     const deleteConfirmButton = document.getElementById('delete-lista-confirm');
     const deleteCancelButton = document.getElementById('delete-lista-cancel');
     let currentDeleteForm = null;
 
-    if (deleteDialog && deleteListaNombre && deleteConfirmButton && deleteCancelButton) {
+    if (deleteDialog && deleteConfirmButton && deleteCancelButton) {
         document.querySelectorAll('[data-delete-lista]').forEach((button) => {
             button.addEventListener('click', () => {
                 currentDeleteForm = button.closest('form');
-                deleteListaNombre.textContent = button.dataset.listaNombre ?? '';
                 if (deleteDialogText) {
                     deleteDialogText.innerHTML = translations.deleteText
                         .replace('__LIST__', `<strong>${button.dataset.listaNombre ?? ''}</strong>`);

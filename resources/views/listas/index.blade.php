@@ -6,7 +6,7 @@
     @php($tieneAccionesEdicion = $listas->contains(fn ($lista) => auth()->user()?->can('update', $lista)))
     @php($tieneAccionesEliminacion = $listas->contains(fn ($lista) => auth()->user()?->can('delete', $lista)))
 
-    <section class="ss-section bg-fondo-claro">
+    <section class="ss-section">
         <div class="ss-container">
             <section class="relative mb-12 overflow-hidden rounded-[20px] p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
                 <img
@@ -231,3 +231,4 @@
     </script>
     @vite('resources/js/listas-index.js')
 @endsection
+

@@ -17,7 +17,7 @@
         ];
     @endphp
 
-    <section class="ss-section bg-fondo-claro">
+    <section class="ss-section">
         <div class="ss-container">
             <section class="relative mb-12 overflow-hidden rounded-[20px] p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
                 <img
@@ -54,8 +54,9 @@
                 </div>
                 @forelse ($markers as $marker)
                     <div
-                        class="absolute z-10 -translate-x-1/2 -translate-y-1/2"
-                        style="top: {{ $marker['top'] }}%; left: {{ $marker['left'] }}%;"
+                        class="js-map-marker absolute z-10 -translate-x-1/2 -translate-y-1/2"
+                        data-top="{{ $marker['top'] }}"
+                        data-left="{{ $marker['left'] }}"
                         title="{{ $marker['nombre'] }}"
                     >
                         <div class="flex h-11 w-11 items-center justify-center rounded-full bg-accent-500 text-white shadow-soft ring-4 ring-white">
@@ -114,7 +115,7 @@
                             </div>
                             <div class="flex flex-wrap items-center gap-3">
                                 <a href="{{ route('admin.supermercados.edit', $supermercado) }}" class="ss-btn-outline">{{ __('common.edit') }}</a>
-                                <form action="{{ route('admin.supermercados.destroy', $supermercado) }}" method="POST" onsubmit="return confirm('{{ __('supermercados.index.delete_confirm') }}');">
+                                <form action="{{ route('admin.supermercados.destroy', $supermercado) }}" method="POST" class="js-confirm-delete" data-confirm="{{ __('supermercados.index.delete_confirm') }}">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="inline-flex items-center rounded-[10px] bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500">{{ __('common.delete') }}</button>
@@ -131,4 +132,26 @@
             @endif
         </div>
     </section>
+
+    @once
+        @push('scripts')
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    document.querySelectorAll('.js-map-marker').forEach((marker) => {
+                        marker.style.top = `${marker.dataset.top}%`;
+                        marker.style.left = `${marker.dataset.left}%`;
+                    });
+
+                    document.querySelectorAll('.js-confirm-delete').forEach((form) => {
+                        form.addEventListener('submit', (event) => {
+                            if (!window.confirm(form.dataset.confirm ?? '')) {
+                                event.preventDefault();
+                            }
+                        });
+                    });
+                });
+            </script>
+        @endpush
+    @endonce
 @endsection
+

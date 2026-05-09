@@ -3,7 +3,7 @@
 @section('title', __('listas.finalize.meta_title'))
 
 @section('content')
-    <section class="ss-section bg-fondo-claro">
+    <section class="ss-section">
         <div class="ss-container">
             <section class="mx-auto max-w-3xl rounded-[20px] bg-white p-8 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
                 <div class="mb-6">
@@ -38,3 +38,4 @@
         </div>
     </section>
 @endsection
+

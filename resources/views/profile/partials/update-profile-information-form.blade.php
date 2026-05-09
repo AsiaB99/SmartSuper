@@ -1,9 +1,5 @@
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            Información del perfil
-        </h2>
-
         <p class="mt-1 text-sm text-gray-600">
             Actualiza la información de tu perfil y tu dirección de correo.
         </p>
