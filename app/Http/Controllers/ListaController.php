@@ -45,11 +45,6 @@ class ListaController extends Controller
         return view('listas.index', compact('listas'));
     }
 
-    public function create(): View
-    {
-        return view('listas.create');
-    }
-
     public function store(StoreListaRequest $request): RedirectResponse
     {
         /** @var \App\Models\User&Authenticatable $usuario */
@@ -259,6 +254,7 @@ class ListaController extends Controller
         $data = $request->validated();
         $productoId = (int) $data['id_producto'];
         $cantidad = (int) $data['cantidad'];
+        $redirectDespensaId = isset($data['redirect_despensa_id']) ? (int) $data['redirect_despensa_id'] : null;
 
         $productoEnLista = $lista->productos()
             ->where('productos.id', $productoId)
@@ -273,6 +269,15 @@ class ListaController extends Controller
         $mensaje = $cantidadActual > 0
             ? __('flash.listas.product_merged')
             : __('flash.listas.product_added');
+
+        if ($redirectDespensaId !== null && $redirectDespensaId > 0) {
+            $despensa = Despensa::query()->findOrFail($redirectDespensaId);
+            $this->authorize('view', $despensa);
+
+            return redirect()
+                ->route('despensas.stock', $despensa)
+                ->with('status', $mensaje);
+        }
 
         return redirect()
             ->route('listas.productos', $lista)

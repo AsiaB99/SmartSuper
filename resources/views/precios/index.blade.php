@@ -5,8 +5,15 @@
 @section('content')
     <section class="ss-section bg-fondo-claro">
         <div class="ss-container">
-            <section class="mb-12 rounded-[20px] bg-white p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
-                <h1 class="text-4xl font-semibold text-ink-900">{{ __('precios.index.title') }}</h1>
+            <section class="relative mb-12 overflow-hidden rounded-[20px] p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+                <img
+                    src="{{ asset('img/encabezados/encabezado_super.PNG') }}"
+                    alt=""
+                    class="absolute inset-0 h-full w-full object-cover"
+                    aria-hidden="true"
+                >
+                <div class="absolute inset-0 bg-white/60" aria-hidden="true"></div>
+                <h1 class="relative text-4xl font-semibold text-ink-900">{{ __('precios.index.title') }}</h1>
                 <form method="GET" action="{{ route('precios.index') }}" class="relative mx-auto mt-5 flex max-w-[600px]">
                     <input
                         id="busqueda-producto"
@@ -104,4 +111,3 @@
         </div>
     </section>
 @endsection
-

@@ -17,13 +17,15 @@ Route::get('precios', [VendenController::class, 'index'])
     ->name('precios.index');
 
 Route::middleware('auth')->group(function () {
-    Route::resource('listas', ListaController::class);
-    Route::resource('despensas', DespensaController::class)->except(['show']);
+    Route::resource('listas', ListaController::class)->except(['create']);
+    Route::resource('despensas', DespensaController::class)->except(['show', 'create']);
     Route::resource('productos', ProductoController::class)
         ->only(['index'])
         ->middleware('admin');
     Route::get('/despensas/{despensa}/stock', [DespensaController::class, 'stock'])
         ->name('despensas.stock');
+    Route::get('/despensas/{despensa}/stock/sugerencias', [DespensaController::class, 'sugerenciasStock'])
+        ->name('despensas.stock.sugerencias');
     Route::post('/despensas/{despensa}/stock', [DespensaController::class, 'agregarProducto'])
         ->name('despensas.stock.agregar');
     Route::patch('/despensas/{despensa}/stock/{producto}', [DespensaController::class, 'actualizarStock'])

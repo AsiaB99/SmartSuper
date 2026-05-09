@@ -16,6 +16,7 @@ class StoreProductoListaRequest extends FormRequest
         return [
             'id_producto' => ['required', 'integer', 'exists:productos,id'],
             'cantidad' => ['required', 'integer', 'min:1'],
+            'redirect_despensa_id' => ['nullable', 'integer', 'exists:despensas,id'],
         ];
     }
 }

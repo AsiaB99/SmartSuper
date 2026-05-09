@@ -11,9 +11,11 @@ use App\Models\Producto;
 use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class DespensaController extends Controller
@@ -37,12 +39,43 @@ class DespensaController extends Controller
             ->orderByDesc('fecha_creacion')
             ->get();
 
-        return view('despensas.index', compact('despensas'));
-    }
+        $stockPorDespensa = DB::table('almacena')
+            ->select(
+                'id_despensa',
+                DB::raw('SUM(stock) as unidades_totales'),
+                DB::raw('COUNT(*) as productos_con_stock'),
+                DB::raw('SUM(CASE WHEN stock <= 1 THEN 1 ELSE 0 END) as productos_stock_bajo')
+            )
+            ->whereIn('id_despensa', $despensas->pluck('id'))
+            ->groupBy('id_despensa')
+            ->get()
+            ->keyBy('id_despensa');
 
-    public function create(): View
-    {
-        return view('despensas.create');
+        $resumenStock = $despensas->mapWithKeys(function (Despensa $despensa) use ($stockPorDespensa): array {
+            $metricas = $stockPorDespensa->get($despensa->id);
+            $productosConStock = max(0, (int) ($metricas->productos_con_stock ?? 0));
+            $unidadesTotales = max(0, (int) ($metricas->unidades_totales ?? 0));
+            $productosStockBajo = max(0, (int) ($metricas->productos_stock_bajo ?? 0));
+            $objetivoUnidades = max(1, $productosConStock * 5);
+            $porcentaje = $productosConStock === 0
+                ? 0
+                : max(8, min(100, (int) round(($unidadesTotales / $objetivoUnidades) * 100)));
+
+            $barClass = $porcentaje < 35
+                ? 'bg-rose-500'
+                : ($porcentaje < 70 ? 'bg-amber-500' : 'bg-brand-500');
+
+            return [
+                $despensa->id => [
+                    'porcentaje' => $porcentaje,
+                    'bar_class' => $barClass,
+                    'productos' => $productosConStock,
+                    'stock_bajo' => $productosStockBajo,
+                ],
+            ];
+        })->all();
+
+        return view('despensas.index', compact('despensas', 'resumenStock'));
     }
 
     public function store(StoreDespensaRequest $request): RedirectResponse
@@ -50,7 +83,10 @@ class DespensaController extends Controller
         /** @var \App\Models\User&Authenticatable $usuario */
         $usuario = $request->user();
 
-        $despensa = Despensa::create($request->validated());
+        $data = $request->safe()->only(['nombre_despensa']);
+        $data['fecha_creacion'] = now();
+
+        $despensa = Despensa::create($data);
         $despensa->usuarios()->attach($usuario->id, ['permiso_despensa' => 'owner']);
 
         return redirect()
@@ -145,25 +181,40 @@ class DespensaController extends Controller
             ->with('status', __('flash.despensas.deleted'));
     }
 
-    public function stock(Request $request, Despensa $despensa): View
+    public function stock(Request $request, Despensa $despensa): View|JsonResponse
     {
         $this->authorize('view', $despensa);
 
+        /** @var \App\Models\User&Authenticatable $usuario */
+        $usuario = $request->user();
         $busqueda = trim((string) $request->query('q', ''));
-        $puedeEditar = $request->user()?->can('update', $despensa) ?? false;
+        $lowStockThreshold = max(1, min(99, (int) $request->query('low_stock_threshold', 1)));
+        $puedeEditar = $usuario?->can('update', $despensa) ?? false;
         $stockBaseQuery = $despensa->productos();
+        $listasEditables = $this->obtenerListasEditables($usuario);
 
         $totalProductos = (clone $stockBaseQuery)->count();
-        $productosBajos = (clone $stockBaseQuery)->wherePivot('stock', '<=', 1)->count();
+        $productosBajos = (clone $stockBaseQuery)->wherePivot('stock', '<=', $lowStockThreshold)->count();
         $unidadesTotales = (clone $stockBaseQuery)->sum('almacena.stock');
 
         $despensa->load([
             'productos' => fn ($query) => $query
-                ->when($busqueda !== '', function ($subQuery) use ($busqueda) {
-                    $subQuery->where('nombre_producto', 'like', '%'.$busqueda.'%');
-                })
+                ->when($busqueda !== '', fn ($subQuery) => $this->aplicarBusquedaProducto($subQuery, $busqueda))
                 ->orderBy('nombre_producto'),
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'productos' => view('despensas.partials.stock-productos', [
+                    'despensa' => $despensa,
+                    'puedeEditar' => $puedeEditar,
+                    'lowStockThreshold' => $lowStockThreshold,
+                    'tieneListasEditables' => $listasEditables->isNotEmpty(),
+                ])->render(),
+                'query' => $busqueda,
+            ]);
+        }
+
         $productos = Producto::query()
             ->orderBy('nombre_producto')
             ->get();
@@ -176,7 +227,21 @@ class DespensaController extends Controller
             'totalProductos',
             'productosBajos',
             'unidadesTotales',
+            'lowStockThreshold',
+            'listasEditables',
         ));
+    }
+
+    public function sugerenciasStock(Request $request, Despensa $despensa): JsonResponse
+    {
+        $this->authorize('view', $despensa);
+
+        $busqueda = trim((string) $request->query('q', ''));
+        if ($busqueda === '') {
+            return response()->json([]);
+        }
+
+        return response()->json($this->obtenerSugerenciasProductoEnDespensa($despensa, $busqueda));
     }
 
     public function agregarProducto(StoreStockDespensaRequest $request, Despensa $despensa): RedirectResponse
@@ -264,4 +329,49 @@ class DespensaController extends Controller
             'usuariosEditoresActuales' => $usuariosEditoresActuales,
         ];
     }
+
+    private function aplicarBusquedaProducto(Builder $query, string $busqueda): void
+    {
+        $query->where(function (Builder $subQuery) use ($busqueda): void {
+            $subQuery
+                ->where('nombre_producto', 'like', '%'.$busqueda.'%')
+                ->orWhere('marca', 'like', '%'.$busqueda.'%')
+                ->orWhere('formato', 'like', '%'.$busqueda.'%');
+        });
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function obtenerSugerenciasProductoEnDespensa(Despensa $despensa, string $busqueda): array
+    {
+        return $despensa->productos()
+            ->select('productos.nombre_producto')
+            ->where(function (Builder $query) use ($busqueda): void {
+                $query
+                    ->where('productos.nombre_producto', 'like', '%'.$busqueda.'%')
+                    ->orWhere('productos.marca', 'like', '%'.$busqueda.'%')
+                    ->orWhere('productos.formato', 'like', '%'.$busqueda.'%');
+            })
+            ->distinct()
+            ->orderBy('productos.nombre_producto')
+            ->limit(8)
+            ->pluck('productos.nombre_producto')
+            ->all();
+    }
+
+    private function obtenerListasEditables(User $usuario): \Illuminate\Support\Collection
+    {
+        return \App\Models\Lista::query()
+            ->where('estado', 'activa')
+            ->when(! $usuario->isAdmin(), function ($query) use ($usuario) {
+                $query->whereHas('usuarios', function ($subQuery) use ($usuario) {
+                    $subQuery->where('users.id', $usuario->id)
+                        ->whereIn('hacen.permiso_lista', ['owner', 'editor']);
+                });
+            })
+            ->orderBy('nombre_lista')
+            ->get(['id', 'nombre_lista']);
+    }
 }
+

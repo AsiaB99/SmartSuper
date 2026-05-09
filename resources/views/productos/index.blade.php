@@ -5,7 +5,7 @@
 @section('content')
     @php($esAdmin = auth()->user()?->isAdmin() ?? false)
 
-    <section class="flex flex-wrap items-center justify-between gap-6 rounded-lg border border-white/70 bg-white/85 p-6 shadow-soft">
+    <section class="ss-header-gradient mb-8 flex flex-wrap items-center justify-between gap-6 rounded-lg border border-white/70 p-6 shadow-soft">
         <div>
             <p class="text-sm font-semibold uppercase text-brand-700">{{ $esAdmin ? __('productos.index.kicker_admin') : __('productos.index.kicker_catalog') }}</p>
             <h1 class="mt-2 font-display text-4xl text-ink-900">{{ __('productos.index.title') }}</h1>

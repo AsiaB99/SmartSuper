@@ -8,9 +8,16 @@
 
     <section class="ss-section bg-fondo-claro">
         <div class="ss-container">
-            <section class="mb-12 rounded-[20px] bg-white p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
-                <h1 class="text-4xl font-semibold text-ink-900">{{ __('listas.index.title') }}</h1>
-                <p class="mx-auto mt-4 max-w-3xl text-lg leading-7 text-ink-600">
+            <section class="relative mb-12 overflow-hidden rounded-[20px] p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+                <img
+                    src="{{ asset('img/encabezados/encabezado_lista.png') }}"
+                    alt=""
+                    class="absolute inset-0 h-full w-full object-cover"
+                    aria-hidden="true"
+                >
+                <div class="absolute inset-0 bg-white/60" aria-hidden="true"></div>
+                <h1 class="relative text-4xl font-semibold text-ink-900">{{ __('listas.index.title') }}</h1>
+                <p class="relative mx-auto mt-4 max-w-3xl text-lg leading-7 text-ink-600">
                     {{ __('listas.index.subtitle') }}
                 </p>
             </section>
@@ -90,11 +97,40 @@
                         <x-ui.icon name="shopping-cart" class="mr-1 inline h-4 w-4" />
                         {{ __('listas.index.summary.tip') }}
                     </div>
-                    <a class="ss-btn-green w-full my-1" href="{{ route('listas.create') }}">{{ __('listas.index.create') }}</a>
+                    <button id="open-create-lista-dialog" type="button" class="ss-btn-green w-full my-1">{{ __('listas.index.create') }}</button>
                 </x-listas.resumen-aside>
             </div>
         </div>
     </section>
+
+    <dialog id="create-lista-dialog" class="w-full max-w-xl rounded-[15px] border border-[var(--color-borde-suave)] p-0 shadow-[0_20px_40px_rgba(0,0,0,0.15)] backdrop:bg-black/40">
+        <div class="p-6 sm:p-7">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-semibold text-ink-900">{{ __('listas.create.kicker') }}</h2>
+                    <p class="mt-2 text-sm leading-6 text-ink-600">{{ __('listas.create.title') }}</p>
+                </div>
+                <button id="create-lista-close" type="button" class="rounded-full border border-ink-200 p-2 text-ink-500 transition hover:border-brand-200 hover:text-brand-600" aria-label="{{ __('common.close') }}">
+                    <x-ui.icon name="x-mark" class="h-5 w-5" />
+                </button>
+            </div>
+
+            <form id="create-lista-form" class="mt-6 grid gap-5" action="{{ route('listas.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="estado" value="activa">
+                <label class="grid gap-2">
+                    <span class="text-sm font-semibold text-ink-700">{{ __('listas.edit.name') }}</span>
+                    <input id="create-lista-nombre" class="ss-input" type="text" name="nombre_lista" value="{{ old('nombre_lista') }}" maxlength="50" required>
+                    @error('nombre_lista')<small class="text-sm font-medium text-rose-600">{{ $message }}</small>@enderror
+                </label>
+
+                <div class="flex justify-end gap-3">
+                    <button id="create-lista-cancel" type="button" class="rounded-[10px] border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-800 transition hover:border-brand-200 hover:text-brand-800">{{ __('common.cancel') }}</button>
+                    <button type="submit" class="ss-btn-green">{{ __('listas.create.submit') }}</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
 
     @if ($tieneAccionesEliminacion)
         <dialog id="delete-lista-dialog" class="w-full max-w-md rounded-[15px] border border-[var(--color-borde-suave)] p-0 shadow-[0_20px_40px_rgba(0,0,0,0.15)] backdrop:bg-black/40">
@@ -195,4 +231,3 @@
     </script>
     @vite('resources/js/listas-index.js')
 @endsection
-

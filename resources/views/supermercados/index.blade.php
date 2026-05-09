@@ -19,23 +19,18 @@
 
     <section class="ss-section bg-fondo-claro">
         <div class="ss-container">
-            <section class="mb-12 rounded-[20px] bg-white p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
-                <h1 class="text-4xl font-semibold text-ink-900">{{ __('supermercados.index.title') }}</h1>
-                <p class="mx-auto mt-4 max-w-3xl text-lg leading-7 text-ink-600">
+            <section class="relative mb-12 overflow-hidden rounded-[20px] p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+                <img
+                    src="{{ asset('img/encabezados/encabezado_super.PNG') }}"
+                    alt=""
+                    class="absolute inset-0 h-full w-full object-cover"
+                    aria-hidden="true"
+                >
+                <div class="absolute inset-0 bg-white/60" aria-hidden="true"></div>
+                <h1 class="relative text-4xl font-semibold text-ink-900">{{ __('supermercados.index.title') }}</h1>
+                <p class="relative mx-auto mt-4 max-w-3xl text-lg leading-7 text-ink-600">
                     {{ __('supermercados.index.subtitle') }}
                 </p>
-                <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
-                    <a href="{{ route('precios.index') }}" class="ss-btn-outline">
-                        <x-ui.icon name="magnifying-glass" class="h-4 w-4" />
-                        <span>{{ __('nav.comparator') }}</span>
-                    </a>
-                    @if ($esAdmin)
-                        <a href="{{ route('admin.supermercados.create') }}" class="ss-btn-green">
-                            <x-ui.icon name="plus" class="h-4 w-4" />
-                            <span>{{ __('supermercados.index.new') }}</span>
-                        </a>
-                    @endif
-                </div>
             </section>
 
             <form method="GET" action="{{ route('supermercados.index') }}" class="mb-8 flex flex-wrap gap-3 rounded-[20px] bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
@@ -137,4 +132,3 @@
         </div>
     </section>
 @endsection
-

@@ -8,9 +8,16 @@
 
     <section class="ss-section bg-fondo-claro">
         <div class="ss-container">
-            <section class="mb-12 rounded-[20px] bg-white p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
-                <h1 class="text-4xl font-semibold text-ink-900">{{ __('despensas.index.title') }}</h1>
-                <p class="mx-auto mt-4 max-w-3xl text-lg leading-7 text-ink-600">
+            <section class="relative mb-12 overflow-hidden rounded-[20px] p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+                <img
+                    src="{{ asset('img/encabezados/encabezado_lista.png') }}"
+                    alt=""
+                    class="absolute inset-0 h-full w-full object-cover"
+                    aria-hidden="true"
+                >
+                <div class="absolute inset-0 bg-white/60" aria-hidden="true"></div>
+                <h1 class="relative text-4xl font-semibold text-ink-900">{{ __('despensas.index.title') }}</h1>
+                <p class="relative mx-auto mt-4 max-w-3xl text-lg leading-7 text-ink-600">
                     {{ __('despensas.index.subtitle') }}
                 </p>
             </section>
@@ -18,24 +25,33 @@
             <div class="grid gap-10 lg:grid-cols-[1fr_330px]">
                 <section class="grid gap-8 md:grid-cols-2">
                     @forelse ($despensas as $despensa)
-                        <article class="flex flex-col rounded-[15px] bg-white p-6 shadow-[0_5px_15px_rgba(0,0,0,0.05)] transition duration-300 hover:-translate-y-1">
-                            <div class="mb-4 flex items-center gap-4">
-                                <div class="flex h-[50px] w-[50px] items-center justify-center rounded-full border-2 border-[var(--color-borde-suave)] bg-brand-50 text-brand-500">
-                                    <x-ui.icon name="archive-box" class="h-6 w-6" />
-                                </div>
-                                <div>
-                                    <h2 class="text-lg font-semibold text-ink-900">{{ $despensa->nombre_despensa }}</h2>
-                                    <p class="text-xs text-ink-400">{{ __('common.created_at') }} {{ optional($despensa->fecha_creacion)->format('d/m/Y H:i') ?? __('common.no_date') }}</p>
+                        @php($stockNivel = $resumenStock[$despensa->id] ?? ['porcentaje' => 0, 'bar_class' => 'bg-ink-300'])
+                        <article class="flex h-full flex-col rounded-[18px] border border-slate-200 bg-[linear-gradient(145deg,#ffffff_0%,#f7fbfa_100%)] p-6 shadow-[0_8px_24px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(15,23,42,0.12)]">
+                            <div class="mb-5 flex items-center justify-between gap-3">
+                                <div class="flex min-w-0 items-center gap-4">
+                                    <div class="flex h-[52px] w-[52px] items-center justify-center rounded-[14px] bg-brand-500/10 text-brand-600">
+                                        <x-ui.icon name="archive-box" class="h-6 w-6" />
+                                    </div>
+                                    <div class="min-w-0">
+                                        <h2 class="truncate text-xl font-semibold text-ink-900">{{ $despensa->nombre_despensa }}</h2>
+                                        <p class="text-sm text-ink-500">{{ __('common.created_at') }} {{ optional($despensa->fecha_creacion)->format('d/m/Y H:i') ?? __('common.no_date') }}</p>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="my-3 h-[10px] overflow-hidden rounded-full bg-[var(--color-barra-suave)]">
-                                <div class="h-full w-2/3 rounded-full bg-brand-500"></div>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <div class="rounded-[14px] bg-white/90 p-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)]">
+                                    <p class="text-xs font-semibold uppercase tracking-[0.08em] text-ink-500">{{ __('despensas.stock.summary.products') }}</p>
+                                    <p class="mt-2 text-2xl font-bold text-ink-900">{{ $stockNivel['productos'] ?? 0 }}</p>
+                                </div>
+                                <div class="rounded-[14px] bg-white/90 p-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)]">
+                                    <p class="text-xs font-semibold uppercase tracking-[0.08em] text-ink-500">{{ __('despensas.stock.summary.low') }}</p>
+                                    <p class="mt-2 text-2xl font-bold text-amber-600">{{ $stockNivel['stock_bajo'] ?? 0 }}</p>
+                                </div>
                             </div>
-                            <p class="text-sm font-bold text-brand-500">{{ __('despensas.index.available_inventory') }}</p>
 
                             <div class="mt-5 flex flex-wrap items-center gap-3">
-                                <a class="ss-btn-outline flex-1" href="{{ route('despensas.stock', $despensa) }}">{{ __('despensas.index.stock') }}</a>
+                                <a class="ss-btn-green flex-1" href="{{ route('despensas.stock', $despensa) }}">{{ __('despensas.index.stock') }}</a>
                                 @can('update', $despensa)
                                     <button
                                         class="ss-btn-outline inline-flex items-center justify-center"
@@ -85,11 +101,39 @@
                         <x-ui.icon name="archive-box" class="mr-1 inline h-4 w-4" />
                         {{ __('despensas.index.summary.tip') }}
                     </div>
-                    <a class="ss-btn-green w-full" href="{{ route('despensas.create') }}">{{ __('despensas.index.create') }}</a>
+                    <button id="open-create-despensa-dialog" type="button" class="ss-btn-green w-full">{{ __('despensas.index.create') }}</button>
                 </x-despensas.resumen-aside>
             </div>
         </div>
     </section>
+
+    <dialog id="create-despensa-dialog" class="w-full max-w-xl rounded-[15px] border border-[var(--color-borde-suave)] p-0 shadow-[0_20px_40px_rgba(0,0,0,0.15)] backdrop:bg-black/40">
+        <div class="p-6 sm:p-7">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-semibold text-ink-900">{{ __('despensas.create.kicker') }}</h2>
+                    <p class="mt-2 text-sm leading-6 text-ink-600">{{ __('despensas.create.title') }}</p>
+                </div>
+                <button id="create-despensa-close" type="button" class="rounded-full border border-ink-200 p-2 text-ink-500 transition hover:border-brand-200 hover:text-brand-600" aria-label="{{ __('common.close') }}">
+                    <x-ui.icon name="x-mark" class="h-5 w-5" />
+                </button>
+            </div>
+
+            <form id="create-despensa-form" class="mt-6 grid gap-5" action="{{ route('despensas.store') }}" method="POST">
+                @csrf
+                <label class="grid gap-2">
+                    <span class="text-sm font-semibold text-ink-700">{{ __('despensas.form.name') }}</span>
+                    <input id="create-despensa-nombre" class="ss-input" type="text" name="nombre_despensa" value="{{ old('nombre_despensa') }}" maxlength="50" required>
+                    @error('nombre_despensa')<small class="text-sm font-medium text-rose-600">{{ $message }}</small>@enderror
+                </label>
+
+                <div class="flex justify-end gap-3">
+                    <button id="create-despensa-cancel" type="button" class="rounded-[10px] border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-800 transition hover:border-brand-200 hover:text-brand-800">{{ __('common.cancel') }}</button>
+                    <button type="submit" class="ss-btn-green">{{ __('despensas.create.submit') }}</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
 
     @if ($tieneAccionesEliminacion)
         <dialog id="delete-despensa-dialog" class="w-full max-w-md rounded-[15px] border border-[var(--color-borde-suave)] p-0 shadow-[0_20px_40px_rgba(0,0,0,0.15)] backdrop:bg-black/40">
@@ -183,4 +227,3 @@
 
     @vite('resources/js/despensas-index.js')
 @endsection
-

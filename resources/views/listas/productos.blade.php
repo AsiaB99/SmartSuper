@@ -5,7 +5,7 @@
 @section('content')
     <section class="ss-section bg-fondo-claro">
         <div class="ss-container">
-            <div class="mb-8 flex flex-wrap items-start justify-between gap-5 rounded-[24px] bg-white px-6 py-6 shadow-[0_14px_35px_rgba(0,0,0,0.06)] sm:px-8">
+            <div class="ss-header-gradient mb-8 flex flex-wrap items-start justify-between gap-5 rounded-[24px] px-6 py-6 shadow-[0_14px_35px_rgba(0,0,0,0.06)] sm:px-8">
                 <div class="flex min-w-0 items-start gap-4">
                     <div class="min-w-0">
                         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">{{ __('listas.products.kicker') }}</p>

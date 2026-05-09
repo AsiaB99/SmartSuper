@@ -1,4 +1,29 @@
 (() => {
+    const createDialog = document.getElementById('create-despensa-dialog');
+    const openCreateButton = document.getElementById('open-create-despensa-dialog');
+    const closeCreateButton = document.getElementById('create-despensa-close');
+    const cancelCreateButton = document.getElementById('create-despensa-cancel');
+    const createNameInput = document.getElementById('create-despensa-nombre');
+
+    if (createDialog && openCreateButton) {
+        const closeCreateDialog = () => createDialog.close();
+
+        openCreateButton.addEventListener('click', () => {
+            createDialog.showModal();
+            createNameInput?.focus();
+        });
+
+        closeCreateButton?.addEventListener('click', closeCreateDialog);
+        cancelCreateButton?.addEventListener('click', closeCreateDialog);
+
+        createDialog.addEventListener('close', () => {
+            const form = document.getElementById('create-despensa-form');
+            if (form instanceof HTMLFormElement) {
+                form.reset();
+            }
+        });
+    }
+
     const translations = JSON.parse(document.getElementById('despensas-translations')?.textContent ?? '{}');
     const deleteDialog = document.getElementById('delete-despensa-dialog');
     const deleteDialogText = deleteDialog?.querySelector('p');
