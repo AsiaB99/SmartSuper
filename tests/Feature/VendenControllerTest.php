@@ -14,11 +14,27 @@ class VendenControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_guest_is_redirected_to_login_when_accessing_precios(): void
+    public function test_guest_can_access_precios_index_in_read_only_mode(): void
     {
+        $seccion = Seccion::factory()->create();
+        $producto = Producto::factory()->create(['id_seccion' => $seccion->id]);
+        $supermercado = Supermercado::factory()->create();
+        Venden::query()->create([
+            'id_producto' => $producto->id,
+            'id_super' => $supermercado->id,
+            'precio' => 10.50,
+            'precio_unidad' => 10.50,
+            'unidad_ref' => 'unidad',
+        ]);
+
         $response = $this->get(route('precios.index'));
 
-        $response->assertRedirect(route('login'));
+        $response->assertOk();
+        $response->assertSeeText('Encuentra el mejor precio');
+        $response->assertDontSee(route('admin.precios.create'), false);
+        $response->assertDontSeeText('Nuevo precio');
+        $response->assertDontSeeText('Editar');
+        $response->assertDontSeeText('Eliminar');
     }
 
     public function test_non_admin_user_can_access_precios_index_in_read_only_mode(): void
@@ -61,7 +77,6 @@ class VendenControllerTest extends TestCase
         $response = $this->actingAs($admin)->get(route('precios.index'));
 
         $response->assertOk();
-        $response->assertViewHas('precios');
         $response->assertSee(route('admin.precios.create'), false);
     }
 

@@ -19,7 +19,7 @@ class ProductoControllerTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    public function test_non_admin_user_can_access_productos_index_in_read_only_mode(): void
+    public function test_non_admin_user_cannot_access_productos_index(): void
     {
         $user = User::factory()->create(['rol' => 'cliente']);
         Seccion::factory()->count(2)->create();
@@ -27,11 +27,7 @@ class ProductoControllerTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('productos.index'));
 
-        $response->assertOk();
-        $response->assertDontSee(route('admin.productos.create'), false);
-        $response->assertDontSeeText('Nuevo producto');
-        $response->assertDontSeeText('Editar');
-        $response->assertDontSeeText('Eliminar');
+        $response->assertForbidden();
     }
 
     public function test_admin_can_view_productos_index(): void

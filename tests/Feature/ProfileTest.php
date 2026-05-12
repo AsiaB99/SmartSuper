@@ -29,6 +29,7 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->patch('/profile', [
                 'name' => 'Test User',
+                'nombre_usuario' => 'test_user',
                 'email' => 'test@example.com',
             ]);
 
@@ -39,6 +40,7 @@ class ProfileTest extends TestCase
         $user->refresh();
 
         $this->assertSame('Test User', $user->name);
+        $this->assertSame('test_user', $user->nombre_usuario);
         $this->assertSame('test@example.com', $user->email);
         $this->assertNull($user->email_verified_at);
     }
@@ -51,6 +53,7 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->patch('/profile', [
                 'name' => 'Test User',
+                'nombre_usuario' => $user->nombre_usuario,
                 'email' => $user->email,
             ]);
 
@@ -95,5 +98,27 @@ class ProfileTest extends TestCase
             ->assertRedirect('/profile');
 
         $this->assertNotNull($user->fresh());
+    }
+
+    public function test_user_location_can_be_updated(): void
+    {
+        $user = User::factory()->create([
+            'latitud' => null,
+            'longitud' => null,
+        ]);
+
+        $this->actingAs($user)
+            ->postJson(route('profile.location.update'), [
+                'latitud' => 40.416775,
+                'longitud' => -3.703790,
+            ])
+            ->assertOk()
+            ->assertJson(['ok' => true]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'latitud' => 40.41677500,
+            'longitud' => -3.70379000,
+        ]);
     }
 }

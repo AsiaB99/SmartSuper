@@ -78,14 +78,8 @@
                 <div class="hidden items-center gap-3 sm:flex">
                     <a href="{{ route('login') }}" class="inline-flex items-center gap-2 rounded-full bg-brand-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-600">
                         <x-ui.icon name="arrow-right-end-on-rectangle" class="h-4 w-4" />
-                        <span>{{ __('nav.login') }}</span>
+                        <span>Acceder</span>
                     </a>
-                    @if (Route::has('register'))
-                        <a href="{{ route('register') }}" class="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-ink-900 transition hover:text-brand-600">
-                            <x-ui.icon name="user-plus" class="h-4 w-4" />
-                            <span>{{ __('nav.register') }}</span>
-                        </a>
-                    @endif
                 </div>
             @endauth
 
@@ -150,14 +144,8 @@
             <div class="flex flex-wrap gap-3 border-t border-brand-100 px-4 pb-4 pt-4">
                 <a href="{{ route('login') }}" class="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-900 shadow-soft transition hover:border-brand-300 hover:text-brand-800">
                     <x-ui.icon name="arrow-right-end-on-rectangle" class="h-4 w-4" />
-                    <span>{{ __('nav.login') }}</span>
+                    <span>Acceder</span>
                 </a>
-                @if (Route::has('register'))
-                    <a href="{{ route('register') }}" class="inline-flex items-center gap-2 rounded-full bg-accent-400 px-4 py-2.5 text-sm font-semibold text-ink-900 transition hover:bg-accent-300">
-                        <x-ui.icon name="user-plus" class="h-4 w-4" />
-                        <span>{{ __('nav.register') }}</span>
-                    </a>
-                @endif
             </div>
         @endauth
     </div>

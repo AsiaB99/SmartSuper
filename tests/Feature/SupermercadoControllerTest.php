@@ -11,11 +11,18 @@ class SupermercadoControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_guest_is_redirected_to_login_when_accessing_supermercados(): void
+    public function test_guest_can_access_supermercados_index_in_read_only_mode(): void
     {
+        Supermercado::factory()->count(2)->create();
+
         $response = $this->get(route('supermercados.index'));
 
-        $response->assertRedirect(route('login'));
+        $response->assertOk();
+        $response->assertSeeText('Supermercados');
+        $response->assertDontSee(route('admin.supermercados.create'), false);
+        $response->assertDontSeeText('Nuevo supermercado');
+        $response->assertDontSeeText('Editar');
+        $response->assertDontSeeText('Eliminar');
     }
 
     public function test_non_admin_user_can_access_supermercados_index_in_read_only_mode(): void

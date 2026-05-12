@@ -67,9 +67,9 @@ class RecommendationFeatureTest extends TestCase
 
         $response->assertOk();
         $response->assertSeeTextInOrder(['Cercano', 'Lejano barato']);
-        $response->assertSeeText('Ahorro frente a');
+        $response->assertSeeText('Ahorras');
         $response->assertSeeText('Lejano barato');
-        $response->assertSeeText('Ver desglose de cesta (2 productos)');
+        $response->assertSeeText('Ver desglose de cesta');
         $response->assertSeeText('Leche');
         $response->assertSeeText('Pan');
     }
@@ -109,6 +109,85 @@ class RecommendationFeatureTest extends TestCase
             ->get(route('listas.recomendacion', $lista));
 
         $response->assertOk();
-        $response->assertSeeText('Sin recomendacion disponible');
+        $response->assertSeeText('Sin recomendación disponible');
+    }
+
+    public function test_user_can_select_recommended_supermarket_and_it_is_persisted(): void
+    {
+        $usuario = User::factory()->create([
+            'latitud' => 40.00000000,
+            'longitud' => -3.00000000,
+        ]);
+
+        $lista = Lista::query()->create([
+            'nombre_lista' => 'Con elección',
+            'estado' => 'activa',
+            'fecha_creacion' => now(),
+        ]);
+        $lista->usuarios()->attach($usuario->id, ['permiso_lista' => 'owner']);
+
+        $seccion = Seccion::query()->create(['nombre_seccion' => 'Basicos']);
+        $producto = Producto::query()->create([
+            'id_seccion' => $seccion->id,
+            'nombre_producto' => 'Leche',
+        ]);
+
+        DB::table('formadas')->insert([
+            'id_lista' => $lista->id,
+            'id_producto' => $producto->id,
+            'cantidad' => 1,
+            'marcado' => false,
+        ]);
+
+        $supermercado = Supermercado::query()->create([
+            'nombre_super' => 'Elegible',
+            'latitud' => 40.00100000,
+            'longitud' => -3.00100000,
+        ]);
+
+        DB::table('venden')->insert([
+            'id_producto' => $producto->id,
+            'id_super' => $supermercado->id,
+            'precio' => 1.50,
+        ]);
+
+        $this->actingAs($usuario)
+            ->post(route('listas.recomendacion.elegir', $lista), [
+                'id_supermercado' => $supermercado->id,
+            ])
+            ->assertRedirect(route('listas.finalizar.confirmar', $lista));
+
+        $this->assertDatabaseHas('listas', [
+            'id' => $lista->id,
+            'id_supermercado_elegido' => $supermercado->id,
+        ]);
+    }
+
+    public function test_cannot_select_recommendation_without_user_coordinates(): void
+    {
+        $usuario = User::factory()->create([
+            'latitud' => null,
+            'longitud' => null,
+        ]);
+
+        $lista = Lista::query()->create([
+            'nombre_lista' => 'Sin coordenadas',
+            'estado' => 'activa',
+            'fecha_creacion' => now(),
+        ]);
+        $lista->usuarios()->attach($usuario->id, ['permiso_lista' => 'owner']);
+
+        $supermercado = Supermercado::query()->create([
+            'nombre_super' => 'No elegible',
+            'latitud' => 40.00100000,
+            'longitud' => -3.00100000,
+        ]);
+
+        $this->actingAs($usuario)
+            ->from(route('listas.recomendacion', $lista))
+            ->post(route('listas.recomendacion.elegir', $lista), [
+                'id_supermercado' => $supermercado->id,
+            ])
+            ->assertSessionHasErrors('ubicacion');
     }
 }

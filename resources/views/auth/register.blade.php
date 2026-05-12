@@ -1,5 +1,5 @@
 <x-guest-layout>
-    <section class="w-full max-w-[420px] rounded-[20px] bg-white/95 p-10 shadow-[0_15px_35px_rgba(0,0,0,0.20)] backdrop-blur">
+    <section class="mx-auto w-full max-w-[420px] rounded-[20px] bg-white/95 p-10 shadow-[0_15px_35px_rgba(0,0,0,0.20)] backdrop-blur">
         <div class="mb-5 flex justify-center">
             <div class="flex h-16 w-16 items-center justify-center text-brand-500">
                 <x-ui.icon name="shopping-bag" class="h-12 w-12" />
@@ -50,4 +50,3 @@
         </form>
     </section>
 </x-guest-layout>
-

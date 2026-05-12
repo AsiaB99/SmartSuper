@@ -28,7 +28,7 @@
     }
 
     .ss-section {
-        @apply py-[60px];
+        @apply py-[40px];
     }
 
     .ss-title {

@@ -6,10 +6,12 @@ use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
-    public function test_root_redirects_to_listas_index(): void
+    public function test_root_shows_public_landing_page(): void
     {
         $response = $this->get('/');
 
-        $response->assertRedirect(route('listas.index'));
+        $response->assertOk();
+        $response->assertSeeText('SmartSuper');
+        $response->assertSeeText('Empieza tu lista');
     }
 }

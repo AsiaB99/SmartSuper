@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Despensa;
+use App\Models\Lista;
 use App\Models\Producto;
 use App\Models\Seccion;
 use App\Models\User;
@@ -82,6 +83,92 @@ class DespensaAuthorizationTest extends TestCase
             'id' => $despensa->id,
             'nombre_despensa' => 'Despensa editada',
         ]);
+    }
+
+    public function test_owner_can_add_new_editors_when_updating_a_despensa(): void
+    {
+        $owner = User::factory()->create();
+        $nuevoEditor = User::factory()->create([
+            'nombre_usuario' => 'editor_despensa',
+        ]);
+        $despensa = Despensa::query()->create([
+            'nombre_despensa' => 'Despensa colaborativa',
+            'fecha_creacion' => now(),
+        ]);
+
+        $despensa->usuarios()->attach($owner->id, ['permiso_despensa' => 'owner']);
+
+        $this->actingAs($owner)
+            ->put(route('despensas.update', $despensa), [
+                'nombre_despensa' => 'Despensa colaborativa',
+                'usuarios_editores' => [$nuevoEditor->nombre_usuario],
+            ])
+            ->assertRedirect(route('despensas.index'));
+
+        $this->assertDatabaseHas('tienen', [
+            'id_usuario' => $nuevoEditor->id,
+            'id_despensa' => $despensa->id,
+            'permiso_despensa' => 'editor',
+        ]);
+    }
+
+    public function test_non_admin_owner_can_load_despensa_edit_modal_data(): void
+    {
+        $owner = User::factory()->create([
+            'rol' => 'cliente',
+        ]);
+        $editorActual = User::factory()->create([
+            'nombre_usuario' => 'editor_actual_despensa',
+        ]);
+        $despensa = Despensa::query()->create([
+            'nombre_despensa' => 'Despensa compartida',
+            'fecha_creacion' => now(),
+        ]);
+
+        $despensa->usuarios()->attach($owner->id, ['permiso_despensa' => 'owner']);
+        $despensa->usuarios()->attach($editorActual->id, ['permiso_despensa' => 'editor']);
+
+        $response = $this->actingAs($owner)->getJson(route('despensas.edit', $despensa));
+
+        $response->assertOk();
+        $response->assertJsonPath('puedeAsignarEditores', true);
+        $response->assertJsonPath('despensa.nombre_despensa', 'Despensa compartida');
+        $response->assertJsonPath('usuariosEditoresActuales.0', 'editor_actual_despensa');
+    }
+
+    public function test_direct_access_to_edit_route_redirects_back_to_despensa_index(): void
+    {
+        $owner = User::factory()->create();
+        $despensa = Despensa::query()->create([
+            'nombre_despensa' => 'Despensa modal',
+            'fecha_creacion' => now(),
+        ]);
+
+        $despensa->usuarios()->attach($owner->id, ['permiso_despensa' => 'owner']);
+
+        $this->actingAs($owner)
+            ->get(route('despensas.edit', $despensa))
+            ->assertRedirect(route('despensas.index'));
+    }
+
+    public function test_owner_gets_validation_error_when_despensa_editor_username_does_not_exist(): void
+    {
+        $owner = User::factory()->create();
+        $despensa = Despensa::query()->create([
+            'nombre_despensa' => 'Despensa validacion',
+            'fecha_creacion' => now(),
+        ]);
+
+        $despensa->usuarios()->attach($owner->id, ['permiso_despensa' => 'owner']);
+
+        $this->actingAs($owner)
+            ->from(route('despensas.index'))
+            ->put(route('despensas.update', $despensa), [
+                'nombre_despensa' => 'Despensa validacion',
+                'usuarios_editores' => ['usuario_inexistente'],
+            ])
+            ->assertRedirect(route('despensas.index'))
+            ->assertSessionHasErrors('usuarios_editores');
     }
 
     public function test_admin_can_delete_any_despensa(): void
@@ -237,10 +324,39 @@ class DespensaAuthorizationTest extends TestCase
             ->get(route('despensas.stock', $despensa));
 
         $response->assertOk();
-        $response->assertSeeText('Modo solo lectura');
-        $response->assertDontSeeText('Añadir al stock');
+        $response->assertSeeText('Despensa lectura');
+        $response->assertSeeText('Inventario actual');
+        $response->assertDontSeeText('Añadir stock manualmente');
         $response->assertDontSeeText('Ajustar');
         $response->assertDontSeeText('Quitar');
+    }
+
+    public function test_updating_stock_to_zero_removes_producto_from_despensa(): void
+    {
+        $owner = User::factory()->create();
+        $despensa = Despensa::query()->create([
+            'nombre_despensa' => 'Despensa cero',
+            'fecha_creacion' => now(),
+        ]);
+        $despensa->usuarios()->attach($owner->id, ['permiso_despensa' => 'owner']);
+
+        $seccion = Seccion::query()->create(['nombre_seccion' => 'Basicos']);
+        $producto = Producto::query()->create([
+            'id_seccion' => $seccion->id,
+            'nombre_producto' => 'Harina',
+        ]);
+        $despensa->productos()->attach($producto->id, ['stock' => 2]);
+
+        $this->actingAs($owner)
+            ->patch(route('despensas.stock.actualizar', [$despensa, $producto]), [
+                'stock' => 0,
+            ])
+            ->assertRedirect(route('despensas.stock', $despensa));
+
+        $this->assertDatabaseMissing('almacena', [
+            'id_despensa' => $despensa->id,
+            'id_producto' => $producto->id,
+        ]);
     }
 
     public function test_stock_search_filters_inventory_items(): void
@@ -270,7 +386,109 @@ class DespensaAuthorizationTest extends TestCase
 
         $response->assertOk();
         $response->assertSeeText('Arroz redondo');
-        $response->assertDontSeeText('Pasta integral');
+        $response->assertSeeText('Filtrado por: arroz');
+    }
+
+    public function test_stock_page_shows_add_to_list_button_only_for_non_high_stock_and_editable_active_lists(): void
+    {
+        $owner = User::factory()->create();
+        $editorLista = User::factory()->create();
+        $viewerLista = User::factory()->create();
+        $despensa = Despensa::query()->create([
+            'nombre_despensa' => 'Despensa reposicion',
+            'fecha_creacion' => now(),
+        ]);
+        $despensa->usuarios()->attach($owner->id, ['permiso_despensa' => 'owner']);
+
+        $listaOwner = Lista::query()->create([
+            'nombre_lista' => 'Compra semanal',
+            'estado' => 'activa',
+            'fecha_creacion' => now(),
+        ]);
+        $listaEditor = Lista::query()->create([
+            'nombre_lista' => 'Compra compartida',
+            'estado' => 'activa',
+            'fecha_creacion' => now(),
+        ]);
+        $listaComprada = Lista::query()->create([
+            'nombre_lista' => 'Compra cerrada',
+            'estado' => 'comprada',
+            'fecha_creacion' => now(),
+        ]);
+        $listaViewer = Lista::query()->create([
+            'nombre_lista' => 'Compra solo lectura',
+            'estado' => 'activa',
+            'fecha_creacion' => now(),
+        ]);
+
+        $listaOwner->usuarios()->attach($owner->id, ['permiso_lista' => 'owner']);
+        $listaEditor->usuarios()->attach($owner->id, ['permiso_lista' => 'editor']);
+        $listaEditor->usuarios()->attach($editorLista->id, ['permiso_lista' => 'owner']);
+        $listaComprada->usuarios()->attach($owner->id, ['permiso_lista' => 'owner']);
+        $listaViewer->usuarios()->attach($owner->id, ['permiso_lista' => 'viewer']);
+        $listaViewer->usuarios()->attach($viewerLista->id, ['permiso_lista' => 'owner']);
+
+        $seccion = Seccion::query()->create(['nombre_seccion' => 'Basicos']);
+        $leche = Producto::query()->create([
+            'id_seccion' => $seccion->id,
+            'nombre_producto' => 'Leche',
+        ]);
+        $arroz = Producto::query()->create([
+            'id_seccion' => $seccion->id,
+            'nombre_producto' => 'Arroz',
+        ]);
+
+        $despensa->productos()->attach($leche->id, ['stock' => 1]);
+        $despensa->productos()->attach($arroz->id, ['stock' => 4]);
+
+        $response = $this->actingAs($owner)->get(route('despensas.stock', $despensa));
+
+        $response->assertOk();
+        $response->assertSeeText('Añadir a lista');
+        $response->assertSee('data-stock-add-to-list-open', false);
+        $response->assertSeeText('Compra semanal');
+        $response->assertSeeText('Compra compartida');
+        $response->assertDontSeeText('Compra cerrada');
+        $response->assertDontSeeText('Compra solo lectura');
+        $response->assertDontSee('aria-label="Añadir Arroz a una lista"', false);
+    }
+
+    public function test_adding_producto_to_lista_from_stock_redirects_back_to_stock(): void
+    {
+        $owner = User::factory()->create();
+        $despensa = Despensa::query()->create([
+            'nombre_despensa' => 'Despensa vuelta',
+            'fecha_creacion' => now(),
+        ]);
+        $lista = Lista::query()->create([
+            'nombre_lista' => 'Lista vuelta',
+            'estado' => 'activa',
+            'fecha_creacion' => now(),
+        ]);
+
+        $despensa->usuarios()->attach($owner->id, ['permiso_despensa' => 'owner']);
+        $lista->usuarios()->attach($owner->id, ['permiso_lista' => 'owner']);
+
+        $seccion = Seccion::query()->create(['nombre_seccion' => 'Basicos']);
+        $producto = Producto::query()->create([
+            'id_seccion' => $seccion->id,
+            'nombre_producto' => 'Garbanzos',
+        ]);
+
+        $this->actingAs($owner)
+            ->post(route('listas.productos.agregar', $lista), [
+                'id_producto' => $producto->id,
+                'cantidad' => 2,
+                'redirect_despensa_id' => $despensa->id,
+            ])
+            ->assertRedirect(route('despensas.stock', $despensa));
+
+        $this->assertDatabaseHas('formadas', [
+            'id_lista' => $lista->id,
+            'id_producto' => $producto->id,
+            'cantidad' => 2,
+            'marcado' => false,
+        ]);
     }
 
     public function test_viewer_does_not_see_despensa_management_actions_in_index(): void

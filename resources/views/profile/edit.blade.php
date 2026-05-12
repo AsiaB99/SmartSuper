@@ -6,7 +6,7 @@
     @endphp
 
     <div class="space-y-8">
-            <section class="relative mb-8 min-h-[210px] overflow-hidden rounded-[20px] p-8 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+            <section class="relative mb-8 min-h-[150px] overflow-hidden rounded-[20px] p-8 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
                 <img
                     src="{{ asset('img/encabezados/encabezado_lista.png') }}"
                     alt=""
