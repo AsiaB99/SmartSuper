@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Producto extends Model
 {
@@ -47,5 +48,10 @@ class Producto extends Model
         return $this->belongsToMany(Supermercado::class, 'venden', 'id_producto', 'id_super')
             ->using(Venden::class)
             ->withPivot(['precio', 'precio_unidad', 'unidad_ref', 'fecha_actualizacion']);
+    }
+
+    public function productosExternos(): HasMany
+    {
+        return $this->hasMany(ProductoExterno::class);
     }
 }

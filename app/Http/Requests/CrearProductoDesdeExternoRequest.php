@@ -4,17 +4,17 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateProductoRequest extends FormRequest
+class CrearProductoDesdeExternoRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->isAdmin();
+        return $this->user()?->isAdmin() ?? false;
     }
 
     public function rules(): array
     {
         return [
-            'nombre_producto' => 'required|string|max:255|unique:productos,nombre_producto,' . $this->producto->id,
+            'nombre_producto' => 'required|string|max:255|unique:productos',
             'id_seccion' => 'required|exists:secciones,id',
             'marca' => 'nullable|string|max:50',
             'formato' => 'nullable|string|max:50',

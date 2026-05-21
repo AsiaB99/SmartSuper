@@ -10,6 +10,11 @@ use JsonException;
 
 class ImportarProductosExternosService
 {
+    public function __construct(
+        private readonly MapeoProductosExternosService $mapeoService,
+    ) {
+    }
+
     /**
      * @return array{insertados:int, actualizados:int, total:int}
      */
@@ -63,12 +68,14 @@ class ImportarProductosExternosService
             $registro = ProductoExterno::query()->where($criterios)->first();
 
             if ($registro === null) {
-                ProductoExterno::query()->create($criterios + $valores);
+                $registro = ProductoExterno::query()->create($criterios + $valores);
+                $this->mapeoService->generarSugerencias($registro);
                 $insertados++;
                 continue;
             }
 
             $registro->fill($valores)->save();
+            $this->mapeoService->generarSugerencias($registro);
             $actualizados++;
         }
 
