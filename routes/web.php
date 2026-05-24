@@ -41,6 +41,8 @@ Route::middleware('auth')->group(function () {
         ->name('despensas.stock');
     Route::get('/despensas/{despensa}/stock/sugerencias', [DespensaController::class, 'sugerenciasStock'])
         ->name('despensas.stock.sugerencias');
+    Route::get('/despensas/{despensa}/stock/catalogo-sugerencias', [DespensaController::class, 'sugerenciasCatalogoProductos'])
+        ->name('despensas.stock.catalogo-sugerencias');
     Route::post('/despensas/{despensa}/stock', [DespensaController::class, 'agregarProducto'])
         ->name('despensas.stock.agregar');
     Route::patch('/despensas/{despensa}/stock/{producto}', [DespensaController::class, 'actualizarStock'])

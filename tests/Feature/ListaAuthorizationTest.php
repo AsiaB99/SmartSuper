@@ -653,6 +653,41 @@ class ListaAuthorizationTest extends TestCase
         $this->assertStringContainsString('Leche entera', $response->json('listaHtml'));
     }
 
+    public function test_productos_page_can_update_product_quantity_via_ajax_without_reloading(): void
+    {
+        $owner = User::factory()->create();
+        $lista = Lista::query()->create([
+            'nombre_lista' => 'Lista ajax patch',
+            'estado' => 'activa',
+            'fecha_creacion' => now(),
+        ]);
+        $lista->usuarios()->attach($owner->id, ['permiso_lista' => 'owner']);
+
+        $seccion = Seccion::query()->create(['nombre_seccion' => 'Basicos']);
+        $producto = Producto::query()->create([
+            'id_seccion' => $seccion->id,
+            'nombre_producto' => 'Cafe molido',
+        ]);
+
+        $lista->productos()->attach($producto->id, ['cantidad' => 2, 'marcado' => false]);
+
+        $response = $this->actingAs($owner)
+            ->patchJson(route('listas.productos.actualizar', [$lista, $producto]), [
+                'cantidad' => 5,
+            ]);
+
+        $response->assertOk()
+            ->assertJsonStructure(['status', 'listaHtml', 'resumenHtml']);
+
+        $this->assertDatabaseHas('formadas', [
+            'id_lista' => $lista->id,
+            'id_producto' => $producto->id,
+            'cantidad' => 5,
+        ]);
+
+        $this->assertStringContainsString('Cafe molido', $response->json('listaHtml'));
+    }
+
     public function test_productos_page_shows_canonical_product_fallbacks_and_placeholder_image(): void
     {
         $owner = User::factory()->create();

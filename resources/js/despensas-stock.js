@@ -11,6 +11,13 @@ export const initDespensaStock = () => {
     const suggestionsBox = document.getElementById('sugerencias-stock-despensa');
     const stockWrapper = document.querySelector('[data-stock-wrapper]');
     const filterChip = document.getElementById('stock-filter-chip');
+    const manualSearchInput = document.getElementById('busqueda-producto-manual');
+    const manualProductInput = document.getElementById('id_producto_manual');
+    const manualForm = document.querySelector('[data-stock-manual-form]');
+    const manualFeedback = document.querySelector('[data-stock-manual-feedback]');
+    const totalProductosEl = document.querySelector('[data-stock-total-productos]');
+    const productosBajosEl = document.querySelector('[data-stock-productos-bajos]');
+    const unidadesTotalesEl = document.querySelector('[data-stock-unidades-totales]');
 
     if (!form || !input || !suggestionsBox || !stockWrapper) {
         return;
@@ -19,6 +26,8 @@ export const initDespensaStock = () => {
     let debounceTimer;
     let activeController;
     let suggestionController;
+    let manualSuggestionController;
+    let manualDebounceTimer;
     let currentSuggestions = [];
     let activeIndex = -1;
     let lowThreshold = Number(form.dataset.lowThreshold ?? '1');
@@ -28,7 +37,6 @@ export const initDespensaStock = () => {
     const writeRecommended = (productId, value) => window.localStorage.setItem(`${recommendedPrefix}${productId}`, String(value));
     const readLastList = () => window.localStorage.getItem(lastListKey) ?? '';
     const writeLastList = (value) => window.localStorage.setItem(lastListKey, value);
-
     const buildUrl = (query = input.value.trim()) => {
         const endpoint = new URL(form.dataset.stockUrl, window.location.origin);
         endpoint.searchParams.set('low_stock_threshold', String(lowThreshold));
@@ -121,6 +129,15 @@ export const initDespensaStock = () => {
         applyRecommendedAlerts();
     };
 
+    const showManualFeedback = (message) => {
+        if (!(manualFeedback instanceof HTMLElement) || !message) {
+            return;
+        }
+
+        manualFeedback.textContent = message;
+        manualFeedback.classList.remove('hidden');
+    };
+
     const applyRecommendedAlerts = () => {
         const template = form.dataset.recommendedAlertTemplate ?? 'Stock bajo recomendado (mín: __MIN__)';
         stockWrapper.querySelectorAll('[data-product-row]').forEach((row) => {
@@ -161,6 +178,28 @@ export const initDespensaStock = () => {
 
         const response = await fetch(endpoint.toString(), {
             signal: suggestionController.signal,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            return [];
+        }
+
+        return response.json();
+    };
+
+    const fetchManualSuggestions = async (query) => {
+        manualSuggestionController?.abort();
+        manualSuggestionController = new AbortController();
+
+        const endpoint = new URL(form.dataset.catalogoSugerenciasUrl, window.location.origin);
+        endpoint.searchParams.set('q', query);
+
+        const response = await fetch(endpoint.toString(), {
+            signal: manualSuggestionController.signal,
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',
@@ -257,6 +296,93 @@ export const initDespensaStock = () => {
     document.addEventListener('click', (event) => {
         if (!form.contains(event.target)) {
             closeSuggestions();
+        }
+    });
+
+    manualSearchInput?.addEventListener('input', () => {
+        if (!(manualSearchInput instanceof HTMLInputElement) || !(manualProductInput instanceof HTMLSelectElement)) {
+            return;
+        }
+
+        const query = manualSearchInput.value.trim();
+
+        if (query.length < 2) {
+            clearTimeout(manualDebounceTimer);
+            manualProductInput.innerHTML = `<option value="">${escapeHtml(manualProductInput.dataset.placeholder ?? 'Selecciona producto')}</option>`;
+            return;
+        }
+
+        clearTimeout(manualDebounceTimer);
+        manualDebounceTimer = window.setTimeout(async () => {
+            const suggestions = await fetchManualSuggestions(query).catch(() => []);
+
+            if (manualSearchInput.value.trim() !== query) {
+                return;
+            }
+
+            const options = Array.isArray(suggestions) ? suggestions : [];
+            const placeholder = manualProductInput.dataset.placeholder ?? 'Selecciona producto';
+
+            manualProductInput.innerHTML = `<option value="">${escapeHtml(placeholder)}</option>`;
+
+            options.forEach((suggestion) => {
+                const option = document.createElement('option');
+                option.value = String(suggestion.id ?? '');
+                option.textContent = suggestion.descripcion?.trim()
+                    ? `${suggestion.nombre ?? ''} · ${suggestion.descripcion}`
+                    : `${suggestion.nombre ?? ''}`;
+                manualProductInput.append(option);
+            });
+
+            if (options.length > 0) {
+                manualProductInput.selectedIndex = 1;
+            }
+        }, 180);
+    });
+
+    manualForm?.addEventListener('submit', async (event) => {
+        if (!(manualForm instanceof HTMLFormElement)) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const submitButton = manualForm.querySelector('button[type="submit"]');
+        submitButton?.setAttribute('disabled', 'disabled');
+
+        const response = await fetch(manualForm.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+            body: new FormData(manualForm),
+        }).catch(() => null);
+
+        submitButton?.removeAttribute('disabled');
+
+        if (!response || !response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+
+        if (typeof data.productos === 'string') {
+            stockWrapper.innerHTML = data.productos;
+            applyRecommendedAlerts();
+        }
+
+        if (data.stats && totalProductosEl && productosBajosEl && unidadesTotalesEl) {
+            totalProductosEl.textContent = String(data.stats.totalProductos ?? totalProductosEl.textContent ?? '');
+            productosBajosEl.textContent = String(data.stats.productosBajos ?? productosBajosEl.textContent ?? '');
+            unidadesTotalesEl.textContent = String(data.stats.unidadesTotales ?? unidadesTotalesEl.textContent ?? '');
+        }
+
+        showManualFeedback(data.status ?? '');
+        manualForm.reset();
+
+        if (manualProductInput instanceof HTMLSelectElement) {
+            manualProductInput.innerHTML = `<option value="">${escapeHtml(manualProductInput.dataset.placeholder ?? 'Selecciona producto')}</option>`;
         }
     });
 
@@ -365,5 +491,8 @@ export const initDespensaStock = () => {
         addToListForm.setAttribute('action', actionTemplate.replace('__LISTA__', listaId));
     });
 
+    if (manualProductInput instanceof HTMLSelectElement) {
+        manualProductInput.dataset.placeholder = manualProductInput.dataset.placeholder || manualProductInput.options[0]?.textContent || 'Selecciona producto';
+    }
     applyRecommendedAlerts();
 };

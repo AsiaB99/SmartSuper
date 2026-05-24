@@ -16,7 +16,7 @@
 
         @if ($puedeEditar)
             <div class="flex flex-wrap items-center gap-3">
-                <form action="{{ route('listas.productos.actualizar', [$lista, $producto]) }}" method="POST">
+                <form action="{{ route('listas.productos.actualizar', [$lista, $producto]) }}" method="POST" data-lista-producto-update>
                     @csrf
                     @method('PATCH')
                     <input
@@ -26,7 +26,7 @@
                         min="1"
                         step="1"
                         value="{{ (int) $producto->pivot->cantidad }}"
-                        onchange="this.form.submit()"
+                        data-lista-cantidad-input
                         required
                     >
                 </form>

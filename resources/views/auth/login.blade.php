@@ -25,9 +25,20 @@
                     <x-input-error :messages="$errors->get('email')" class="mt-2 text-sm text-rose-600" />
                 </div>
 
-                <div>
+                <div x-data="{ show: false }">
                     <x-input-label for="password" :value="__('auth.password')" />
-                    <x-text-input id="password" class="ss-input mt-2 block w-full" type="password" name="password" required autocomplete="current-password" />
+                    <div class="relative mt-2">
+                        <x-text-input id="password" class="ss-input block w-full pr-14" x-bind:type="show ? 'text' : 'password'" name="password" required autocomplete="current-password" />
+                        <button
+                            type="button"
+                            class="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-ink-500 transition hover:text-ink-800"
+                            x-on:click="show = !show"
+                            x-bind:aria-label="show ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                        >
+                            <x-ui.icon name="eye" class="h-5 w-5" x-show="!show" />
+                            <x-ui.icon name="eye-slash" class="h-5 w-5" x-show="show" x-cloak />
+                        </button>
+                    </div>
                     <x-input-error :messages="$errors->get('password')" class="mt-2 text-sm text-rose-600" />
                 </div>
 

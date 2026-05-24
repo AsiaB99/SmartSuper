@@ -21,6 +21,7 @@ export const initListaProductosSearch = () => {
     let debounceTimer;
     let activeController;
     let suggestionController;
+    let updateController;
     let currentSuggestions = [];
     let activeIndex = -1;
 
@@ -290,6 +291,61 @@ export const initListaProductosSearch = () => {
 
         showFeedback(data.status ?? '');
         closeSuggestions();
+    });
+
+    listaActualWrapper?.addEventListener('change', (event) => {
+        const inputCantidad = event.target.closest('[data-lista-cantidad-input]');
+
+        if (!(inputCantidad instanceof HTMLInputElement)) {
+            return;
+        }
+
+        inputCantidad.form?.requestSubmit();
+    });
+
+    listaActualWrapper?.addEventListener('submit', async (event) => {
+        const submitForm = event.target.closest('form[data-lista-producto-update]');
+
+        if (!submitForm) {
+            return;
+        }
+
+        event.preventDefault();
+        updateController?.abort();
+        updateController = new AbortController();
+
+        const inputCantidad = submitForm.querySelector('[data-lista-cantidad-input]');
+        const payload = new FormData(submitForm);
+        inputCantidad?.setAttribute('disabled', 'disabled');
+
+        const response = await fetch(submitForm.action, {
+            method: 'POST',
+            signal: updateController.signal,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+            body: payload,
+        }).catch(() => null);
+
+        inputCantidad?.removeAttribute('disabled');
+
+        if (!response || !response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+
+        if (typeof data.listaHtml === 'string') {
+            listaActualWrapper.innerHTML = data.listaHtml;
+        }
+
+        if (resumenWrapper && typeof data.resumenHtml === 'string') {
+            resumenWrapper.innerHTML = data.resumenHtml;
+            initUserLocationCapture();
+        }
+
+        showFeedback(data.status ?? '');
     });
 
     document.addEventListener('click', (event) => {

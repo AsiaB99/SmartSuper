@@ -316,7 +316,7 @@ class ListaController extends Controller
             ->with('status', $mensaje);
     }
 
-    public function actualizarProducto(UpdateProductoListaRequest $request, Lista $lista, Producto $producto): RedirectResponse
+    public function actualizarProducto(UpdateProductoListaRequest $request, Lista $lista, Producto $producto): RedirectResponse|JsonResponse
     {
         $this->authorize('update', $lista);
 
@@ -334,6 +334,24 @@ class ListaController extends Controller
             'cantidad' => $cantidad,
             'marcado' => $marcado,
         ]);
+
+        if ($request->expectsJson()) {
+            $lista->load([
+                'productos' => fn ($query) => $query->orderBy('nombre_producto'),
+            ]);
+
+            return response()->json([
+                'status' => __('flash.listas.product_updated'),
+                'listaHtml' => view('listas.partials.lista-productos-actual', [
+                    'lista' => $lista,
+                    'puedeEditar' => true,
+                ])->render(),
+                'resumenHtml' => view('listas.partials.resumen-productos', [
+                    'lista' => $lista,
+                    'puedeEditar' => true,
+                ])->render(),
+            ]);
+        }
 
         return redirect()
             ->route('listas.productos', $lista)

@@ -19,17 +19,17 @@
                     <div class="mt-6 grid gap-4 md:grid-cols-3">
                         <article class="rounded-[18px] border border-white/70 bg-white/85 px-5 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.06)] backdrop-blur">
                             <p class="text-xs font-semibold uppercase tracking-[0.16em] text-ink-500">{{ __('despensas.stock.summary.products') }}</p>
-                            <p class="mt-3 text-2xl font-semibold text-ink-900 sm:text-3xl">{{ $totalProductos }}</p>
+                            <p class="mt-3 text-2xl font-semibold text-ink-900 sm:text-3xl" data-stock-total-productos>{{ $totalProductos }}</p>
                             <p class="mt-1 text-sm text-ink-600">{{ __('despensas.stock.summary.products_hint') }}</p>
                         </article>
                         <article class="rounded-[18px] border border-white/70 bg-white/85 px-5 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.06)] backdrop-blur">
                             <p class="text-xs font-semibold uppercase tracking-[0.16em] text-ink-500">{{ __('despensas.stock.summary.units') }}</p>
-                            <p class="mt-3 text-2xl font-semibold text-ink-900 sm:text-3xl">{{ $unidadesTotales }}</p>
+                            <p class="mt-3 text-2xl font-semibold text-ink-900 sm:text-3xl" data-stock-unidades-totales>{{ $unidadesTotales }}</p>
                             <p class="mt-1 text-sm text-ink-600">{{ __('despensas.stock.summary.units_hint') }}</p>
                         </article>
                         <article class="rounded-[18px] border px-5 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.06)] {{ $productosBajos > 0 ? 'border-rose-200 bg-rose-50/90' : 'border-white/70 bg-white/85' }}">
                             <p class="text-xs font-semibold uppercase tracking-[0.16em] {{ $productosBajos > 0 ? 'text-rose-700' : 'text-ink-500' }}">{{ __('despensas.stock.summary.low') }}</p>
-                            <p class="mt-3 text-2xl font-semibold {{ $productosBajos > 0 ? 'text-rose-700' : 'text-ink-900' }} sm:text-3xl">{{ $productosBajos }}</p>
+                            <p class="mt-3 text-2xl font-semibold {{ $productosBajos > 0 ? 'text-rose-700' : 'text-ink-900' }} sm:text-3xl" data-stock-productos-bajos>{{ $productosBajos }}</p>
                             <p class="mt-1 text-sm {{ $productosBajos > 0 ? 'text-rose-700' : 'text-ink-600' }}">{{ __('despensas.stock.summary.low_hint') }}</p>
                         </article>
                     </div>
@@ -62,6 +62,7 @@
                             method="GET"
                             data-stock-url="{{ route('despensas.stock', $despensa) }}"
                             data-sugerencias-url="{{ route('despensas.stock.sugerencias', $despensa) }}"
+                            data-catalogo-sugerencias-url="{{ route('despensas.stock.catalogo-sugerencias', $despensa) }}"
                             data-low-threshold="{{ $lowStockThreshold }}"
                             data-filter-label="{{ __('despensas.stock.filtered_results_prefix') }}"
                             data-delete-template="{{ __('despensas.stock.delete_modal.text', ['name' => '__NAME__']) }}"
@@ -105,7 +106,7 @@
 
                 @if ($puedeEditar)
                     <aside class="min-w-0">
-                        <details class="overflow-hidden rounded-[20px] bg-white shadow-[0_10px_28px_rgba(15,23,42,0.06)]" @if ($errors->has('id_producto') || $errors->has('stock')) open @endif>
+                        <details class="rounded-[20px] bg-white shadow-[0_10px_28px_rgba(15,23,42,0.06)]" @if ($errors->has('id_producto') || $errors->has('stock')) open @endif>
                             <summary class="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 marker:hidden">
                                 <div>
                                     <p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">{{ __('despensas.stock.manual.kicker') }}</p>
@@ -115,24 +116,33 @@
                             </summary>
 
                             <div class="border-t border-[var(--color-borde-suave)] px-6 py-5">
-                                <form class="grid gap-5" action="{{ route('despensas.stock.agregar', $despensa) }}" method="POST">
+                                <form class="grid gap-5" action="{{ route('despensas.stock.agregar', $despensa) }}" method="POST" data-stock-manual-form>
                                     @csrf
+                                    <input type="hidden" name="low_stock_threshold" value="{{ $lowStockThreshold }}">
                                     <label class="grid gap-2">
                                         <span class="text-sm font-semibold text-ink-700">{{ __('common.product') }}</span>
-                                        <input
-                                            class="ss-input w-full"
-                                            type="search"
-                                            placeholder="{{ __('despensas.stock.filter_product_placeholder') }}"
-                                            oninput="const query=this.value.toLowerCase();const select=document.getElementById('id_producto_manual');Array.from(select.options).forEach((option,index)=>{if(index===0){option.hidden=false;return;}option.hidden=!option.text.toLowerCase().includes(query);});if(select.selectedOptions[0]?.hidden){select.value='';}"
-                                        >
-                                        <select class="ss-input w-full" id="id_producto_manual" name="id_producto" required>
+                                        <div class="relative">
+                                            <input
+                                                id="busqueda-producto-manual"
+                                                class="ss-input min-h-[56px] w-full rounded-[16px] pr-12"
+                                                type="search"
+                                                placeholder="{{ __('despensas.stock.filter_product_placeholder') }}"
+                                                autocomplete="off"
+                                                value=""
+                                            >
+                                            <div class="pointer-events-none absolute inset-y-0 right-0 flex w-12 items-center justify-center text-ink-400">
+                                                <x-ui.icon name="magnifying-glass" class="h-5 w-5" />
+                                            </div>
+                                        </div>
+                                        <select class="ss-input min-h-[56px] w-full rounded-[16px]" id="id_producto_manual" name="id_producto" required data-placeholder="{{ __('despensas.stock.select_product') }}">
                                             <option value="">{{ __('despensas.stock.select_product') }}</option>
-                                            @foreach ($productos as $producto)
-                                                <option value="{{ $producto->id }}" @selected((int) old('id_producto') === $producto->id)>
-                                                    {{ $producto->nombre_producto }}
+                                            @if ($productoManualSeleccionado)
+                                                <option value="{{ $productoManualSeleccionado->id }}" selected>
+                                                    {{ $productoManualSeleccionado->nombre_producto }}{{ collect([$productoManualSeleccionado->marca, $productoManualSeleccionado->formato])->filter()->isNotEmpty() ? ' · ' . collect([$productoManualSeleccionado->marca, $productoManualSeleccionado->formato])->filter()->join(' · ') : '' }}
                                                 </option>
-                                            @endforeach
+                                            @endif
                                         </select>
+                                        <p class="text-xs leading-5 text-ink-500">Escribe al menos 2 letras para cargar coincidencias en el selector.</p>
                                         @error('id_producto')<small class="text-sm font-medium text-rose-600">{{ $message }}</small>@enderror
                                     </label>
                                     <label class="grid gap-2">
@@ -140,6 +150,7 @@
                                         <input class="ss-input w-full text-right" type="number" name="stock" min="1" step="1" value="{{ old('stock', 1) }}" required>
                                         @error('stock')<small class="text-sm font-medium text-rose-600">{{ $message }}</small>@enderror
                                     </label>
+                                    <div class="hidden rounded-[10px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800" data-stock-manual-feedback></div>
                                     <button class="ss-btn-green w-full justify-center" type="submit">{{ __('common.add') }}</button>
                                 </form>
                             </div>

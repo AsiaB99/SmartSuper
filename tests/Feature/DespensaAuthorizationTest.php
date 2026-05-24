@@ -241,6 +241,44 @@ class DespensaAuthorizationTest extends TestCase
         ]);
     }
 
+    public function test_editor_can_add_stock_in_despensa_via_ajax(): void
+    {
+        $owner = User::factory()->create();
+        $editor = User::factory()->create();
+        $despensa = Despensa::query()->create([
+            'nombre_despensa' => 'Despensa ajax',
+            'fecha_creacion' => now(),
+        ]);
+        $despensa->usuarios()->attach($owner->id, ['permiso_despensa' => 'owner']);
+        $despensa->usuarios()->attach($editor->id, ['permiso_despensa' => 'editor']);
+
+        $seccion = Seccion::query()->create(['nombre_seccion' => 'Basicos']);
+        $producto = Producto::query()->create([
+            'id_seccion' => $seccion->id,
+            'nombre_producto' => 'Avena',
+        ]);
+
+        $response = $this->actingAs($editor)
+            ->postJson(route('despensas.stock.agregar', $despensa), [
+                'id_producto' => $producto->id,
+                'stock' => 3,
+                'low_stock_threshold' => 1,
+            ]);
+
+        $response->assertOk()
+            ->assertJsonStructure(['status', 'productos', 'stats' => ['totalProductos', 'productosBajos', 'unidadesTotales']]);
+
+        $this->assertDatabaseHas('almacena', [
+            'id_despensa' => $despensa->id,
+            'id_producto' => $producto->id,
+            'stock' => 3,
+        ]);
+
+        $this->assertStringContainsString('Avena', $response->json('productos'));
+        $response->assertJsonPath('stats.totalProductos', 1);
+        $response->assertJsonPath('stats.unidadesTotales', 3);
+    }
+
     public function test_viewer_cannot_add_or_update_or_remove_stock_in_despensa(): void
     {
         $owner = User::factory()->create();
@@ -451,6 +489,41 @@ class DespensaAuthorizationTest extends TestCase
         $response->assertDontSeeText('Compra cerrada');
         $response->assertDontSeeText('Compra solo lectura');
         $response->assertDontSee('aria-label="Añadir Arroz a una lista"', false);
+    }
+
+    public function test_stock_page_does_not_preload_full_catalog_and_uses_remote_product_suggestions(): void
+    {
+        $owner = User::factory()->create();
+        $despensa = Despensa::query()->create([
+            'nombre_despensa' => 'Despensa remota',
+            'fecha_creacion' => now(),
+        ]);
+        $despensa->usuarios()->attach($owner->id, ['permiso_despensa' => 'owner']);
+
+        $seccion = Seccion::query()->create(['nombre_seccion' => 'Basicos']);
+        $leche = Producto::query()->create([
+            'id_seccion' => $seccion->id,
+            'nombre_producto' => 'Leche fresca',
+        ]);
+        Producto::query()->create([
+            'id_seccion' => $seccion->id,
+            'nombre_producto' => 'Arroz bomba',
+        ]);
+
+        $response = $this->actingAs($owner)->get(route('despensas.stock', $despensa));
+
+        $response->assertOk();
+        $response->assertDontSeeText('Leche fresca');
+        $response->assertDontSeeText('Arroz bomba');
+
+        $this->actingAs($owner)
+            ->getJson(route('despensas.stock.catalogo-sugerencias', ['despensa' => $despensa, 'q' => 'Leche']))
+            ->assertOk()
+            ->assertExactJson([[
+                'id' => $leche->id,
+                'nombre' => 'Leche fresca',
+                'descripcion' => '',
+            ]]);
     }
 
     public function test_adding_producto_to_lista_from_stock_redirects_back_to_stock(): void

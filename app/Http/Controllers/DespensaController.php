@@ -214,14 +214,17 @@ class DespensaController extends Controller
                 'query' => $busqueda,
             ]);
         }
+        $productoManualSeleccionado = null;
+        $productoManualSeleccionadoId = (int) session()->getOldInput('id_producto', 0);
 
-        $productos = Producto::query()
-            ->orderBy('nombre_producto')
-            ->get();
+        if ($productoManualSeleccionadoId > 0) {
+            $productoManualSeleccionado = Producto::query()
+                ->select('id', 'nombre_producto', 'marca', 'formato')
+                ->find($productoManualSeleccionadoId);
+        }
 
         return view('despensas.stock', compact(
             'despensa',
-            'productos',
             'busqueda',
             'puedeEditar',
             'totalProductos',
@@ -229,6 +232,7 @@ class DespensaController extends Controller
             'unidadesTotales',
             'lowStockThreshold',
             'listasEditables',
+            'productoManualSeleccionado',
         ));
     }
 
@@ -244,13 +248,27 @@ class DespensaController extends Controller
         return response()->json($this->obtenerSugerenciasProductoEnDespensa($despensa, $busqueda));
     }
 
-    public function agregarProducto(StoreStockDespensaRequest $request, Despensa $despensa): RedirectResponse
+    public function sugerenciasCatalogoProductos(Request $request, Despensa $despensa): JsonResponse
+    {
+        $this->authorize('update', $despensa);
+
+        $busqueda = trim((string) $request->query('q', ''));
+
+        if ($busqueda === '') {
+            return response()->json([]);
+        }
+
+        return response()->json($this->obtenerSugerenciasCatalogoProductos($busqueda));
+    }
+
+    public function agregarProducto(StoreStockDespensaRequest $request, Despensa $despensa): RedirectResponse|JsonResponse
     {
         $this->authorize('update', $despensa);
 
         $data = $request->validated();
         $productoId = (int) $data['id_producto'];
         $stock = (int) $data['stock'];
+        $lowStockThreshold = max(1, min(99, (int) $request->input('low_stock_threshold', 1)));
 
         $stockActual = (int) ($despensa->productos()
             ->where('productos.id', $productoId)
@@ -259,6 +277,29 @@ class DespensaController extends Controller
         $despensa->productos()->syncWithoutDetaching([
             $productoId => ['stock' => $stockActual + $stock],
         ]);
+
+        if ($request->expectsJson()) {
+            $despensa->load([
+                'productos' => fn ($query) => $query->orderBy('nombre_producto'),
+            ]);
+
+            $stockBaseQuery = $despensa->productos();
+
+            return response()->json([
+                'status' => __('flash.despensas.product_added'),
+                'productos' => view('despensas.partials.stock-productos', [
+                    'despensa' => $despensa,
+                    'puedeEditar' => true,
+                    'lowStockThreshold' => $lowStockThreshold,
+                    'tieneListasEditables' => $this->obtenerListasEditables($request->user())->isNotEmpty(),
+                ])->render(),
+                'stats' => [
+                    'totalProductos' => (int) (clone $stockBaseQuery)->count(),
+                    'productosBajos' => (int) (clone $stockBaseQuery)->wherePivot('stock', '<=', $lowStockThreshold)->count(),
+                    'unidadesTotales' => (int) (clone $stockBaseQuery)->sum('almacena.stock'),
+                ],
+            ]);
+        }
 
         return redirect()
             ->route('despensas.stock', $despensa)
@@ -360,6 +401,36 @@ class DespensaController extends Controller
             ->all();
     }
 
+    /**
+     * @return array<int, array{id: int, nombre: string, descripcion: string}>
+     */
+    private function obtenerSugerenciasCatalogoProductos(string $busqueda): array
+    {
+        return Producto::query()
+            ->select('id', 'nombre_producto', 'marca', 'formato')
+            ->where(function (Builder $query) use ($busqueda): void {
+                $query
+                    ->where('nombre_producto', 'like', '%'.$busqueda.'%')
+                    ->orWhere('marca', 'like', '%'.$busqueda.'%')
+                    ->orWhere('formato', 'like', '%'.$busqueda.'%');
+            })
+            ->orderBy('nombre_producto')
+            ->limit(8)
+            ->get()
+            ->map(static function (Producto $producto): array {
+                $descripcion = collect([$producto->marca, $producto->formato])
+                    ->filter(static fn ($valor): bool => filled($valor))
+                    ->implode(' · ');
+
+                return [
+                    'id' => (int) $producto->id,
+                    'nombre' => (string) $producto->nombre_producto,
+                    'descripcion' => $descripcion,
+                ];
+            })
+            ->all();
+    }
+
     private function obtenerListasEditables(User $usuario): \Illuminate\Support\Collection
     {
         return \App\Models\Lista::query()
@@ -374,4 +445,3 @@ class DespensaController extends Controller
             ->get(['id', 'nombre_lista']);
     }
 }
-

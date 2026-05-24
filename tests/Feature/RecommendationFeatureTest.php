@@ -7,6 +7,7 @@ use App\Models\Producto;
 use App\Models\Seccion;
 use App\Models\Supermercado;
 use App\Models\User;
+use App\Services\RecommendationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -263,5 +264,52 @@ class RecommendationFeatureTest extends TestCase
 
         $this->assertSame($superLeche->id, $lista->id_supermercado_elegido);
         $this->assertCount(2, $lista->supermercados_recomendados_snapshot ?? []);
+    }
+
+    public function test_recommendation_uses_updated_quantity_after_ajax_list_update(): void
+    {
+        $usuario = User::factory()->create([
+            'latitud' => 40.00000000,
+            'longitud' => -3.00000000,
+        ]);
+
+        $lista = Lista::query()->create([
+            'nombre_lista' => 'Cantidad actualizada',
+            'estado' => 'activa',
+            'fecha_creacion' => now(),
+        ]);
+        $lista->usuarios()->attach($usuario->id, ['permiso_lista' => 'owner']);
+
+        $seccion = Seccion::query()->create(['nombre_seccion' => 'Basicos']);
+        $producto = Producto::query()->create([
+            'id_seccion' => $seccion->id,
+            'nombre_producto' => 'Leche',
+        ]);
+
+        $lista->productos()->attach($producto->id, ['cantidad' => 1, 'marcado' => false]);
+
+        $supermercado = Supermercado::query()->create([
+            'nombre_super' => 'Super precio',
+            'latitud' => 40.00100000,
+            'longitud' => -3.00100000,
+        ]);
+
+        DB::table('venden')->insert([
+            'id_producto' => $producto->id,
+            'id_super' => $supermercado->id,
+            'precio' => 1.50,
+        ]);
+
+        $this->actingAs($usuario)
+            ->patchJson(route('listas.productos.actualizar', [$lista, $producto]), [
+                'cantidad' => 4,
+            ])
+            ->assertOk();
+
+        $ranking = app(RecommendationService::class)->recomendarSupermercados($lista->fresh(), $usuario, 0.0);
+
+        $this->assertCount(1, $ranking);
+        $this->assertSame(4, $ranking[0]['detalle_cesta'][0]['cantidad']);
+        $this->assertSame(6.0, $ranking[0]['total_cesta']);
     }
 }

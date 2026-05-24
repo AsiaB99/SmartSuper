@@ -7,6 +7,7 @@
         'bars-3' => 'menu',
         'clipboard-document-list' => 'clipboard-list',
         'eye' => 'eye',
+        'eye-slash' => 'eye-off',
         'list-bullet' => 'list',
         'magnifying-glass' => 'search',
         'map-pin' => 'map-pin',
