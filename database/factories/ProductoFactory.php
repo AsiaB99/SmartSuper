@@ -15,6 +15,7 @@ class ProductoFactory extends Factory
         return [
             'nombre_producto' => fake()->unique()->words(3, asText: true),
             'id_seccion' => Seccion::inRandomOrder()->first()?->id ?? Seccion::factory(),
+            'origen_catalogo' => Producto::ORIGEN_MANUAL,
         ];
     }
 }

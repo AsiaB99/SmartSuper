@@ -18,9 +18,18 @@
                 <section class="rounded-[15px] bg-white shadow-[0_4px_10px_rgba(0,0,0,0.03)]">
                     @forelse ($lista->productos as $producto)
                         <article class="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-borde-suave)] p-4 last:border-b-0 sm:p-5">
-                            <div class="min-w-0">
-                                <h2 class="truncate text-lg font-semibold text-ink-900">{{ $producto->nombre_producto }}</h2>
-                                <p class="text-sm text-ink-500">{{ collect([$producto->marca, $producto->formato])->filter()->join(' · ') ?: __('listas.products.product_fallback') }}</p>
+                            <div class="flex min-w-0 items-center gap-3">
+                                <div class="h-14 w-14 shrink-0 overflow-hidden rounded-[14px] border border-[var(--color-borde-suave)] bg-white">
+                                    <img
+                                        src="{{ $producto->imagen_canonica ?? asset('img/productos/placeholder.svg') }}"
+                                        alt="{{ $producto->nombre_canonico }}"
+                                        class="h-full w-full object-cover"
+                                    >
+                                </div>
+                                <div class="min-w-0">
+                                    <h2 class="truncate text-lg font-semibold text-ink-900">{{ $producto->nombre_canonico }}</h2>
+                                    <p class="text-sm text-ink-500">{{ $producto->marca_canonica ?? __('common.product_brand_fallback') }} · {{ $producto->formato_canonico ?? __('common.product_format_fallback') }}</p>
+                                </div>
                             </div>
                             <div class="rounded-full border border-[var(--color-borde-suave)] px-5 py-2 text-sm font-semibold text-ink-700">
                                 {{ (int) $producto->pivot->cantidad }}
@@ -40,7 +49,15 @@
                     <p class="mt-2 text-xl font-semibold text-ink-900">{{ __('common.states.' . $lista->estado) }}</p>
                     <p class="mt-6 text-sm text-ink-600">{{ __('listas.show.summary.count') }}</p>
                     <p class="mt-2 text-3xl font-bold text-ink-900">{{ $lista->productos->count() }}</p>
-                    @if ($lista->supermercadoElegido)
+                    @php($supermercadosSeleccionados = collect($lista->supermercados_recomendados_snapshot ?? []))
+                    @if ($supermercadosSeleccionados->isNotEmpty())
+                        <p class="mt-6 text-sm text-ink-600">{{ __('listas.show.summary.selected_supermarket') }}</p>
+                        <div class="mt-2 grid gap-2">
+                            @foreach ($supermercadosSeleccionados as $supermercadoSeleccionado)
+                                <p class="text-base font-semibold text-ink-900">{{ $supermercadoSeleccionado['nombre_super'] ?? __('common.supermarket') }}</p>
+                            @endforeach
+                        </div>
+                    @elseif ($lista->supermercadoElegido)
                         <p class="mt-6 text-sm text-ink-600">{{ __('listas.show.summary.selected_supermarket') }}</p>
                         <p class="mt-2 text-base font-semibold text-ink-900">{{ $lista->supermercadoElegido->nombre_super }}</p>
                     @endif
@@ -70,4 +87,3 @@
         </div>
     </section>
 @endsection
-

@@ -38,6 +38,30 @@
                 @enderror
             </fieldset>
 
+            <fieldset class="grid gap-2">
+                <label class="text-sm font-semibold text-ink-700" for="marca">{{ __('productos.form.brand') }}</label>
+                <input class="rounded-lg border border-brand-100 bg-white px-4 py-3 text-ink-900 focus:border-brand-400 focus:ring-brand-300" type="text" id="marca" name="marca" value="{{ old('marca') }}">
+                @error('marca')
+                    <span class="text-sm font-medium text-rose-600">{{ $message }}</span>
+                @enderror
+            </fieldset>
+
+            <fieldset class="grid gap-2">
+                <label class="text-sm font-semibold text-ink-700" for="formato">{{ __('productos.form.format') }}</label>
+                <input class="rounded-lg border border-brand-100 bg-white px-4 py-3 text-ink-900 focus:border-brand-400 focus:ring-brand-300" type="text" id="formato" name="formato" value="{{ old('formato') }}">
+                @error('formato')
+                    <span class="text-sm font-medium text-rose-600">{{ $message }}</span>
+                @enderror
+            </fieldset>
+
+            <fieldset class="grid gap-2">
+                <label class="text-sm font-semibold text-ink-700" for="imagen">{{ __('productos.form.image') }}</label>
+                <input class="rounded-lg border border-brand-100 bg-white px-4 py-3 text-ink-900 focus:border-brand-400 focus:ring-brand-300" type="text" id="imagen" name="imagen" value="{{ old('imagen') }}">
+                @error('imagen')
+                    <span class="text-sm font-medium text-rose-600">{{ $message }}</span>
+                @enderror
+            </fieldset>
+
             <div class="flex flex-wrap items-center gap-3">
                 <button type="submit" class="inline-flex items-center rounded-full bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-700">{{ __('productos.create.submit') }}</button>
                 <a href="{{ route('productos.index') }}" class="inline-flex items-center rounded-full border border-ink-200 bg-white px-5 py-3 text-sm font-semibold text-ink-800 shadow-soft transition hover:-translate-y-0.5 hover:border-brand-200 hover:text-brand-800">{{ __('common.cancel') }}</a>

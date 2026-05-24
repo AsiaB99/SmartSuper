@@ -1,0 +1,11 @@
+1690|https://tienda.consum.es/es/c/bebidas/1690?orderById=5&page=1&showProducts=true
+2812|https://tienda.consum.es/es/c/frescos/2812?orderById=5&page=1&showProducts=true
+4108|https://tienda.consum.es/es/c/horno/4108?orderById=5&page=1&showProducts=true
+1833|https://tienda.consum.es/es/c/platos-preparados/1833?orderById=5&page=1&showProducts=true
+1783|https://tienda.consum.es/es/c/congelados/1783?orderById=5&page=1&showProducts=true
+5281|https://tienda.consum.es/es/c/ecologico-saludable/5281?orderById=5&page=1&showProducts=true
+2297|https://tienda.consum.es/es/c/infantil/2297?orderById=5&page=1&showProducts=true
+1239|https://tienda.consum.es/es/c/drogueria/1239?orderById=5&page=1&showProducts=true
+2814|https://tienda.consum.es/es/c/cuidado/2814?orderById=5&page=1&showProducts=true
+2469|https://tienda.consum.es/es/c/mascotas/2469?orderById=5&page=1&showProducts=true
+1486|https://tienda.consum.es/es/c/bazar/1486?orderById=5&page=1&showProducts=true

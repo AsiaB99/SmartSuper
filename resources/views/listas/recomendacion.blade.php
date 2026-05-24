@@ -36,6 +36,11 @@
                                 <div>
                                     <h2 class="text-xl font-semibold text-ink-900">{{ $fila['nombre_super'] }}</h2>
                                     <p class="mt-1 text-sm text-ink-500">{{ __('listas.recommendation.items', ['count' => $fila['items_cesta']]) }}</p>
+                                    @if ($fila['es_combinada'])
+                                        <p class="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-brand-600">
+                                            {{ __('listas.recommendation.multi_store', ['count' => count($fila['supermercados'])]) }}
+                                        </p>
+                                    @endif
                                 </div>
                                 <div class="text-sm">
                                     <p class="text-ink-500">{{ __('listas.recommendation.total') }}</p>
@@ -54,14 +59,14 @@
                                     <p class="text-2xl font-bold text-brand-600">{{ number_format((float) $fila['score'], 2, ',', '.') }} €</p>
                                 </div>
                                 <div class="text-right">
-                                    @if ((int) $lista->id_supermercado_elegido === (int) $fila['id_super'])
+                                    @if ($seleccionActualToken !== null && $seleccionActualToken === $fila['token'])
                                         <div class="rounded-[10px] bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
                                             {{ __('listas.recommendation.selected') }}
                                         </div>
                                     @else
                                         <form action="{{ route('listas.recomendacion.elegir', $lista) }}" method="POST">
                                             @csrf
-                                            <input type="hidden" name="id_supermercado" value="{{ (int) $fila['id_super'] }}">
+                                            <input type="hidden" name="combinacion" value="{{ $fila['token'] }}">
                                             <button class="ss-btn-green inline-flex w-full justify-center px-4 py-2.5 text-sm md:w-auto" type="submit">
                                                 {{ __('listas.recommendation.choose') }}
                                             </button>
@@ -77,6 +82,7 @@
                                         <thead class="bg-brand-50 text-left text-xs font-semibold uppercase text-ink-600">
                                             <tr>
                                                 <th class="px-4 py-3">{{ __('common.product') }}</th>
+                                                <th class="px-4 py-3">{{ __('common.supermarket') }}</th>
                                                 <th class="px-4 py-3">{{ __('common.quantity') }}</th>
                                                 <th class="px-4 py-3">{{ __('listas.recommendation.unit_price') }}</th>
                                                 <th class="px-4 py-3">{{ __('listas.recommendation.subtotal') }}</th>
@@ -86,6 +92,7 @@
                                             @foreach ($fila['detalle_cesta'] as $detalle)
                                                 <tr>
                                                     <td class="px-4 py-3">{{ $detalle['nombre_producto'] }}</td>
+                                                    <td class="px-4 py-3">{{ $detalle['nombre_super'] }}</td>
                                                     <td class="px-4 py-3">{{ $detalle['cantidad'] }}</td>
                                                     <td class="px-4 py-3">{{ number_format((float) $detalle['precio_unitario'], 2, ',', '.') }} €</td>
                                                     <td class="px-4 py-3 font-semibold text-ink-900">{{ number_format((float) $detalle['subtotal'], 2, ',', '.') }} €</td>
@@ -102,5 +109,4 @@
         </div>
     </section>
 @endsection
-
 

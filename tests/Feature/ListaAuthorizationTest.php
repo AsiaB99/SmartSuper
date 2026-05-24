@@ -40,6 +40,27 @@ class ListaAuthorizationTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_create_own_personal_lists(): void
+    {
+        $admin = User::factory()->create(['rol' => 'admin']);
+
+        $this->actingAs($admin)
+            ->post(route('listas.store'), [
+                'nombre_lista' => 'Lista admin',
+                'estado' => 'activa',
+                'fecha_creacion' => now()->format('Y-m-d H:i:s'),
+            ])
+            ->assertRedirect(route('listas.index'));
+
+        $lista = Lista::query()->where('nombre_lista', 'Lista admin')->firstOrFail();
+
+        $this->assertDatabaseHas('hacen', [
+            'id_usuario' => $admin->id,
+            'id_lista' => $lista->id,
+            'permiso_lista' => 'owner',
+        ]);
+    }
+
     public function test_viewer_cannot_update_a_lista(): void
     {
         $owner = User::factory()->create();
@@ -259,7 +280,7 @@ class ListaAuthorizationTest extends TestCase
             ->assertSessionHasErrors('usuarios_editores');
     }
 
-    public function test_admin_can_delete_any_lista(): void
+    public function test_admin_cannot_delete_any_lista(): void
     {
         $admin = User::factory()->create(['rol' => 'admin']);
         $owner = User::factory()->create();
@@ -273,9 +294,26 @@ class ListaAuthorizationTest extends TestCase
 
         $this->actingAs($admin)
             ->delete(route('listas.destroy', $lista))
-            ->assertRedirect(route('listas.index'));
+            ->assertForbidden();
 
-        $this->assertDatabaseMissing('listas', ['id' => $lista->id]);
+        $this->assertDatabaseHas('listas', ['id' => $lista->id]);
+    }
+
+    public function test_admin_cannot_view_lists_owned_by_other_users(): void
+    {
+        $admin = User::factory()->create(['rol' => 'admin']);
+        $owner = User::factory()->create();
+        $lista = Lista::query()->create([
+            'nombre_lista' => 'Lista privada usuario',
+            'estado' => 'activa',
+            'fecha_creacion' => now(),
+        ]);
+
+        $lista->usuarios()->attach($owner->id, ['permiso_lista' => 'owner']);
+
+        $this->actingAs($admin)
+            ->get(route('listas.show', $lista))
+            ->assertForbidden();
     }
 
     public function test_viewer_does_not_see_lista_management_actions_in_index(): void
@@ -485,6 +523,31 @@ class ListaAuthorizationTest extends TestCase
         $response->assertOk();
         $response->assertSeeText('Sin productos');
         $response->assertSeeText('Añade productos para empezar la lista de compra.');
+        $response->assertSeeText('Busca un producto para empezar');
+    }
+
+    public function test_productos_page_does_not_load_catalog_until_user_searches(): void
+    {
+        $owner = User::factory()->create();
+        $lista = Lista::query()->create([
+            'nombre_lista' => 'Lista sin catálogo inicial',
+            'estado' => 'activa',
+            'fecha_creacion' => now(),
+        ]);
+        $lista->usuarios()->attach($owner->id, ['permiso_lista' => 'owner']);
+
+        $seccion = Seccion::query()->create(['nombre_seccion' => 'Basicos']);
+        Producto::query()->create([
+            'id_seccion' => $seccion->id,
+            'nombre_producto' => 'Leche entera',
+        ]);
+
+        $response = $this->actingAs($owner)
+            ->get(route('listas.productos', $lista));
+
+        $response->assertOk();
+        $response->assertSeeText('Busca un producto para empezar');
+        $response->assertDontSeeText('Leche entera');
     }
 
     public function test_productos_page_shows_paginated_catalog_filtered_by_search(): void
@@ -499,7 +562,7 @@ class ListaAuthorizationTest extends TestCase
 
         $seccion = Seccion::query()->create(['nombre_seccion' => 'Basicos']);
 
-        foreach (range(1, 11) as $indice) {
+        foreach (range(1, 8) as $indice) {
             Producto::query()->create([
                 'id_seccion' => $seccion->id,
                 'nombre_producto' => 'Arroz '.str_pad((string) $indice, 2, '0', STR_PAD_LEFT),
@@ -516,8 +579,8 @@ class ListaAuthorizationTest extends TestCase
 
         $response->assertOk();
         $response->assertSeeText('Arroz 01');
-        $response->assertSeeText('Arroz 09');
-        $response->assertDontSeeText('Arroz 10');
+        $response->assertSeeText('Arroz 06');
+        $response->assertDontSeeText('Arroz 07');
         $response->assertDontSeeText('Leche entera');
         $response->assertSee('q=Arroz&amp;page=2', false);
         $response->assertDontSeeText('Limpiar');
@@ -551,6 +614,73 @@ class ListaAuthorizationTest extends TestCase
             ->assertJsonStructure(['catalogo']);
 
         $this->assertStringContainsString('Leche semidesnatada', $response->json('catalogo'));
+    }
+
+    public function test_productos_page_can_add_product_via_ajax_without_losing_catalog_state(): void
+    {
+        $owner = User::factory()->create();
+        $lista = Lista::query()->create([
+            'nombre_lista' => 'Lista ajax',
+            'estado' => 'activa',
+            'fecha_creacion' => now(),
+        ]);
+        $lista->usuarios()->attach($owner->id, ['permiso_lista' => 'owner']);
+
+        $seccion = Seccion::query()->create(['nombre_seccion' => 'Basicos']);
+        $producto = Producto::query()->create([
+            'id_seccion' => $seccion->id,
+            'nombre_producto' => 'Leche entera',
+        ]);
+
+        $response = $this->actingAs($owner)
+            ->postJson(route('listas.productos.agregar', $lista), [
+                'id_producto' => $producto->id,
+                'cantidad' => 1,
+                'q' => 'Leche',
+                'page' => 1,
+            ]);
+
+        $response->assertOk()
+            ->assertJsonStructure(['status', 'catalogo', 'listaHtml', 'resumenHtml']);
+
+        $this->assertDatabaseHas('formadas', [
+            'id_lista' => $lista->id,
+            'id_producto' => $producto->id,
+            'cantidad' => 1,
+        ]);
+
+        $this->assertStringContainsString('Leche entera', $response->json('catalogo'));
+        $this->assertStringContainsString('Leche entera', $response->json('listaHtml'));
+    }
+
+    public function test_productos_page_shows_canonical_product_fallbacks_and_placeholder_image(): void
+    {
+        $owner = User::factory()->create();
+        $lista = Lista::query()->create([
+            'nombre_lista' => 'Lista canónica',
+            'estado' => 'activa',
+            'fecha_creacion' => now(),
+        ]);
+        $lista->usuarios()->attach($owner->id, ['permiso_lista' => 'owner']);
+
+        $seccion = Seccion::query()->create(['nombre_seccion' => 'Basicos']);
+        $producto = Producto::query()->create([
+            'id_seccion' => $seccion->id,
+            'nombre_producto' => 'Garbanzos cocidos',
+            'marca' => null,
+            'formato' => null,
+            'imagen' => null,
+        ]);
+
+        $lista->productos()->attach($producto->id, ['cantidad' => 2, 'marcado' => false]);
+
+        $response = $this->actingAs($owner)
+            ->get(route('listas.productos', $lista));
+
+        $response->assertOk();
+        $response->assertSeeText('Marca no disponible');
+        $response->assertSeeText('Formato no informado');
+        $response->assertSee('img/productos/placeholder.svg', false);
     }
 
     public function test_product_suggestions_returns_matching_names(): void

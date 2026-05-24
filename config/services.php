@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'geocodificacion' => [
+        'url' => env('GEOCODIFICACION_URL', 'https://nominatim.openstreetmap.org/search'),
+        'user_agent' => env('GEOCODIFICACION_USER_AGENT', 'SmartSuper/1.0'),
+        'countrycodes' => env('GEOCODIFICACION_COUNTRYCODES', 'es'),
+    ],
+
+    'contacto' => [
+        'email' => env('CONTACTO_EMAIL', 'smartsuper.dev@gmail.com'),
+    ],
+
 ];

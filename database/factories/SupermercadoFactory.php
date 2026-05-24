@@ -15,6 +15,7 @@ class SupermercadoFactory extends Factory
             'nombre_super' => fake()->unique()->company(),
             'latitud' => fake()->latitude(),
             'longitud' => fake()->longitude(),
+            'activo' => true,
         ];
     }
 }

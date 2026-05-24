@@ -24,13 +24,21 @@
                     <x-nav-link :href="route('supermercados.index')" :active="request()->routeIs('supermercados.*') || request()->routeIs('admin.supermercados.*')">
                         {{ __('nav.supermarkets') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('despensas.index')" :active="request()->routeIs('despensas.*')">
-                        {{ __('nav.pantry') }}
-                    </x-nav-link>
+                    @auth
+                        @if (! Auth::user()->isAdmin())
+                            <x-nav-link :href="route('despensas.index')" :active="request()->routeIs('despensas.*')">
+                                {{ __('nav.pantry') }}
+                            </x-nav-link>
+                        @endif
+                    @else
+                        <x-nav-link :href="route('despensas.index')" :active="request()->routeIs('despensas.*')">
+                            {{ __('nav.pantry') }}
+                        </x-nav-link>
+                    @endauth
                     @auth
                     @if (Auth::user()->isAdmin())
-                        <x-nav-link :href="route('productos.index')" :active="request()->routeIs('productos.*') || request()->routeIs('admin.productos.*')">
-                            {{ __('nav.products') }}
+                        <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.*') || request()->routeIs('productos.*')">
+                            {{ __('nav.admin_panel') }}
                         </x-nav-link>
                     @endif
                     @endauth
@@ -106,13 +114,21 @@
             <x-responsive-nav-link :href="route('supermercados.index')" :active="request()->routeIs('supermercados.*') || request()->routeIs('admin.supermercados.*')">
                 {{ __('nav.supermarkets') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('despensas.index')" :active="request()->routeIs('despensas.*')">
-                {{ __('nav.pantry') }}
-            </x-responsive-nav-link>
+            @auth
+                @if (! Auth::user()->isAdmin())
+                    <x-responsive-nav-link :href="route('despensas.index')" :active="request()->routeIs('despensas.*')">
+                        {{ __('nav.pantry') }}
+                    </x-responsive-nav-link>
+                @endif
+            @else
+                <x-responsive-nav-link :href="route('despensas.index')" :active="request()->routeIs('despensas.*')">
+                    {{ __('nav.pantry') }}
+                </x-responsive-nav-link>
+            @endauth
             @auth
             @if (Auth::user()->isAdmin())
-                <x-responsive-nav-link :href="route('productos.index')" :active="request()->routeIs('productos.*') || request()->routeIs('admin.productos.*')">
-                    {{ __('nav.products') }}
+                <x-responsive-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.*') || request()->routeIs('productos.*')">
+                    {{ __('nav.admin_panel') }}
                 </x-responsive-nav-link>
             @endif
             @endauth

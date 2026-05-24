@@ -14,7 +14,7 @@ class ExampleTest extends TestCase
         $this->assertSame('listas', $lista->getTable());
         $this->assertFalse($lista->timestamps);
         $this->assertSame(
-            ['nombre_lista', 'estado', 'fecha_creacion'],
+            ['nombre_lista', 'estado', 'id_supermercado_elegido', 'fecha_creacion'],
             $lista->getFillable()
         );
     }

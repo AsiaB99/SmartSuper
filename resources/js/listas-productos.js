@@ -10,6 +10,9 @@ export const initListaProductosSearch = () => {
     const input = document.getElementById('busqueda-productos-lista');
     const suggestionsBox = document.getElementById('sugerencias-productos-lista');
     const catalogoWrapper = document.querySelector('[data-catalogo-wrapper]');
+    const listaActualWrapper = document.querySelector('[data-lista-productos-actual]');
+    const resumenWrapper = document.querySelector('[data-lista-resumen]');
+    const feedback = document.querySelector('[data-catalogo-feedback]');
 
     if (!form || !input || !suggestionsBox || !catalogoWrapper) {
         return;
@@ -21,11 +24,12 @@ export const initListaProductosSearch = () => {
     let currentSuggestions = [];
     let activeIndex = -1;
 
-    const buildCatalogUrl = (query = input.value.trim(), page = null) => {
+    const buildCatalogUrl = (query = input.value, page = null) => {
         const endpoint = new URL(form.dataset.catalogoUrl, window.location.origin);
+        const normalizedQuery = query.trim();
 
-        if (query !== '') {
-            endpoint.searchParams.set('q', query);
+        if (normalizedQuery !== '') {
+            endpoint.searchParams.set('q', normalizedQuery);
         }
 
         if (page) {
@@ -41,6 +45,15 @@ export const initListaProductosSearch = () => {
         input.setAttribute('aria-expanded', 'false');
         currentSuggestions = [];
         activeIndex = -1;
+    };
+
+    const showFeedback = (message) => {
+        if (!feedback || !message) {
+            return;
+        }
+
+        feedback.textContent = message;
+        feedback.classList.remove('hidden');
     };
 
     const setActiveSuggestion = (index) => {
@@ -104,9 +117,7 @@ export const initListaProductosSearch = () => {
     };
 
     const applySearch = (query) => {
-        const normalizedQuery = query.trim();
-        input.value = normalizedQuery;
-        const url = buildCatalogUrl(normalizedQuery);
+        const url = buildCatalogUrl(query);
         window.history.replaceState({}, '', url);
         cargarCatalogo(url).catch(() => {});
     };
@@ -140,9 +151,10 @@ export const initListaProductosSearch = () => {
     });
 
     input.addEventListener('input', () => {
-        const query = input.value.trim();
+        const query = input.value;
+        const normalizedQuery = query.trim();
 
-        if (query.length < 2) {
+        if (normalizedQuery.length < 2) {
             closeSuggestions();
             clearTimeout(debounceTimer);
             applySearch(query);
@@ -151,9 +163,9 @@ export const initListaProductosSearch = () => {
 
         clearTimeout(debounceTimer);
         debounceTimer = window.setTimeout(async () => {
-            const suggestions = await fetchSuggestions(query).catch(() => []);
+            const suggestions = await fetchSuggestions(normalizedQuery).catch(() => []);
 
-            if (input.value.trim() !== query) {
+            if (input.value.trim() !== normalizedQuery) {
                 return;
             }
 
@@ -232,6 +244,52 @@ export const initListaProductosSearch = () => {
         window.history.replaceState({}, '', url.toString());
         closeSuggestions();
         cargarCatalogo(url.toString()).catch(() => {});
+    });
+
+    catalogoWrapper.addEventListener('submit', async (event) => {
+        const submitForm = event.target.closest('form');
+
+        if (!submitForm || !submitForm.querySelector('[data-catalogo-add]')) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const submitButton = submitForm.querySelector('[data-catalogo-add]');
+        submitButton?.setAttribute('disabled', 'disabled');
+
+        const response = await fetch(submitForm.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+            body: new FormData(submitForm),
+        }).catch(() => null);
+
+        submitButton?.removeAttribute('disabled');
+
+        if (!response || !response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+
+        if (typeof data.catalogo === 'string') {
+            catalogoWrapper.innerHTML = data.catalogo;
+        }
+
+        if (listaActualWrapper && typeof data.listaHtml === 'string') {
+            listaActualWrapper.innerHTML = data.listaHtml;
+        }
+
+        if (resumenWrapper && typeof data.resumenHtml === 'string') {
+            resumenWrapper.innerHTML = data.resumenHtml;
+            initUserLocationCapture();
+        }
+
+        showFeedback(data.status ?? '');
+        closeSuggestions();
     });
 
     document.addEventListener('click', (event) => {

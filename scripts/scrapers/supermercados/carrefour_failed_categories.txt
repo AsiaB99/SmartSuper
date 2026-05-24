@@ -1,0 +1,6 @@
+cat20009|supermercado/la-despensa/alimentacion/cat20009/c|https://www.carrefour.es/supermercado/la-despensa/alimentacion/cat20009/c
+cat26100390|supermercado/la-despensa/desayuno/cat26100390/c|https://www.carrefour.es/supermercado/la-despensa/desayuno/cat26100390/c
+cat20013|supermercado/la-despensa/conservas-sopas-y-precocinados/cat20013/c|https://www.carrefour.es/supermercado/la-despensa/conservas-sopas-y-precocinados/cat20013/c
+cat20003|supermercado/bebidas/cat20003/c|https://www.carrefour.es/supermercado/bebidas/cat20003/c
+cat20005|supermercado/drogueria-y-limpieza/cat20005/c|https://www.carrefour.es/supermercado/drogueria-y-limpieza/cat20005/c
+cat20004|supermercado/cuidado-personal-e-higiene/cat20004/c|https://www.carrefour.es/supermercado/cuidado-personal-e-higiene/cat20004/c

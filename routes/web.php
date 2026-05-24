@@ -1,8 +1,12 @@
 <?php
 
 use App\Http\Controllers\DespensaController;
+use App\Http\Controllers\AdminPanelController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\ListaController;
+use App\Http\Controllers\PaginaPublicaController;
 use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\ProductoExternoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SupermercadoController;
 use App\Http\Controllers\VendenController;
@@ -15,12 +19,20 @@ Route::get('supermercados', [SupermercadoController::class, 'index'])
     ->name('supermercados.index');
 Route::get('precios', [VendenController::class, 'index'])
     ->name('precios.index');
+Route::get('aviso-legal', [PaginaPublicaController::class, 'avisoLegal'])
+    ->name('aviso-legal');
+Route::get('privacidad', [PaginaPublicaController::class, 'privacidad'])
+    ->name('privacidad');
+Route::get('contacto', [PaginaPublicaController::class, 'contacto'])
+    ->name('contacto');
+Route::post('contacto', [PaginaPublicaController::class, 'enviarContacto'])
+    ->name('contacto.enviar');
 
 Route::middleware('auth')->group(function () {
     Route::resource('listas', ListaController::class)->except(['create']);
     Route::resource('despensas', DespensaController::class)->except(['show', 'create']);
-    Route::resource('productos', ProductoController::class)
-        ->only(['index'])
+    Route::get('productos', [ProductoController::class, 'index'])
+        ->name('productos.index')
         ->middleware('admin');
     Route::get('/despensas/{despensa}/stock', [DespensaController::class, 'stock'])
         ->name('despensas.stock');
@@ -58,10 +70,32 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::resource('supermercados', SupermercadoController::class)
-        ->except(['index', 'show']);
-    Route::resource('productos', ProductoController::class)
-        ->except(['index', 'show']);
+    Route::get('/', [AdminPanelController::class, 'index'])->name('index');
+    Route::get('supermercados', [AdminPanelController::class, 'redirectToSupermercadosTab'])->name('supermercados.index');
+    Route::get('supermercados/create', [SupermercadoController::class, 'create'])->name('supermercados.create');
+    Route::get('supermercados/{supermercado}/edit', [SupermercadoController::class, 'edit'])->name('supermercados.edit');
+    Route::post('supermercados', [SupermercadoController::class, 'store'])->name('supermercados.store');
+    Route::put('supermercados/{supermercado}', [SupermercadoController::class, 'update'])->name('supermercados.update');
+    Route::delete('supermercados/{supermercado}', [SupermercadoController::class, 'destroy'])->name('supermercados.destroy');
+    Route::patch('supermercados/{supermercado}/activo', [SupermercadoController::class, 'toggleActivo'])->name('supermercados.toggle');
+    Route::patch('cadenas-supermercados/{cadenaSupermercado}/activo', [SupermercadoController::class, 'toggleCadenaActivo'])->name('cadenas-supermercados.toggle');
+    Route::get('productos', [AdminPanelController::class, 'redirectToProductosTab'])->name('productos.index');
+    Route::get('productos/create', [ProductoController::class, 'create'])->name('productos.create');
+    Route::get('productos/{producto}/edit', [ProductoController::class, 'edit'])->name('productos.edit');
+    Route::post('productos', [ProductoController::class, 'store'])->name('productos.store');
+    Route::put('productos/{producto}', [ProductoController::class, 'update'])->name('productos.update');
+    Route::delete('productos/{producto}', [ProductoController::class, 'destroy'])->name('productos.destroy');
+    Route::get('usuarios', [AdminPanelController::class, 'redirectToUsuariosTab'])->name('usuarios.index');
+    Route::post('usuarios', [AdminUserController::class, 'store'])->name('usuarios.store');
+    Route::delete('usuarios/{user}', [AdminUserController::class, 'destroy'])->name('usuarios.destroy');
+    Route::get('productos-externos', [ProductoExternoController::class, 'index'])
+        ->name('productos-externos.index');
+    Route::post('productos-externos/{productoExterno}/confirmar', [ProductoExternoController::class, 'confirmar'])
+        ->name('productos-externos.confirmar');
+    Route::post('productos-externos/{productoExterno}/crear-producto', [ProductoExternoController::class, 'store'])
+        ->name('productos-externos.store');
+    Route::post('productos-externos/{productoExterno}/descartar', [ProductoExternoController::class, 'descartar'])
+        ->name('productos-externos.descartar');
     Route::get('precios/create', [VendenController::class, 'create'])->name('precios.create');
     Route::post('precios', [VendenController::class, 'store'])->name('precios.store');
     Route::get('precios/{producto}/{supermercado}/edit', [VendenController::class, 'edit'])->name('precios.edit');

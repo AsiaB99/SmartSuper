@@ -14,6 +14,7 @@
         <div class="flex flex-wrap items-center gap-3">
             <a class="inline-flex items-center rounded-full border border-brand-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-800 shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-50" href="{{ route('precios.index') }}">{{ __('productos.index.view_prices') }}</a>
             @if ($esAdmin)
+                <a class="inline-flex items-center rounded-full border border-brand-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-800 shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-50" href="{{ route('admin.productos-externos.index') }}">{{ __('productos.index.external_mapping') }}</a>
                 <a class="inline-flex items-center rounded-full bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-700" href="{{ route('admin.productos.create') }}">{{ __('productos.index.new') }}</a>
             @endif
         </div>
@@ -25,6 +26,9 @@
                 <div>
                     <h2 class="text-xl font-semibold text-ink-900">{{ $producto->nombre_producto }}</h2>
                     <p class="mt-2 text-sm text-ink-600">{{ __('productos.index.section') }} <strong class="text-ink-900">{{ $producto->seccion->nombre_seccion }}</strong></p>
+                    @if ($producto->marca || $producto->formato)
+                        <p class="mt-1 text-sm text-ink-500">{{ collect([$producto->marca, $producto->formato])->filter()->join(' · ') }}</p>
+                    @endif
                 </div>
                 @if ($esAdmin)
                     <div class="flex flex-wrap items-center gap-3">

@@ -87,11 +87,13 @@
                     <h2 class="mt-3 text-xl font-semibold text-ink-900">{{ __('dashboard.auth.list.title') }}</h2>
                     <p class="mt-2 text-sm leading-7 text-ink-600">{{ __('dashboard.auth.list.text') }}</p>
                 </a>
-                <a href="{{ route('despensas.index') }}" class="ss-card ss-card-hover">
-                    <p class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-600">{{ __('dashboard.auth.pantry.label') }}</p>
-                    <h2 class="mt-3 text-xl font-semibold text-ink-900">{{ __('dashboard.auth.pantry.title') }}</h2>
-                    <p class="mt-2 text-sm leading-7 text-ink-600">{{ __('dashboard.auth.pantry.text') }}</p>
-                </a>
+                @if (! auth()->user()?->isAdmin())
+                    <a href="{{ route('despensas.index') }}" class="ss-card ss-card-hover">
+                        <p class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-600">{{ __('dashboard.auth.pantry.label') }}</p>
+                        <h2 class="mt-3 text-xl font-semibold text-ink-900">{{ __('dashboard.auth.pantry.title') }}</h2>
+                        <p class="mt-2 text-sm leading-7 text-ink-600">{{ __('dashboard.auth.pantry.text') }}</p>
+                    </a>
+                @endif
                 <a href="{{ route('precios.index') }}" class="ss-card ss-card-hover">
                     <p class="text-sm font-semibold uppercase tracking-[0.12em] text-brand-600">{{ __('dashboard.auth.comparator.label') }}</p>
                     <h2 class="mt-3 text-xl font-semibold text-ink-900">{{ __('dashboard.auth.comparator.title') }}</h2>

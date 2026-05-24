@@ -37,7 +37,7 @@
             </section>
 
             <div class="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
-                <div class="space-y-6">
+                <div class="min-w-0 space-y-6">
                     <section class="rounded-[20px] bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.06)] sm:p-6">
                         <div class="flex flex-wrap items-start justify-between gap-4">
                             <div>
@@ -104,7 +104,7 @@
                 </div>
 
                 @if ($puedeEditar)
-                    <aside>
+                    <aside class="min-w-0">
                         <details class="overflow-hidden rounded-[20px] bg-white shadow-[0_10px_28px_rgba(15,23,42,0.06)]" @if ($errors->has('id_producto') || $errors->has('stock')) open @endif>
                             <summary class="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5 marker:hidden">
                                 <div>
@@ -120,12 +120,12 @@
                                     <label class="grid gap-2">
                                         <span class="text-sm font-semibold text-ink-700">{{ __('common.product') }}</span>
                                         <input
-                                            class="ss-input"
+                                            class="ss-input w-full"
                                             type="search"
                                             placeholder="{{ __('despensas.stock.filter_product_placeholder') }}"
                                             oninput="const query=this.value.toLowerCase();const select=document.getElementById('id_producto_manual');Array.from(select.options).forEach((option,index)=>{if(index===0){option.hidden=false;return;}option.hidden=!option.text.toLowerCase().includes(query);});if(select.selectedOptions[0]?.hidden){select.value='';}"
                                         >
-                                        <select class="ss-input" id="id_producto_manual" name="id_producto" required>
+                                        <select class="ss-input w-full" id="id_producto_manual" name="id_producto" required>
                                             <option value="">{{ __('despensas.stock.select_product') }}</option>
                                             @foreach ($productos as $producto)
                                                 <option value="{{ $producto->id }}" @selected((int) old('id_producto') === $producto->id)>
@@ -137,7 +137,7 @@
                                     </label>
                                     <label class="grid gap-2">
                                         <span class="text-sm font-semibold text-ink-700">{{ __('despensas.stock.add_quantity') }}</span>
-                                        <input class="ss-input text-right" type="number" name="stock" min="1" step="1" value="{{ old('stock', 1) }}" required>
+                                        <input class="ss-input w-full text-right" type="number" name="stock" min="1" step="1" value="{{ old('stock', 1) }}" required>
                                         @error('stock')<small class="text-sm font-medium text-rose-600">{{ $message }}</small>@enderror
                                     </label>
                                     <button class="ss-btn-green w-full justify-center" type="submit">{{ __('common.add') }}</button>
@@ -228,4 +228,3 @@
         </dialog>
     @endif
 @endsection
-

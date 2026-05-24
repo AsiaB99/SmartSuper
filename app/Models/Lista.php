@@ -19,6 +19,7 @@ class Lista extends Model
         'nombre_lista',
         'estado',
         'id_supermercado_elegido',
+        'supermercados_recomendados_snapshot',
         'fecha_creacion',
     ];
 
@@ -26,6 +27,7 @@ class Lista extends Model
     {
         return [
             'fecha_creacion' => 'datetime',
+            'supermercados_recomendados_snapshot' => 'array',
         ];
     }
 

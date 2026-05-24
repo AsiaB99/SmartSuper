@@ -16,10 +16,6 @@ class ListaPolicy
 
     public function view(User $user, Lista $lista): bool
     {
-        if ($user->isAdmin()) {
-            return true;
-        }
-
         $permiso = $user->permisoEnLista($lista);
 
         return in_array($permiso, ['owner', 'editor', 'viewer'], true);
@@ -32,10 +28,6 @@ class ListaPolicy
 
     public function update(User $user, Lista $lista): bool
     {
-        if ($user->isAdmin()) {
-            return true;
-        }
-
         $permiso = $user->permisoEnLista($lista);
 
         return in_array($permiso, ['owner', 'editor'], true);
@@ -43,10 +35,6 @@ class ListaPolicy
 
     public function delete(User $user, Lista $lista): bool
     {
-        if ($user->isAdmin()) {
-            return true;
-        }
-
         return $user->permisoEnLista($lista) === 'owner';
     }
 }

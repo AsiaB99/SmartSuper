@@ -32,6 +32,8 @@ class NavigationVisibilityTest extends TestCase
         $response = $this->actingAs($user)->get(route('listas.index'));
 
         $response->assertOk();
-        $response->assertSeeText('Productos');
+        $response->assertSeeText('Administración');
+        $response->assertSeeText('Mi Lista');
+        $response->assertDontSeeText('Mi Despensa');
     }
 }

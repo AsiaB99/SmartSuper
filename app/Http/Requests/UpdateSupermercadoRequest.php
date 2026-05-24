@@ -14,7 +14,7 @@ class UpdateSupermercadoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre_super' => 'required|string|max:255|unique:supermercados,nombre_super,' . $this->supermercado->id,
+            'nombre_super' => 'required|string|max:255',
             'latitud' => 'required|numeric|between:-90,90',
             'longitud' => 'required|numeric|between:-180,180',
         ];

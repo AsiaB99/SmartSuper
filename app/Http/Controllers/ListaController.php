@@ -16,6 +16,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,8 @@ use Illuminate\Validation\ValidationException;
 
 class ListaController extends Controller
 {
+    private const CATALOGO_PRODUCTOS_POR_PAGINA = 6;
+
     public function __construct()
     {
         $this->authorizeResource(Lista::class, 'lista');
@@ -34,10 +37,8 @@ class ListaController extends Controller
         $usuario = request()->user();
 
         $listas = Lista::query()
-            ->when(! $usuario->isAdmin(), function ($query) use ($usuario) {
-                $query->whereHas('usuarios', function ($subQuery) use ($usuario) {
-                    $subQuery->where('users.id', $usuario->id);
-                });
+            ->whereHas('usuarios', function ($subQuery) use ($usuario) {
+                $subQuery->where('users.id', $usuario->id);
             })
             ->orderByDesc('fecha_creacion')
             ->get();
@@ -104,7 +105,7 @@ class ListaController extends Controller
         /** @var \App\Models\User&Authenticatable $usuario */
         $usuario = $request->user();
         $permisoLista = $usuario->permisoEnLista($lista);
-        $puedeAsignarEditores = $usuario->isAdmin() || $permisoLista === 'owner';
+        $puedeAsignarEditores = $permisoLista === 'owner';
 
         $data = $request->validated();
         $editoresNuevos = collect($data['usuarios_editores'] ?? [])
@@ -178,7 +179,7 @@ class ListaController extends Controller
     private function obtenerDatosEdicion(Lista $lista, User $usuario): array
     {
         $permisoLista = $usuario->permisoEnLista($lista);
-        $puedeAsignarEditores = $usuario->isAdmin() || $permisoLista === 'owner';
+        $puedeAsignarEditores = $permisoLista === 'owner';
         $usuariosEditoresActuales = [];
 
         if ($puedeAsignarEditores) {
@@ -207,25 +208,24 @@ class ListaController extends Controller
         $this->authorize('view', $lista);
 
         $busqueda = trim((string) $request->query('q', ''));
+        $hayBusqueda = $busqueda !== '';
         $puedeEditar = $request->user()?->can('update', $lista) ?? false;
+        $terminosBusqueda = $this->obtenerTerminosBusqueda($busqueda);
 
         $lista->load([
             'productos' => fn ($query) => $query
-                ->when($busqueda !== '', fn ($subQuery) => $this->aplicarBusquedaProducto($subQuery, $busqueda))
+                ->when($hayBusqueda, fn ($subQuery) => $this->aplicarBusquedaProducto($subQuery, $terminosBusqueda))
                 ->orderBy('nombre_producto'),
         ]);
 
-        $productos = Producto::query()
-            ->when($busqueda !== '', fn ($query) => $this->aplicarBusquedaProducto($query, $busqueda))
-            ->orderBy('nombre_producto')
-            ->paginate(9)
-            ->withQueryString();
+        $productos = $this->obtenerCatalogoProductosParaLista($busqueda);
 
         if ($request->expectsJson()) {
             return response()->json([
                 'catalogo' => view('listas.partials.catalogo-productos', [
                     'lista' => $lista,
                     'productos' => $productos,
+                    'busqueda' => $busqueda,
                     'puedeEditar' => $puedeEditar,
                 ])->render(),
             ]);
@@ -247,7 +247,7 @@ class ListaController extends Controller
         return response()->json($this->obtenerSugerenciasProducto($busqueda));
     }
 
-    public function agregarProducto(StoreProductoListaRequest $request, Lista $lista): RedirectResponse
+    public function agregarProducto(StoreProductoListaRequest $request, Lista $lista): RedirectResponse|JsonResponse
     {
         $this->authorize('update', $lista);
 
@@ -255,6 +255,8 @@ class ListaController extends Controller
         $productoId = (int) $data['id_producto'];
         $cantidad = (int) $data['cantidad'];
         $redirectDespensaId = isset($data['redirect_despensa_id']) ? (int) $data['redirect_despensa_id'] : null;
+        $busqueda = trim((string) $request->input('q', ''));
+        $pagina = max(1, (int) $request->input('page', 1));
 
         $productoEnLista = $lista->productos()
             ->where('productos.id', $productoId)
@@ -270,6 +272,32 @@ class ListaController extends Controller
             ? __('flash.listas.product_merged')
             : __('flash.listas.product_added');
 
+        if ($request->expectsJson()) {
+            $lista->load([
+                'productos' => fn ($query) => $query->orderBy('nombre_producto'),
+            ]);
+
+            $productos = $this->obtenerCatalogoProductosParaLista($busqueda, $pagina);
+
+            return response()->json([
+                'status' => $mensaje,
+                'catalogo' => view('listas.partials.catalogo-productos', [
+                    'lista' => $lista,
+                    'productos' => $productos,
+                    'busqueda' => $busqueda,
+                    'puedeEditar' => true,
+                ])->render(),
+                'listaHtml' => view('listas.partials.lista-productos-actual', [
+                    'lista' => $lista,
+                    'puedeEditar' => true,
+                ])->render(),
+                'resumenHtml' => view('listas.partials.resumen-productos', [
+                    'lista' => $lista,
+                    'puedeEditar' => true,
+                ])->render(),
+            ]);
+        }
+
         if ($redirectDespensaId !== null && $redirectDespensaId > 0) {
             $despensa = Despensa::query()->findOrFail($redirectDespensaId);
             $this->authorize('view', $despensa);
@@ -280,7 +308,11 @@ class ListaController extends Controller
         }
 
         return redirect()
-            ->route('listas.productos', $lista)
+            ->route('listas.productos', array_filter([
+                'lista' => $lista,
+                'q' => $busqueda !== '' ? $busqueda : null,
+                'page' => $pagina > 1 ? $pagina : null,
+            ]))
             ->with('status', $mensaje);
     }
 
@@ -423,7 +455,9 @@ class ListaController extends Controller
             ];
         }
 
-        return view('listas.recomendacion', compact('lista', 'ranking', 'comparativaAhorro'));
+        $seleccionActualToken = $this->obtenerTokenSeleccionActual($lista);
+
+        return view('listas.recomendacion', compact('lista', 'ranking', 'comparativaAhorro', 'seleccionActualToken'));
     }
 
     public function elegirSupermercado(Request $request, Lista $lista, RecommendationService $recommendationService): RedirectResponse
@@ -431,7 +465,7 @@ class ListaController extends Controller
         $this->authorize('update', $lista);
 
         $data = $request->validate([
-            'id_supermercado' => ['required', 'integer', 'exists:supermercados,id'],
+            'combinacion' => ['required', 'string', 'size:40'],
         ]);
 
         /** @var \App\Models\User&Authenticatable $usuario */
@@ -444,33 +478,66 @@ class ListaController extends Controller
         }
 
         $ranking = $recommendationService->recomendarSupermercados($lista, $usuario);
-        $idsDisponibles = collect($ranking)->pluck('id_super')->map(fn ($id) => (int) $id);
-        $idSupermercado = (int) $data['id_supermercado'];
+        $seleccion = collect($ranking)
+            ->first(fn (array $fila): bool => (string) $fila['token'] === (string) $data['combinacion']);
 
-        if (! $idsDisponibles->contains($idSupermercado)) {
+        if ($seleccion === null) {
             throw ValidationException::withMessages([
-                'id_supermercado' => __('flash.listas.recommendation_unavailable'),
+                'combinacion' => __('flash.listas.recommendation_unavailable'),
             ]);
         }
 
-        $supermercado = Supermercado::query()->findOrFail($idSupermercado);
+        $supermercado = Supermercado::query()->findOrFail((int) $seleccion['id_super']);
         $lista->update([
             'id_supermercado_elegido' => $supermercado->id,
+            'supermercados_recomendados_snapshot' => $seleccion['supermercados'],
         ]);
+
+        $nombresSeleccionados = collect($seleccion['supermercados'])
+            ->pluck('nombre_super')
+            ->implode(', ');
+
+        $mensaje = count($seleccion['supermercados']) > 1
+            ? __('flash.listas.supermarkets_selected', ['names' => $nombresSeleccionados])
+            : __('flash.listas.supermarket_selected', ['name' => $supermercado->nombre_super]);
 
         return redirect()
             ->route('listas.finalizar.confirmar', $lista)
-            ->with('status', __('flash.listas.supermarket_selected', ['name' => $supermercado->nombre_super]));
+            ->with('status', $mensaje);
     }
 
-    private function aplicarBusquedaProducto(Builder $query, string $busqueda): void
+    private function obtenerTokenSeleccionActual(Lista $lista): ?string
     {
-        $query->where(function (Builder $subQuery) use ($busqueda): void {
-            $subQuery
-                ->where('nombre_producto', 'like', '%'.$busqueda.'%')
-                ->orWhere('marca', 'like', '%'.$busqueda.'%')
-                ->orWhere('formato', 'like', '%'.$busqueda.'%');
-        });
+        $ids = collect($lista->supermercados_recomendados_snapshot ?? [])
+            ->pluck('id_super')
+            ->map(static fn ($id): int => (int) $id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+
+        if ($ids === [] && $lista->id_supermercado_elegido !== null) {
+            $ids = [(int) $lista->id_supermercado_elegido];
+        }
+
+        if ($ids === []) {
+            return null;
+        }
+
+        return sha1(implode('-', $ids));
+    }
+
+    private function aplicarBusquedaProducto(Builder $query, array $terminosBusqueda): void
+    {
+        foreach ($terminosBusqueda as $termino) {
+            $query->where(function (Builder $subQuery) use ($termino): void {
+                $subQuery
+                    ->where('nombre_producto', 'like', '%'.$termino.'%')
+                    ->orWhere('marca', 'like', '%'.$termino.'%')
+                    ->orWhere('formato', 'like', '%'.$termino.'%');
+            });
+        }
     }
 
     private function obtenerSugerenciasProducto(string $busqueda): array
@@ -492,5 +559,88 @@ class ListaController extends Controller
             ->limit(8)
             ->pluck('nombre_producto')
             ->all();
+    }
+
+    private function obtenerCatalogoProductosParaLista(string $busqueda, ?int $pagina = null): LengthAwarePaginator
+    {
+        $hayBusqueda = $busqueda !== '';
+        $terminosBusqueda = $this->obtenerTerminosBusqueda($busqueda);
+
+        if (! $hayBusqueda) {
+            return $this->crearPaginadorCatalogoVacio();
+        }
+
+        return Producto::query()
+            ->when($terminosBusqueda !== [], fn ($query) => $this->aplicarBusquedaProducto($query, $terminosBusqueda))
+            ->when($terminosBusqueda !== [], fn ($query) => $this->aplicarOrdenBusquedaProducto($query, $busqueda, $terminosBusqueda))
+            ->orderBy('nombre_producto')
+            ->paginate(self::CATALOGO_PRODUCTOS_POR_PAGINA, ['*'], 'page', $pagina)
+            ->withQueryString();
+    }
+
+    private function aplicarOrdenBusquedaProducto(Builder $query, string $busqueda, array $terminosBusqueda): void
+    {
+        $busquedaNormalizada = mb_strtolower(trim($busqueda));
+        $primerTermino = mb_strtolower($terminosBusqueda[0] ?? '');
+        $coincidenciasEnNombre = [];
+
+        foreach ($terminosBusqueda as $termino) {
+            $coincidenciasEnNombre[] = 'case when lower(nombre_producto) like ? then 1 else 0 end';
+        }
+
+        $query->orderByRaw(
+            'case
+                when lower(nombre_producto) like ? then 0
+                when '.implode(' + ', $coincidenciasEnNombre).' = ? then 1
+                when lower(nombre_producto) like ? then 2
+                when lower(nombre_producto) like ? then 3
+                when lower(marca) like ? then 4
+                when lower(formato) like ? then 5
+                else 6
+            end',
+            [
+                $busquedaNormalizada.'%',
+                ...array_map(
+                    static fn (string $termino): string => '%'.mb_strtolower($termino).'%',
+                    $terminosBusqueda
+                ),
+                count($terminosBusqueda),
+                $primerTermino !== '' ? $primerTermino.'%' : $busquedaNormalizada.'%',
+                $primerTermino !== '' ? '%'.$primerTermino.'%' : '%'.$busquedaNormalizada.'%',
+                '%'.$busquedaNormalizada.'%',
+                '%'.$busquedaNormalizada.'%',
+            ]
+        );
+
+        if ($coincidenciasEnNombre !== []) {
+            $query->orderByRaw(
+                implode(' + ', $coincidenciasEnNombre).' desc',
+                array_map(
+                    static fn (string $termino): string => '%'.mb_strtolower($termino).'%',
+                    $terminosBusqueda
+                )
+            );
+        }
+    }
+
+    private function obtenerTerminosBusqueda(string $busqueda): array
+    {
+        $terminos = preg_split('/\s+/u', trim($busqueda)) ?: [];
+
+        return array_values(array_filter($terminos, static fn (string $termino): bool => $termino !== ''));
+    }
+
+    private function crearPaginadorCatalogoVacio(): LengthAwarePaginator
+    {
+        return new LengthAwarePaginator(
+            items: collect(),
+            total: 0,
+            perPage: self::CATALOGO_PRODUCTOS_POR_PAGINA,
+            currentPage: 1,
+            options: [
+                'path' => request()->url(),
+                'pageName' => 'page',
+            ],
+        );
     }
 }

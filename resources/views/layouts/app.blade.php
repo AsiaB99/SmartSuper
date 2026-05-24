@@ -8,16 +8,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 @php($esInicioPrincipal = request()->routeIs('dashboard'))
 
 <body
-    class="ss-page min-h-screen font-sans"
+    class="ss-page flex min-h-screen flex-col font-sans"
     data-search-suggestions-label="{{ __('js.search_suggestions') }}"
 >
     @include('layouts.navigation')
 
-    <main class="relative mx-auto flex w-full flex-col {{ $esInicioPrincipal ? 'bg-transparent' : 'ss-page-gradient' }}">
+    <main class="relative mx-auto flex w-full flex-1 flex-col {{ $esInicioPrincipal ? 'bg-transparent' : 'ss-page-gradient' }}">
 
         @if (session('status'))
             <div class="relative ss-container pt-6" x-data="{ show: true }" x-init="setTimeout(() => show = false, 2800)">
@@ -42,5 +43,6 @@
     </main>
 
     <x-layouts.footer />
+    @stack('scripts')
 </body>
 </html>

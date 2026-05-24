@@ -5,25 +5,19 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreProductoRequest;
 use App\Http\Requests\UpdateProductoRequest;
 use App\Models\Producto;
-use App\Models\Seccion;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class ProductoController extends Controller
 {
-    public function index(): View
+    public function index(): RedirectResponse
     {
-        $productos = Producto::with('seccion')->orderBy('nombre_producto')->paginate(15);
-        $secciones = Seccion::orderBy('nombre_seccion')->get();
-
-        return view('productos.index', compact('productos', 'secciones'));
+        return redirect()->route('admin.index', ['tab' => 'productos']);
     }
 
-    public function create(): View
+    public function create(): RedirectResponse
     {
-        $secciones = Seccion::orderBy('nombre_seccion')->get();
-
-        return view('productos.create', compact('secciones'));
+        return redirect()->route('admin.index', ['tab' => 'productos']);
     }
 
     public function store(StoreProductoRequest $request): RedirectResponse
@@ -35,11 +29,9 @@ class ProductoController extends Controller
             ->with('status', __('flash.productos.created'));
     }
 
-    public function edit(Producto $producto): View
+    public function edit(Producto $producto): RedirectResponse
     {
-        $secciones = Seccion::orderBy('nombre_seccion')->get();
-
-        return view('productos.edit', compact('producto', 'secciones'));
+        return redirect()->route('admin.index', ['tab' => 'productos']);
     }
 
     public function update(UpdateProductoRequest $request, Producto $producto): RedirectResponse
@@ -51,12 +43,16 @@ class ProductoController extends Controller
             ->with('status', __('flash.productos.updated'));
     }
 
-    public function destroy(Producto $producto): RedirectResponse
+    public function destroy(Request $request, Producto $producto): RedirectResponse
     {
         $producto->delete();
 
         return redirect()
-            ->route('productos.index')
+            ->route('admin.index', array_filter([
+                'tab' => 'productos',
+                'productos_busqueda' => trim((string) $request->query('productos_busqueda', '')),
+                'productos_page' => $request->query('productos_page'),
+            ], static fn ($value): bool => $value !== null && $value !== ''))
             ->with('status', __('flash.productos.deleted'));
     }
 }

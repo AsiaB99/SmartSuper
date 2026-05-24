@@ -153,7 +153,7 @@ class RecommendationFeatureTest extends TestCase
 
         $this->actingAs($usuario)
             ->post(route('listas.recomendacion.elegir', $lista), [
-                'id_supermercado' => $supermercado->id,
+                'combinacion' => sha1((string) $supermercado->id),
             ])
             ->assertRedirect(route('listas.finalizar.confirmar', $lista));
 
@@ -161,6 +161,18 @@ class RecommendationFeatureTest extends TestCase
             'id' => $lista->id,
             'id_supermercado_elegido' => $supermercado->id,
         ]);
+
+        $lista->refresh();
+
+        $this->assertSame([
+            [
+                'id_super' => $supermercado->id,
+                'nombre_super' => 'Elegible',
+                'distancia_km' => round((float) $lista->supermercados_recomendados_snapshot[0]['distancia_km'], 3),
+                'coste_distancia' => round((float) $lista->supermercados_recomendados_snapshot[0]['coste_distancia'], 2),
+                'items_cesta' => 1,
+            ],
+        ], $lista->supermercados_recomendados_snapshot);
     }
 
     public function test_cannot_select_recommendation_without_user_coordinates(): void
@@ -186,8 +198,70 @@ class RecommendationFeatureTest extends TestCase
         $this->actingAs($usuario)
             ->from(route('listas.recomendacion', $lista))
             ->post(route('listas.recomendacion.elegir', $lista), [
-                'id_supermercado' => $supermercado->id,
+                'combinacion' => sha1((string) $supermercado->id),
             ])
             ->assertSessionHasErrors('ubicacion');
+    }
+
+    public function test_user_can_select_multi_supermarket_recommendation_and_it_is_persisted(): void
+    {
+        $usuario = User::factory()->create([
+            'latitud' => 40.00000000,
+            'longitud' => -3.00000000,
+        ]);
+
+        $lista = Lista::query()->create([
+            'nombre_lista' => 'Mixta',
+            'estado' => 'activa',
+            'fecha_creacion' => now(),
+        ]);
+        $lista->usuarios()->attach($usuario->id, ['permiso_lista' => 'owner']);
+
+        $seccion = Seccion::query()->create(['nombre_seccion' => 'Basicos']);
+        $leche = Producto::query()->create([
+            'id_seccion' => $seccion->id,
+            'nombre_producto' => 'Leche',
+        ]);
+        $pan = Producto::query()->create([
+            'id_seccion' => $seccion->id,
+            'nombre_producto' => 'Pan',
+        ]);
+
+        DB::table('formadas')->insert([
+            ['id_lista' => $lista->id, 'id_producto' => $leche->id, 'cantidad' => 1, 'marcado' => false],
+            ['id_lista' => $lista->id, 'id_producto' => $pan->id, 'cantidad' => 1, 'marcado' => false],
+        ]);
+
+        $superLeche = Supermercado::query()->create([
+            'nombre_super' => 'Super leche',
+            'latitud' => 40.00100000,
+            'longitud' => -3.00100000,
+        ]);
+        $superPan = Supermercado::query()->create([
+            'nombre_super' => 'Super pan',
+            'latitud' => 40.00150000,
+            'longitud' => -3.00150000,
+        ]);
+
+        DB::table('venden')->insert([
+            ['id_producto' => $leche->id, 'id_super' => $superLeche->id, 'precio' => 1.50],
+            ['id_producto' => $pan->id, 'id_super' => $superPan->id, 'precio' => 1.20],
+        ]);
+
+        $this->actingAs($usuario)
+            ->get(route('listas.recomendacion', $lista))
+            ->assertSeeText('2 supermercados combinados')
+            ->assertSeeText('Super leche + Super pan');
+
+        $this->actingAs($usuario)
+            ->post(route('listas.recomendacion.elegir', $lista), [
+                'combinacion' => sha1($superLeche->id.'-'.$superPan->id),
+            ])
+            ->assertRedirect(route('listas.finalizar.confirmar', $lista));
+
+        $lista->refresh();
+
+        $this->assertSame($superLeche->id, $lista->id_supermercado_elegido);
+        $this->assertCount(2, $lista->supermercados_recomendados_snapshot ?? []);
     }
 }

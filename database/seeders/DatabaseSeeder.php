@@ -2,13 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\Producto;
 use App\Models\Seccion;
-use App\Models\Supermercado;
 use App\Models\User;
-use App\Models\Venden;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\File;
+use JsonException;
 
 class DatabaseSeeder extends Seeder
 {
@@ -33,117 +32,85 @@ class DatabaseSeeder extends Seeder
             'rol' => 'admin',
         ]);
 
-        // Crear secciones
-        $secciones = [
-            'Frutas y verduras',
-            'Carnes y pescados',
-            'Lácteos',
+        foreach ($this->resolverSeccionesCatalogo() as $seccion) {
+            Seccion::query()->firstOrCreate(['nombre_seccion' => $seccion]);
+        }
+
+        // El catálogo y los precios reales se incorporan desde importaciones
+        // y validación manual, no desde datos de demostración.
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function resolverSeccionesCatalogo(): array
+    {
+        $rutaCatalogo = (string) env('SECCIONES_CATALOGO_PATH', storage_path('app/scraping'));
+
+        if (! File::isDirectory($rutaCatalogo)) {
+            return $this->seccionesFallback();
+        }
+
+        $secciones = collect(File::allFiles($rutaCatalogo))
+            ->filter(fn (\SplFileInfo $archivo): bool => str_ends_with($archivo->getFilename(), '-normalizado.json'))
+            ->map(fn (\SplFileInfo $archivo): ?string => $this->extraerSeccionDesdeArchivo($archivo->getPathname()))
+            ->filter(fn (?string $seccion): bool => $seccion !== null)
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+
+        return $secciones !== [] ? $secciones : $this->seccionesFallback();
+    }
+
+    private function extraerSeccionDesdeArchivo(string $rutaArchivo): ?string
+    {
+        try {
+            $payload = json_decode(File::get($rutaArchivo), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return null;
+        }
+
+        if (! is_array($payload)) {
+            return null;
+        }
+
+        $nombre = $payload['categoria']['nombre'] ?? null;
+
+        if (! is_string($nombre)) {
+            return null;
+        }
+
+        $nombre = trim($nombre);
+
+        if ($nombre === '') {
+            return null;
+        }
+
+        return mb_substr($nombre, 0, 50);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function seccionesFallback(): array
+    {
+        return [
+            'Aceite, vinagre y sal',
+            'Agua',
+            'Aperitivos',
+            'Arroz y pasta',
             'Bebidas',
-            'Alimentos secos',
+            'Bebé',
+            'Carnes',
             'Congelados',
-            'Higiene y limpieza',
-            'Panadería',
+            'Droguería y limpieza',
+            'Fruta',
+            'Huevos, leche y mantequilla',
+            'Pan de molde y hamburguesa',
+            'Pescado',
+            'Postres y yogures',
+            'Verdura',
         ];
-
-        foreach ($secciones as $seccion) {
-            Seccion::factory()->create(['nombre_seccion' => $seccion]);
-        }
-
-        // Crear supermercados con coordenadas reales (Buenos Aires)
-        $supermercados = [
-            [
-                'nombre_super' => 'Carrefour Centro',
-                'latitud' => -34.603722,
-                'longitud' => -58.381592,
-            ],
-            [
-                'nombre_super' => 'Disco Supermercado',
-                'latitud' => -34.595764,
-                'longitud' => -58.374850,
-            ],
-            [
-                'nombre_super' => 'Jumbo',
-                'latitud' => -34.585721,
-                'longitud' => -58.378923,
-            ],
-            [
-                'nombre_super' => 'Coto',
-                'latitud' => -34.575829,
-                'longitud' => -58.385102,
-            ],
-            [
-                'nombre_super' => 'Walmart',
-                'latitud' => -34.598174,
-                'longitud' => -58.392916,
-            ],
-        ];
-
-        foreach ($supermercados as $super) {
-            Supermercado::factory()->create($super);
-        }
-
-        // Crear productos variados
-        $productos = [
-            // Frutas y verduras
-            ['nombre_producto' => 'Manzanas Rojas', 'id_seccion' => 1],
-            ['nombre_producto' => 'Plátanos', 'id_seccion' => 1],
-            ['nombre_producto' => 'Tomates', 'id_seccion' => 1],
-            ['nombre_producto' => 'Lechuga', 'id_seccion' => 1],
-            ['nombre_producto' => 'Cebolla', 'id_seccion' => 1],
-            // Carnes y pescados
-            ['nombre_producto' => 'Pechuga de Pollo', 'id_seccion' => 2],
-            ['nombre_producto' => 'Carne Molida', 'id_seccion' => 2],
-            ['nombre_producto' => 'Salmón Fresco', 'id_seccion' => 2],
-            ['nombre_producto' => 'Jamón Cocido', 'id_seccion' => 2],
-            // Lácteos
-            ['nombre_producto' => 'Leche Descremada', 'id_seccion' => 3],
-            ['nombre_producto' => 'Queso Fresco', 'id_seccion' => 3],
-            ['nombre_producto' => 'Yogur Natural', 'id_seccion' => 3],
-            ['nombre_producto' => 'Manteca', 'id_seccion' => 3],
-            // Bebidas
-            ['nombre_producto' => 'Agua Mineral', 'id_seccion' => 4],
-            ['nombre_producto' => 'Jugo Naranja', 'id_seccion' => 4],
-            ['nombre_producto' => 'Café', 'id_seccion' => 4],
-            ['nombre_producto' => 'Té', 'id_seccion' => 4],
-            // Alimentos secos
-            ['nombre_producto' => 'Arroz Integral', 'id_seccion' => 5],
-            ['nombre_producto' => 'Pasta', 'id_seccion' => 5],
-            ['nombre_producto' => 'Fideos', 'id_seccion' => 5],
-            ['nombre_producto' => 'Aceite de oliva', 'id_seccion' => 5],
-            ['nombre_producto' => 'Sal', 'id_seccion' => 5],
-            // Congelados
-            ['nombre_producto' => 'Milanesas de Carne', 'id_seccion' => 6],
-            ['nombre_producto' => 'Espinaca Congelada', 'id_seccion' => 6],
-            ['nombre_producto' => 'Papas Prefritas', 'id_seccion' => 6],
-            // Higiene y limpieza
-            ['nombre_producto' => 'Detergente', 'id_seccion' => 7],
-            ['nombre_producto' => 'Jabón de Manos', 'id_seccion' => 7],
-            ['nombre_producto' => 'Papel Higiénico', 'id_seccion' => 7],
-            // Panadería
-            ['nombre_producto' => 'Pan Blanco', 'id_seccion' => 8],
-            ['nombre_producto' => 'Pan Integral', 'id_seccion' => 8],
-            ['nombre_producto' => 'Facturas', 'id_seccion' => 8],
-        ];
-
-        foreach ($productos as $producto) {
-            Producto::factory()->create($producto);
-        }
-
-        $todosProductos = Producto::query()->get(['id']);
-        $todosSupermercados = Supermercado::query()->get(['id']);
-
-        foreach ($todosProductos as $producto) {
-            foreach ($todosSupermercados as $supermercado) {
-                $precio = round((float) random_int(120, 1200) / 10, 2);
-
-                Venden::query()->create([
-                    'id_producto' => $producto->id,
-                    'id_super' => $supermercado->id,
-                    'precio' => $precio,
-                    'precio_unidad' => $precio,
-                    'unidad_ref' => 'unidad',
-                ]);
-            }
-        }
     }
 }

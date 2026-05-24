@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\CadenaSupermercado;
 use App\Models\Producto;
 use App\Models\ProductoExterno;
+use App\Models\Seccion;
+use App\Support\TaxonomiaSecciones;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -28,9 +31,10 @@ class MapeoProductosExternosService
         }
 
         $catalogo = Producto::query()
+            ->where('origen_catalogo', '!=', Producto::ORIGEN_DEMO)
             ->with('seccion')
             ->orderBy('nombre_producto')
-            ->get(['id', 'id_seccion', 'nombre_producto', 'marca', 'formato', 'imagen']);
+            ->get(['id', 'id_seccion', 'nombre_producto', 'marca', 'formato', 'imagen', 'origen_catalogo']);
 
         return $items->map(function (ProductoExterno $productoExterno) use ($catalogo): ProductoExterno {
             if ($productoExterno->mapeo_estado === ProductoExterno::ESTADO_MAPEADO && $productoExterno->producto_id !== null) {
@@ -54,18 +58,15 @@ class MapeoProductosExternosService
                 return $productoExterno->refresh();
             }
 
-            $snapshot = $this->buildSnapshot($mejorCandidato, $mejorScore);
-
             if ($this->debeAutoMapear($mejorScore, $segundoScore)) {
-                $productoExterno->forceFill([
-                    'producto_id' => $mejorCandidato->id,
-                    'mapeo_estado' => ProductoExterno::ESTADO_MAPEADO,
-                    'sugerencia_score' => $this->roundScore($mejorScore),
-                    'sugerencia_snapshot' => $snapshot,
-                ])->save();
+                DB::transaction(function () use ($productoExterno, $mejorCandidato, $mejorScore): void {
+                    $this->aplicarMapeoConfirmado($productoExterno, $mejorCandidato, $mejorScore);
+                });
 
                 return $productoExterno->refresh();
             }
+
+            $snapshot = $this->buildSnapshot($mejorCandidato, $mejorScore);
 
             $productoExterno->forceFill([
                 'producto_id' => null,
@@ -83,12 +84,9 @@ class MapeoProductosExternosService
     public function confirmarMapeo(ProductoExterno $productoExterno, Producto $producto): ProductoExterno
     {
         DB::transaction(function () use ($productoExterno, $producto): void {
-            $productoExterno->forceFill([
-                'producto_id' => $producto->id,
-                'mapeo_estado' => ProductoExterno::ESTADO_MAPEADO,
-                'sugerencia_snapshot' => $this->buildSnapshot($producto, $this->calcularScore($productoExterno, $producto)),
-                'sugerencia_score' => $this->roundScore($this->calcularScore($productoExterno, $producto)),
-            ])->save();
+            $score = $this->calcularScore($productoExterno, $producto);
+
+            $this->aplicarMapeoConfirmado($productoExterno, $producto, $score);
         });
 
         return $productoExterno->refresh();
@@ -100,6 +98,7 @@ class MapeoProductosExternosService
     public function buscarCandidatosManuales(ProductoExterno $productoExterno, ?string $busqueda = null, int $limit = 8): Collection
     {
         $query = Producto::query()
+            ->where('origen_catalogo', '!=', Producto::ORIGEN_DEMO)
             ->with('seccion')
             ->orderBy('nombre_producto');
 
@@ -114,7 +113,7 @@ class MapeoProductosExternosService
         }
 
         return $query->limit(max($limit * 3, $limit))
-            ->get(['id', 'id_seccion', 'nombre_producto', 'marca', 'formato', 'imagen'])
+            ->get(['id', 'id_seccion', 'nombre_producto', 'marca', 'formato', 'imagen', 'origen_catalogo'])
             ->map(fn (Producto $producto): array => [
                 'producto' => $producto,
                 'score' => $this->calcularScore($productoExterno, $producto),
@@ -127,6 +126,7 @@ class MapeoProductosExternosService
     public function crearYMapearProducto(ProductoExterno $productoExterno, array $atributos): ProductoExterno
     {
         return DB::transaction(function () use ($productoExterno, $atributos): ProductoExterno {
+            $atributos['origen_catalogo'] = Producto::ORIGEN_EXTERNO;
             $producto = Producto::query()->create($atributos);
 
             return $this->confirmarMapeo($productoExterno, $producto);
@@ -141,6 +141,87 @@ class MapeoProductosExternosService
         ])->save();
 
         return $productoExterno->refresh();
+    }
+
+    /**
+     * @param  ProductoExterno|EloquentCollection<int, ProductoExterno>  $productosExternos
+     * @return Collection<int, ProductoExterno>
+     */
+    public function materializarPendientes(ProductoExterno|EloquentCollection $productosExternos): Collection
+    {
+        $items = $productosExternos instanceof ProductoExterno
+            ? collect([$productosExternos])
+            : $productosExternos->values();
+
+        return $items->map(function (ProductoExterno $productoExterno): ProductoExterno {
+            $productoExterno->refresh();
+
+            if ($productoExterno->mapeo_estado === ProductoExterno::ESTADO_DESCARTADO) {
+                return $productoExterno;
+            }
+
+            if ($productoExterno->mapeo_estado === ProductoExterno::ESTADO_MAPEADO && $productoExterno->producto_id !== null) {
+                return $this->sincronizarPreciosCadena($productoExterno);
+            }
+
+            if ($productoExterno->mapeo_estado === ProductoExterno::ESTADO_SUGERIDO) {
+                $productoSugeridoId = (int) ($productoExterno->sugerencia_snapshot['id'] ?? 0);
+
+                if ($productoSugeridoId > 0) {
+                    $producto = Producto::query()->find($productoSugeridoId);
+
+                    if ($producto !== null) {
+                        return $this->confirmarMapeo($productoExterno, $producto);
+                    }
+                }
+            }
+
+            return $this->crearYMapearProducto($productoExterno, $this->buildAtributosCanonicosDesdeExterno($productoExterno));
+        });
+    }
+
+    public function sincronizarPreciosCadena(ProductoExterno $productoExterno): ProductoExterno
+    {
+        if ($productoExterno->producto_id === null || $productoExterno->precio === null) {
+            return $productoExterno;
+        }
+
+        $cadena = $this->resolverCadenaDesdeFuente($productoExterno->fuente);
+
+        DB::table('precios_cadena')->updateOrInsert(
+            [
+                'id_producto' => $productoExterno->producto_id,
+                'id_cadena' => $cadena->id,
+            ],
+            [
+                'precio' => $productoExterno->precio,
+                'precio_unidad' => $productoExterno->precio_unidad,
+                'unidad_ref' => $this->limitarLongitud($productoExterno->unidad_ref, 20),
+                'fecha_actualizacion' => $productoExterno->fecha_importacion ?? now(),
+            ]
+        );
+
+        return $productoExterno->refresh();
+    }
+
+    public function limpiarFormatoProducto(Producto $producto): bool
+    {
+        $formatoLimpio = $this->resolverFormatoLimpioProducto($producto);
+
+        if ($formatoLimpio === $this->normalizarCampoPersistible($producto->formato)) {
+            return false;
+        }
+
+        $producto->forceFill([
+            'formato' => $formatoLimpio,
+        ])->save();
+
+        return true;
+    }
+
+    public function resolverFormatoLimpioProducto(Producto $producto): ?string
+    {
+        return $this->sanearFormatoDuplicado($producto->formato, $producto->nombre_producto);
     }
 
     /**
@@ -260,5 +341,161 @@ class MapeoProductosExternosService
     private function roundScore(float $score): float
     {
         return round($score, 4);
+    }
+
+    private function aplicarMapeoConfirmado(ProductoExterno $productoExterno, Producto $producto, float $score): void
+    {
+        $this->enriquecerProductoCanonico($producto, $productoExterno);
+        $producto->loadMissing('seccion');
+
+        $productoExterno->forceFill([
+            'producto_id' => $producto->id,
+            'mapeo_estado' => ProductoExterno::ESTADO_MAPEADO,
+            'sugerencia_snapshot' => $this->buildSnapshot($producto, $score),
+            'sugerencia_score' => $this->roundScore($score),
+        ])->save();
+
+        $this->sincronizarPreciosCadena($productoExterno->refresh());
+    }
+
+    private function enriquecerProductoCanonico(Producto $producto, ProductoExterno $productoExterno): void
+    {
+        $updates = [];
+
+        if ($producto->marca_canonica === null && $productoExterno->marca !== null && trim($productoExterno->marca) !== '') {
+            $updates['marca'] = trim($productoExterno->marca);
+        }
+
+        $formatoExterno = $this->resolverFormatoCanonicoExterno($productoExterno);
+
+        if ($producto->formato_canonico === null && $formatoExterno !== null) {
+            $updates['formato'] = $formatoExterno;
+        }
+
+        if ($producto->imagen_canonica === null && $productoExterno->imagen !== null && trim($productoExterno->imagen) !== '') {
+            $updates['imagen'] = trim($productoExterno->imagen);
+        }
+
+        if ($updates !== []) {
+            $producto->fill($updates)->save();
+        }
+    }
+
+    private function resolverFormatoCanonicoExterno(ProductoExterno $productoExterno): ?string
+    {
+        $formatoBase = trim((string) $productoExterno->formato);
+        $tamano = trim((string) $productoExterno->tamano);
+
+        if ($formatoBase !== '' && $tamano !== '') {
+            $tamanoNormalizado = $this->normalizarTexto($tamano);
+            $formatoNormalizado = $this->normalizarTexto($formatoBase);
+
+            if ($formatoNormalizado !== '' && Str::startsWith($tamanoNormalizado, $formatoNormalizado)) {
+                $formato = $tamano;
+            } else {
+                $formato = "{$formatoBase} {$tamano}";
+            }
+        } else {
+            $formato = trim(collect([$productoExterno->formato, $productoExterno->tamano])
+                ->filter(fn (?string $valor): bool => $valor !== null && trim($valor) !== '')
+                ->implode(' '));
+        }
+
+        return $this->sanearFormatoDuplicado($formato, $productoExterno->nombre);
+    }
+
+    /**
+     * @return array{id_seccion:int,nombre_producto:string,marca:?string,formato:?string,imagen:?string}
+     */
+    private function buildAtributosCanonicosDesdeExterno(ProductoExterno $productoExterno): array
+    {
+        return [
+            'id_seccion' => $this->resolverSeccionId($productoExterno),
+            'nombre_producto' => $this->limitarLongitud($productoExterno->nombre, 100, 'Producto externo'),
+            'marca' => $this->limitarLongitud($productoExterno->marca, 50),
+            'formato' => $this->limitarLongitud($this->resolverFormatoCanonicoExterno($productoExterno), 50),
+            'imagen' => $this->limitarLongitud($productoExterno->imagen, 255),
+        ];
+    }
+
+    private function resolverSeccionId(ProductoExterno $productoExterno): int
+    {
+        $nombreSeccion = $this->limitarLongitud(
+            TaxonomiaSecciones::resolverParaCategoriaExterna($productoExterno->categoria_nombre),
+            50,
+            TaxonomiaSecciones::SECCION_OTROS
+        );
+
+        return (int) Seccion::query()->firstOrCreate([
+            'nombre_seccion' => $nombreSeccion,
+        ])->id;
+    }
+
+    private function resolverCadenaDesdeFuente(string $fuente): CadenaSupermercado
+    {
+        $nombre = match (Str::lower(trim($fuente))) {
+            'mercadona' => 'Mercadona',
+            'consum' => 'Consum',
+            'carrefour' => 'Carrefour',
+            default => Str::headline($fuente),
+        };
+
+        return CadenaSupermercado::query()->firstOrCreate(
+            ['nombre_normalizado' => Str::lower(Str::ascii($nombre))],
+            ['nombre' => $nombre]
+        );
+    }
+
+    private function limitarLongitud(?string $valor, int $maximo, ?string $fallback = null): ?string
+    {
+        $valor = trim((string) $valor);
+
+        if ($valor === '') {
+            return $fallback;
+        }
+
+        return mb_substr($valor, 0, $maximo);
+    }
+
+    private function sanearFormatoDuplicado(?string $formato, ?string $nombreProducto): ?string
+    {
+        $formatoNormalizado = $this->normalizarCampoPersistible($formato);
+        $nombreNormalizado = $this->normalizarCampoPersistible($nombreProducto);
+
+        if ($formatoNormalizado === null || $nombreNormalizado === null) {
+            return $formatoNormalizado;
+        }
+
+        if ($this->normalizarTexto($formatoNormalizado) === $this->normalizarTexto($nombreNormalizado)) {
+            return null;
+        }
+
+        $tokensNombre = preg_split('/[^\pL\pN]+/u', $nombreNormalizado, -1, PREG_SPLIT_NO_EMPTY);
+
+        if ($tokensNombre === false || $tokensNombre === []) {
+            return $formatoNormalizado;
+        }
+
+        $patron = '/^\s*'.implode('[\s,;:()\/-]+', array_map(
+            static fn (string $token): string => preg_quote($token, '/'),
+            $tokensNombre
+        )).'\b[\s,;:()\/-]*/iu';
+
+        $sinNombre = preg_replace($patron, '', $formatoNormalizado, 1);
+
+        if (! is_string($sinNombre) || $sinNombre === $formatoNormalizado) {
+            return $formatoNormalizado;
+        }
+
+        $sinNombre = trim($sinNombre, " \t\n\r\0\x0B,;:.-/");
+
+        return $sinNombre !== '' ? $sinNombre : null;
+    }
+
+    private function normalizarCampoPersistible(?string $valor): ?string
+    {
+        $valor = trim((string) $valor);
+
+        return $valor !== '' ? $valor : null;
     }
 }

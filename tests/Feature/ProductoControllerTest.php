@@ -38,10 +38,7 @@ class ProductoControllerTest extends TestCase
 
         $response = $this->actingAs($admin)->get(route('productos.index'));
 
-        $response->assertOk();
-        $response->assertViewHas('productos');
-        $response->assertViewHas('secciones');
-        $response->assertSee(route('admin.productos.create'), false);
+        $response->assertRedirect(route('admin.index', ['tab' => 'productos']));
     }
 
     public function test_admin_can_create_producto(): void
@@ -90,7 +87,7 @@ class ProductoControllerTest extends TestCase
         $response = $this->actingAs($admin)
             ->delete(route('admin.productos.destroy', $producto));
 
-        $response->assertRedirect(route('productos.index'));
+        $response->assertRedirect(route('admin.index', ['tab' => 'productos']));
         $this->assertDatabaseMissing('productos', [
             'id' => $producto->id,
         ]);
@@ -141,5 +138,19 @@ class ProductoControllerTest extends TestCase
             'id_seccion' => $seccion->id,
         ])->assertForbidden();
         $this->actingAs($user)->delete(route('admin.productos.destroy', $producto))->assertForbidden();
+    }
+
+    public function test_legacy_admin_producto_pages_redirect_to_panel(): void
+    {
+        $admin = User::factory()->create(['rol' => 'admin']);
+        $producto = Producto::factory()->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.productos.create'))
+            ->assertRedirect(route('admin.index', ['tab' => 'productos']));
+
+        $this->actingAs($admin)
+            ->get(route('admin.productos.edit', $producto))
+            ->assertRedirect(route('admin.index', ['tab' => 'productos']));
     }
 }
