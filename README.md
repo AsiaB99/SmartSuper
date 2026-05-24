@@ -89,3 +89,74 @@ Esto genera `public/build/manifest.json`, requerido por `@vite(...)` en las vist
 
 - `npm run dev`: servidor Vite para desarrollo
 - `npm run build`: compilación de producción de assets
+
+## Automatización de catálogo externo
+
+El catálogo externo de precios queda orquestado por Laravel con:
+
+```bash
+php artisan catalogo:actualizar
+```
+
+Opciones disponibles:
+
+```bash
+php artisan catalogo:actualizar --fuente=mercadona
+php artisan catalogo:actualizar --fuente=consum
+php artisan catalogo:actualizar --fuente=carrefour
+php artisan catalogo:actualizar --solo-importar
+php artisan catalogo:actualizar --solo-scraping
+```
+
+### Configuración en `.env`
+
+La automatización usa variables `CATALOGO_EXTERNO_*`:
+
+- activación del scheduler: `CATALOGO_EXTERNO_SCHEDULER_ENABLED`
+- binario de PowerShell: `CATALOGO_EXTERNO_POWERSHELL_BINARY`
+- timeout de procesos: `CATALOGO_EXTERNO_PROCESS_TIMEOUT`
+- parámetros de `mercadona`, `consum` y `carrefour`
+
+La primera versión opera con un único contexto por cadena.
+
+### Despliegue en servidor
+
+Para que la actualización diaria se ejecute automáticamente en producción hacen falta estos prerrequisitos:
+
+- PHP CLI operativo
+- PowerShell 7 disponible en el servidor
+- Python disponible para los scrapers
+- permisos de escritura en `storage/app/scraping`
+- `.env` de producción con `CATALOGO_EXTERNO_SCHEDULER_ENABLED=true`
+
+Laravel ya registra el comando diario en su scheduler. Solo falta que el servidor ejecute el scheduler de Laravel cada minuto:
+
+```cron
+* * * * * cd /ruta/al/proyecto && php artisan schedule:run >> /dev/null 2>&1
+```
+
+En Windows Task Scheduler, el equivalente es lanzar cada minuto:
+
+```powershell
+php artisan schedule:run
+```
+
+desde la raíz del proyecto.
+
+### Verificación postdespliegue
+
+Comandos útiles:
+
+```bash
+php artisan schedule:list
+php artisan catalogo:actualizar --fuente=mercadona
+php artisan catalogo:actualizar --fuente=consum
+php artisan catalogo:actualizar --fuente=carrefour --solo-importar
+```
+
+Qué revisar:
+
+- salida del comando sin errores
+- tabla `productos_externos` con `fecha_importacion` actualizada
+- productos marcados como `disponible = false` cuando desaparecen del lote
+- panel admin de productos externos con sugerencias regeneradas
