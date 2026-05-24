@@ -7,7 +7,7 @@
 
 <div class="flex flex-wrap items-start gap-4">
     @if ($productoSeleccionado)
-        <div class="h-20 w-20 shrink-0 overflow-hidden rounded-[18px] border border-[var(--color-borde-suave)] bg-white">
+        <div class="h-16 w-16 shrink-0 overflow-hidden rounded-[18px] border border-[var(--color-borde-suave)] bg-white sm:h-20 sm:w-20">
             <img
                 src="{{ $productoSeleccionado->imagen_canonica ?? asset('img/productos/placeholder.svg') }}"
                 alt="{{ $productoSeleccionado->nombre_canonico }}"
@@ -18,7 +18,7 @@
 
     <div class="min-w-0 flex-1">
         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">Comparativa</p>
-        <h2 class="mt-2 text-3xl font-semibold leading-tight text-ink-900">
+        <h2 class="mt-2 text-2xl font-semibold leading-tight text-ink-900 sm:text-3xl">
             {{ $productoSeleccionado?->nombre_canonico ?? __('precios.index.select_product') }}
         </h2>
 
@@ -38,14 +38,14 @@
         <div class="mt-3 grid gap-3 sm:grid-cols-2">
             <div class="rounded-[14px] bg-white/80 p-4">
                 <p class="text-xs font-semibold uppercase tracking-[0.08em] text-ink-500">Mejor precio</p>
-                <p class="mt-2 text-2xl font-bold text-brand-700">{{ number_format((float) $precioMin, 2, ',', '.') }} €</p>
+                <p class="mt-2 text-xl font-bold text-brand-700 sm:text-2xl">{{ number_format((float) $precioMin, 2, ',', '.') }} €</p>
                 <p class="mt-1 text-sm text-ink-700">{{ $preciosOrdenados->first()->nombre_super }}</p>
             </div>
 
             @if ($diferenciaMaxima !== null && $diferenciaMaxima > 0)
                 <div class="rounded-[14px] bg-white/80 p-4">
                     <p class="text-xs font-semibold uppercase tracking-[0.08em] text-ink-500">Ahorro máximo</p>
-                    <p class="mt-2 text-2xl font-bold text-emerald-700">{{ number_format((float) $diferenciaMaxima, 2, ',', '.') }} €</p>
+                    <p class="mt-2 text-xl font-bold text-emerald-700 sm:text-2xl">{{ number_format((float) $diferenciaMaxima, 2, ',', '.') }} €</p>
                     <p class="mt-1 text-sm text-ink-700">Entre mejor y peor precio visible</p>
                 </div>
             @endif
@@ -69,19 +69,19 @@
                     : 100;
             @endphp
 
-            <article class="rounded-[18px] border border-[var(--color-borde-suave)] bg-[var(--color-fondo-claro)] p-5 shadow-[0_5px_15px_rgba(0,0,0,0.05)]">
-                <div class="flex flex-wrap items-start justify-between gap-3">
+            <article class="rounded-[18px] border border-[var(--color-borde-suave)] bg-[var(--color-fondo-claro)] p-4 shadow-[0_5px_15px_rgba(0,0,0,0.05)] sm:p-5">
+                <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
                     <div>
-                        <div class="flex items-center gap-2">
-                            <h3 class="text-lg font-semibold text-ink-900">{{ $precio->nombre_super }}</h3>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h3 class="text-base font-semibold text-ink-900 sm:text-lg">{{ $precio->nombre_super }}</h3>
                             @if ($esMejor)
                                 <span class="rounded-full bg-[var(--color-exito-suave)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">{{ __('precios.index.best') }}</span>
                             @endif
                         </div>
                     </div>
 
-                    <div class="text-right">
-                        <strong class="text-3xl {{ $esMejor ? 'text-brand-700' : 'text-ink-900' }}">{{ number_format((float) $precio->precio, 2, ',', '.') }} €</strong>
+                    <div class="sm:text-right">
+                        <strong class="text-2xl {{ $esMejor ? 'text-brand-700' : 'text-ink-900' }} sm:text-3xl">{{ number_format((float) $precio->precio, 2, ',', '.') }} €</strong>
                         @if ($diferencia > 0.001)
                             <p class="mt-1 text-sm font-semibold text-amber-700">+{{ number_format((float) $diferencia, 2, ',', '.') }} €</p>
                         @else

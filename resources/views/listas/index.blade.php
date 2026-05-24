@@ -8,7 +8,7 @@
 
     <section class="ss-section">
         <div class="ss-container">
-            <section class="relative mb-12 overflow-hidden rounded-[20px] p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+            <section class="ss-hero mb-8 sm:mb-12">
                 <img
                     src="{{ asset('img/encabezados/encabezado_lista.png') }}"
                     alt=""
@@ -16,8 +16,8 @@
                     aria-hidden="true"
                 >
                 <div class="absolute inset-0 bg-white/60" aria-hidden="true"></div>
-                <h1 class="relative text-4xl font-semibold text-ink-900">{{ __('listas.index.title') }}</h1>
-                <p class="relative mx-auto mt-4 max-w-3xl text-lg leading-7 text-ink-600">
+                <h1 class="ss-hero-title">{{ __('listas.index.title') }}</h1>
+                <p class="ss-hero-subtitle">
                     {{ __('listas.index.subtitle') }}
                 </p>
             </section>
@@ -26,13 +26,13 @@
                 <section class="grid gap-5">
                     @forelse ($listas as $lista)
                         @php($estaComprada = $lista->estado === 'comprada')
-                        <article class="flex flex-wrap items-center justify-between gap-5 rounded-[15px] bg-white p-5 shadow-[0_4px_10px_rgba(0,0,0,0.03)] transition duration-300 hover:translate-x-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)]">
-                            <div class="flex items-center gap-5">
-                                <div class="flex h-[70px] w-[70px] items-center justify-center rounded-[10px] bg-brand-50 text-brand-500">
+                        <article class="flex flex-col gap-5 rounded-[15px] bg-white p-4 shadow-[0_4px_10px_rgba(0,0,0,0.03)] transition duration-300 hover:translate-x-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] sm:p-5 lg:flex-row lg:items-center lg:justify-between">
+                            <div class="flex items-center gap-4 sm:gap-5">
+                                <div class="flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-[10px] bg-brand-50 text-brand-500 sm:h-[70px] sm:w-[70px]">
                                     <x-ui.icon name="list-bullet" class="h-8 w-8" />
                                 </div>
-                                <div>
-                                    <h2 class="text-xl font-semibold text-ink-900">{{ $lista->nombre_lista }}</h2>
+                                <div class="min-w-0">
+                                    <h2 class="text-lg font-semibold text-ink-900 sm:text-xl">{{ $lista->nombre_lista }}</h2>
                                     <p class="mt-1 text-sm text-ink-500">{{ __('listas.index.created_at') }} {{ optional($lista->fecha_creacion)->format('d/m/Y H:i') ?? __('common.no_date') }}</p>
                                     <span class="mt-2 inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $estaComprada ? 'bg-[var(--color-exito-suave)] text-brand-600' : 'bg-accent-100 text-accent-800' }}">
                                         {{ __('common.states.' . $lista->estado) }}
@@ -40,7 +40,7 @@
                                 </div>
                             </div>
 
-                            <div class="flex flex-wrap items-center gap-3">
+                            <div class="ss-mobile-actions w-full lg:w-auto lg:justify-end">
                                 <a class="ss-btn-outline inline-flex items-center justify-center" href="{{ route('listas.show', $lista) }}" aria-label="{{ __('listas.index.view_label', ['name' => $lista->nombre_lista]) }}" title="{{ __('listas.index.view_title') }}">
                                     <x-ui.icon name="eye" class="h-5 w-5" />
                                 </a>
@@ -89,8 +89,8 @@
                     @endforelse
                 </section>
 
-                <x-listas.resumen-aside class="p-8">
-                    <h2 class="text-2xl font-semibold text-ink-900">{{ __('common.summary') }}</h2>
+                <x-listas.resumen-aside class="p-6 sm:p-8">
+                    <h2 class="text-xl font-semibold text-ink-900 sm:text-2xl">{{ __('common.summary') }}</h2>
                     <p class="mt-3 text-sm text-ink-600">{{ __('listas.index.summary.count') }}</p>
                     <p class="mt-1 text-3xl font-bold text-ink-900 text-center">{{ $listas->count() }}</p>
                     <div class="my-2 rounded-[10px] bg-[var(--color-info-suave)] p-3 text-sm font-semibold text-brand-600 text-center">
@@ -231,4 +231,3 @@
     </script>
     @vite('resources/js/listas-index.js')
 @endsection
-

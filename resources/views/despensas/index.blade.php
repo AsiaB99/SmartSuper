@@ -8,7 +8,7 @@
 
     <section class="ss-section">
         <div class="ss-container">
-            <section class="relative mb-12 overflow-hidden rounded-[20px] p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+            <section class="ss-hero mb-8 sm:mb-12">
                 <img
                     src="{{ asset('img/encabezados/encabezado_lista.png') }}"
                     alt=""
@@ -16,8 +16,8 @@
                     aria-hidden="true"
                 >
                 <div class="absolute inset-0 bg-white/60" aria-hidden="true"></div>
-                <h1 class="relative text-4xl font-semibold text-ink-900">{{ __('despensas.index.title') }}</h1>
-                <p class="relative mx-auto mt-4 max-w-3xl text-lg leading-7 text-ink-600">
+                <h1 class="ss-hero-title">{{ __('despensas.index.title') }}</h1>
+                <p class="ss-hero-subtitle">
                     {{ __('despensas.index.subtitle') }}
                 </p>
             </section>
@@ -26,14 +26,14 @@
                 <section class="grid gap-8 md:grid-cols-2">
                     @forelse ($despensas as $despensa)
                         @php($stockNivel = $resumenStock[$despensa->id] ?? ['porcentaje' => 0, 'bar_class' => 'bg-ink-300'])
-                        <article class="flex h-full flex-col rounded-[18px] border border-slate-200 bg-[linear-gradient(145deg,#ffffff_0%,#f7fbfa_100%)] p-6 shadow-[0_8px_24px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(15,23,42,0.12)]">
+                        <article class="flex h-full flex-col rounded-[18px] border border-slate-200 bg-[linear-gradient(145deg,#ffffff_0%,#f7fbfa_100%)] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(15,23,42,0.12)] sm:p-6">
                             <div class="mb-5 flex items-center justify-between gap-3">
-                                <div class="flex min-w-0 items-center gap-4">
-                                    <div class="flex h-[52px] w-[52px] items-center justify-center rounded-[14px] bg-brand-500/10 text-brand-600">
+                                <div class="flex min-w-0 items-center gap-3 sm:gap-4">
+                                    <div class="flex h-[48px] w-[48px] items-center justify-center rounded-[14px] bg-brand-500/10 text-brand-600 sm:h-[52px] sm:w-[52px]">
                                         <x-ui.icon name="archive-box" class="h-6 w-6" />
                                     </div>
                                     <div class="min-w-0">
-                                        <h2 class="truncate text-xl font-semibold text-ink-900">{{ $despensa->nombre_despensa }}</h2>
+                                        <h2 class="truncate text-lg font-semibold text-ink-900 sm:text-xl">{{ $despensa->nombre_despensa }}</h2>
                                         <p class="text-sm text-ink-500">{{ __('common.created_at') }} {{ optional($despensa->fecha_creacion)->format('d/m/Y H:i') ?? __('common.no_date') }}</p>
                                     </div>
                                 </div>
@@ -50,7 +50,7 @@
                                 </div>
                             </div>
 
-                            <div class="mt-5 flex flex-wrap items-center gap-3">
+                            <div class="ss-mobile-actions mt-5">
                                 <a class="ss-btn-green flex-1" href="{{ route('despensas.stock', $despensa) }}">{{ __('despensas.index.stock') }}</a>
                                 @can('update', $despensa)
                                     <button
@@ -93,8 +93,8 @@
                     @endforelse
                 </section>
 
-                <x-despensas.resumen-aside class="p-8">
-                    <h2 class="text-2xl font-semibold text-ink-900">{{ __('common.summary') }}</h2>
+                <x-despensas.resumen-aside class="p-6 sm:p-8">
+                    <h2 class="text-xl font-semibold text-ink-900 sm:text-2xl">{{ __('common.summary') }}</h2>
                     <p class="mt-3 text-sm text-ink-600">{{ __('despensas.index.summary.count') }}</p>
                     <p class="mt-1 text-center text-3xl font-bold text-ink-900">{{ $despensas->count() }}</p>
                     <div class="my-2 rounded-[10px] bg-[var(--color-info-suave)] p-3 text-center text-sm font-semibold text-brand-600">
@@ -227,4 +227,3 @@
 
     @vite('resources/js/despensas-index.js')
 @endsection
-

@@ -16,8 +16,10 @@ Route::view('/', 'dashboard')->name('dashboard');
 Route::redirect('/dashboard', '/');
 
 Route::get('supermercados', [SupermercadoController::class, 'index'])
+    ->middleware('throttle:120,1')
     ->name('supermercados.index');
 Route::get('precios', [VendenController::class, 'index'])
+    ->middleware('throttle:120,1')
     ->name('precios.index');
 Route::get('aviso-legal', [PaginaPublicaController::class, 'avisoLegal'])
     ->name('aviso-legal');
@@ -26,6 +28,7 @@ Route::get('privacidad', [PaginaPublicaController::class, 'privacidad'])
 Route::get('contacto', [PaginaPublicaController::class, 'contacto'])
     ->name('contacto');
 Route::post('contacto', [PaginaPublicaController::class, 'enviarContacto'])
+    ->middleware('throttle:10,1')
     ->name('contacto.enviar');
 
 Route::middleware('auth')->group(function () {

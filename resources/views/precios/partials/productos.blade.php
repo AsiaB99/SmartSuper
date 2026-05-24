@@ -13,7 +13,7 @@
                 class="group flex h-full flex-col rounded-[16px] border p-4 text-left shadow-[0_3px_10px_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 {{ $productoId === $producto->id ? 'border-brand-300 bg-brand-50' : 'border-[var(--color-borde-suave)] bg-[var(--color-fondo-claro)] hover:border-brand-200' }}"
             >
                 <div class="flex items-start gap-3">
-                    <div class="h-16 w-16 shrink-0 overflow-hidden rounded-[14px] border border-[var(--color-borde-suave)] bg-white">
+                    <div class="h-14 w-14 shrink-0 overflow-hidden rounded-[14px] border border-[var(--color-borde-suave)] bg-white sm:h-16 sm:w-16">
                         <img
                             src="{{ $producto->imagen_canonica ?? asset('img/productos/placeholder.svg') }}"
                             alt="{{ $producto->nombre_canonico }}"
@@ -21,10 +21,10 @@
                         >
                     </div>
                     <div class="min-w-0 flex-1">
-                        <div class="flex items-start justify-between gap-2">
-                            <h3 class="text-base font-semibold leading-5 text-ink-900">{{ $producto->nombre_canonico }}</h3>
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <h3 class="text-sm font-semibold leading-5 text-ink-900 sm:text-base">{{ $producto->nombre_canonico }}</h3>
                             @if ($productoId === $producto->id)
-                                <span class="rounded-full bg-brand-600 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white">
+                                <span class="w-fit rounded-full bg-brand-600 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white">
                                     Seleccionado
                                 </span>
                             @endif
@@ -37,7 +37,7 @@
                                 Más barato en {{ $producto->mejor_cadena_nombre }} · {{ number_format((float) $producto->mejor_cadena_precio, 2, ',', '.') }} €
                             </p>
                         @endif
-                        <span class="mt-4 inline-flex items-center text-sm font-semibold text-brand-700 group-hover:text-brand-800">
+                        <span class="mt-3 inline-flex items-center text-sm font-semibold text-brand-700 group-hover:text-brand-800 sm:mt-4">
                             Ver comparativa
                         </span>
                     </div>

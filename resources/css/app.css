@@ -24,19 +24,19 @@
     }
 
     .ss-container {
-        @apply mx-auto w-full max-w-[1200px] px-5;
+        @apply mx-auto w-full max-w-[1200px] px-4 sm:px-5;
     }
 
     .ss-section {
-        @apply py-[40px];
+        @apply py-7 sm:py-[40px];
     }
 
     .ss-title {
-        @apply text-center text-3xl font-semibold text-brand-600;
+        @apply text-center text-2xl font-semibold text-brand-600 sm:text-3xl;
     }
 
     .ss-card {
-        @apply rounded-[10px] bg-white p-8 shadow-[0_5px_15px_rgba(0,0,0,0.10)] transition duration-300;
+        @apply rounded-[10px] bg-white p-5 shadow-[0_5px_15px_rgba(0,0,0,0.10)] transition duration-300 sm:p-8;
     }
 
     .ss-card-hover {
@@ -44,19 +44,19 @@
     }
 
     .ss-btn-primary {
-        @apply inline-flex items-center justify-center gap-2 rounded-[5px] bg-accent-500 px-8 py-4 text-base font-bold text-white transition duration-300 hover:scale-105 hover:bg-accent-600 focus:outline-none focus:ring-2 focus:ring-accent-300;
+        @apply inline-flex min-h-[52px] items-center justify-center gap-2 rounded-[8px] bg-accent-500 px-6 py-3 text-sm font-bold text-white transition duration-300 hover:scale-105 hover:bg-accent-600 focus:outline-none focus:ring-2 focus:ring-accent-300 sm:min-h-[56px] sm:px-8 sm:py-4 sm:text-base;
     }
 
     .ss-btn-green {
-        @apply inline-flex items-center justify-center gap-2 rounded-[10px] bg-brand-500 px-5 py-3 text-sm font-bold text-white transition duration-300 hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-300;
+        @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-[10px] bg-brand-500 px-4 py-3 text-sm font-bold text-white transition duration-300 hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-300 sm:px-5;
     }
 
     .ss-btn-outline {
-        @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-brand-500 bg-transparent px-5 py-2.5 text-sm font-semibold text-brand-600 transition duration-300 hover:bg-brand-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-300;
+        @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border-2 border-brand-500 bg-transparent px-4 py-2.5 text-sm font-semibold text-brand-600 transition duration-300 hover:bg-brand-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-300 sm:px-5;
     }
 
     .ss-input {
-        @apply rounded-[10px] border-2 border-[var(--color-borde-suave)] bg-white px-4 py-3 text-sm text-ink-900 shadow-sm focus:border-brand-500 focus:ring-brand-500;
+        @apply min-h-[48px] rounded-[10px] border-2 border-[var(--color-borde-suave)] bg-white px-4 py-3 text-sm text-ink-900 shadow-sm focus:border-brand-500 focus:ring-brand-500;
     }
 
     .ss-icon-bubble {
@@ -86,6 +86,38 @@
             radial-gradient(circle at top left, rgba(43, 122, 120, 0.18), transparent 48%),
             radial-gradient(circle at 78% 18%, rgba(243, 156, 18, 0.22), transparent 42%),
             linear-gradient(135deg, #f7fbfa 0%, #ffffff 62%);
+    }
+
+    .ss-panel {
+        @apply rounded-[20px] bg-white p-4 shadow-[0_10px_28px_rgba(0,0,0,0.06)] sm:p-6;
+    }
+
+    .ss-hero {
+        @apply relative overflow-hidden rounded-[20px] px-5 py-7 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:px-8 sm:py-10;
+    }
+
+    .ss-hero-title {
+        @apply relative text-3xl font-semibold leading-tight text-ink-900 sm:text-4xl;
+    }
+
+    .ss-hero-subtitle {
+        @apply relative mx-auto mt-3 max-w-3xl text-sm leading-6 text-ink-600 sm:mt-4 sm:text-lg sm:leading-7;
+    }
+
+    .ss-page-header {
+        @apply mb-6 flex flex-col gap-4 rounded-[24px] px-5 py-5 shadow-[0_14px_35px_rgba(0,0,0,0.06)] sm:mb-8 sm:px-8 sm:py-6 lg:flex-row lg:items-start lg:justify-between;
+    }
+
+    .ss-page-header-title {
+        @apply mt-2 text-3xl font-semibold leading-tight text-ink-900 sm:text-4xl;
+    }
+
+    .ss-page-header-copy {
+        @apply mt-3 max-w-2xl text-sm leading-6 text-ink-600 sm:leading-7;
+    }
+
+    .ss-mobile-actions {
+        @apply flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center;
     }
 }
 

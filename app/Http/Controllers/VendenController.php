@@ -19,10 +19,11 @@ use Illuminate\Support\Facades\DB;
 class VendenController extends Controller
 {
     private const PRODUCTOS_POR_PAGINA = 6;
+    private const MAX_BUSQUEDA_LEN = 120;
 
     public function index(Request $request): View|JsonResponse
     {
-        $busqueda = trim((string) $request->string('busqueda'));
+        $busqueda = mb_substr(trim((string) $request->string('busqueda')), 0, self::MAX_BUSQUEDA_LEN);
         $hayBusqueda = $busqueda !== '';
         $productos = $hayBusqueda
             ? $this->obtenerProductosComparables($busqueda)

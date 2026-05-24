@@ -18,7 +18,7 @@
 
     <section class="ss-section">
         <div class="ss-container">
-            <section class="relative mb-12 overflow-hidden rounded-[20px] p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+            <section class="ss-hero mb-8 sm:mb-12">
                 <img
                     src="{{ asset('img/encabezados/encabezado_super.PNG') }}"
                     alt=""
@@ -26,17 +26,17 @@
                     aria-hidden="true"
                 >
                 <div class="absolute inset-0 bg-white/60" aria-hidden="true"></div>
-                <h1 class="relative text-4xl font-semibold text-ink-900">{{ __('supermercados.index.title') }}</h1>
-                <p class="relative mx-auto mt-4 max-w-3xl text-lg leading-7 text-ink-600">
+                <h1 class="ss-hero-title">{{ __('supermercados.index.title') }}</h1>
+                <p class="ss-hero-subtitle">
                     {{ __('supermercados.index.subtitle') }}
                 </p>
             </section>
 
-            <form id="form-ubicacion-supermercados" method="GET" action="{{ route('supermercados.index') }}" class="mb-8 rounded-[24px] border border-brand-100 bg-white p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+            <form id="form-ubicacion-supermercados" method="GET" action="{{ route('supermercados.index') }}" class="mb-8 rounded-[24px] border border-brand-100 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:p-6">
                 <div class="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.9fr)]">
                     <div class="space-y-5">
                         <div>
-                            <h2 class="text-xl font-semibold text-ink-900">{{ __('supermercados.index.location_prompt.title') }}</h2>
+                            <h2 class="text-lg font-semibold text-ink-900 sm:text-xl">{{ __('supermercados.index.location_prompt.title') }}</h2>
                             <p class="mt-2 max-w-3xl text-sm leading-6 text-ink-600">{{ __('supermercados.index.location_prompt.text', ['km' => (int) $radioBusquedaKm]) }}</p>
                         </div>
                         <div class="grid gap-3 sm:grid-cols-2">
@@ -66,7 +66,7 @@
                         </div>
                     </div>
 
-                    <div class="rounded-[20px] bg-[linear-gradient(160deg,#f5fbf7_0%,#e9f6ef_100%)] p-5">
+                    <div class="rounded-[20px] bg-[linear-gradient(160deg,#f5fbf7_0%,#e9f6ef_100%)] p-4 sm:p-5">
                         <div class="flex h-full flex-col justify-center gap-5">
                             <div class="space-y-3">
                                 <input type="hidden" name="latitud" id="supermercados-ubicacion-latitud" value="{{ request('latitud', '') }}">
@@ -97,7 +97,7 @@
                 <section class="mb-10 overflow-hidden rounded-[20px] border border-brand-100 bg-white shadow-[0_14px_35px_rgba(0,0,0,0.08)]">
                     <div class="flex flex-wrap items-center justify-between gap-4 border-b border-brand-100 px-5 py-4">
                         <div>
-                            <h2 class="text-xl font-semibold text-ink-900">{{ __('supermercados.index.map_title') }}</h2>
+                            <h2 class="text-lg font-semibold text-ink-900 sm:text-xl">{{ __('supermercados.index.map_title') }}</h2>
                             <p class="mt-1 text-sm text-ink-600">
                                 {{ __('supermercados.index.locations_count', ['count' => $totalSupermercados]) }}
                                 · {{ __('supermercados.index.sorted_by_distance') }}
@@ -110,7 +110,7 @@
                     </div>
                     <div
                         id="supermercados-map"
-                        class="h-[420px] w-full bg-[#dff2e8]"
+                        class="h-[300px] w-full bg-[#dff2e8] sm:h-[420px]"
                         data-markers='@json($markers->values())'
                         data-user-lat="{{ $latitudUsuario }}"
                         data-user-lng="{{ $longitudUsuario }}"
@@ -121,28 +121,28 @@
 
                 <section class="mb-5 flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h2 class="text-2xl font-semibold text-ink-900">{{ __('supermercados.index.results_title') }}</h2>
+                        <h2 class="text-xl font-semibold text-ink-900 sm:text-2xl">{{ __('supermercados.index.results_title') }}</h2>
                         <p class="mt-1 text-sm text-ink-600">{{ __('supermercados.index.results_nearest', ['km' => (int) $radioBusquedaKm]) }}</p>
                     </div>
                 </section>
 
-                <section class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                <section class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 sm:gap-8">
                     @forelse ($supermercados as $supermercado)
                         @php
                             $claveLogo = \Illuminate\Support\Str::of($supermercado->nombre_super)->lower()->ascii()->before(' ')->toString();
                             $logo = $logos[$claveLogo] ?? null;
                         @endphp
                         <article class="flex flex-col overflow-hidden rounded-[15px] bg-white shadow-[0_5px_15px_rgba(0,0,0,0.05)] transition duration-300 hover:-translate-y-2 hover:shadow-[0_15px_30px_rgba(0,0,0,0.10)]">
-                            <div class="relative flex h-[120px] items-center justify-center bg-[var(--color-superficie-suave)] p-5">
-                                <span class="absolute right-3 top-3 rounded-full bg-brand-700 px-3 py-1 text-xs font-bold text-white">{{ number_format((float) $supermercado->distancia_km, 2, ',', '.') }} km</span>
+                            <div class="relative flex h-[110px] items-center justify-center bg-[var(--color-superficie-suave)] p-4 sm:h-[120px] sm:p-5">
+                                <span class="absolute right-3 top-3 rounded-full bg-brand-700 px-2.5 py-1 text-[11px] font-bold text-white sm:px-3 sm:text-xs">{{ number_format((float) $supermercado->distancia_km, 2, ',', '.') }} km</span>
                                 @if ($logo && file_exists(public_path($logo)))
-                                    <img src="{{ asset($logo) }}" alt="Logo {{ $supermercado->nombre_super }}" class="max-h-[60px] max-w-[160px] object-contain drop-shadow" loading="lazy">
+                                    <img src="{{ asset($logo) }}" alt="Logo {{ $supermercado->nombre_super }}" class="max-h-[52px] max-w-[140px] object-contain drop-shadow sm:max-h-[60px] sm:max-w-[160px]" loading="lazy">
                                 @else
-                                    <span class="text-xl font-semibold text-ink-900">{{ $supermercado->nombre_super }}</span>
+                                    <span class="text-lg font-semibold text-ink-900 sm:text-xl">{{ $supermercado->nombre_super }}</span>
                                 @endif
                             </div>
-                            <div class="flex flex-1 flex-col gap-3 p-5">
-                                <h2 class="text-xl font-semibold text-ink-900">{{ $supermercado->nombre_super }}</h2>
+                            <div class="flex flex-1 flex-col gap-3 p-4 sm:p-5">
+                                <h2 class="text-lg font-semibold text-ink-900 sm:text-xl">{{ $supermercado->nombre_super }}</h2>
                                 <p class="text-sm text-ink-600">
                                     <x-ui.icon name="map-pin" class="mr-1 inline h-4 w-4 text-brand-600" />
                                     {{ $supermercado->direccion ?? __('common.address_undefined') }}

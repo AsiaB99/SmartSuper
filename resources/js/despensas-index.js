@@ -36,8 +36,15 @@
             button.addEventListener('click', () => {
                 currentDeleteForm = button.closest('form');
                 if (deleteDialogText) {
-                    deleteDialogText.innerHTML = translations.deleteText
-                        .replace('__PANTRY__', `<strong>${button.dataset.despensaNombre ?? ''}</strong>`);
+                    const template = String(translations.deleteText ?? '__PANTRY__');
+                    const [before, after] = template.split('__PANTRY__');
+                    const strong = document.createElement('strong');
+                    strong.textContent = button.dataset.despensaNombre ?? '';
+
+                    deleteDialogText.textContent = '';
+                    deleteDialogText.append(document.createTextNode(before ?? ''));
+                    deleteDialogText.append(strong);
+                    deleteDialogText.append(document.createTextNode(after ?? ''));
                 }
                 deleteDialog.showModal();
             });

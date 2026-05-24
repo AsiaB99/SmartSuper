@@ -1,17 +1,17 @@
-<nav x-data="{ open: false }" class="sticky top-0 z-40 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.10)]">
+<nav x-data="{ open: false }" class="sticky top-0 z-40 bg-white/95 shadow-[0_2px_10px_rgba(0,0,0,0.10)] backdrop-blur">
     <div class="ss-container">
-        <div class="flex min-h-[70px] items-center justify-between gap-4">
-            <div class="flex flex-1 items-center justify-center gap-8">
-                <div class="shrink-0">
-                    <a href="{{ route('dashboard') }}" class="flex items-baseline gap-2 text-ink-900 transition duration-300 hover:scale-105 hover:text-brand-500">
-                        <x-ui.icon name="shopping-cart" class="h-6 w-6 self-center text-brand-500" />
-                        <span class="font-display text-[1.75rem] font-semibold leading-none">Smart</span>
-                        <span class="font-display text-[1.75rem] font-semibold leading-none text-brand-500 underline">Super</span>
+        <div class="flex min-h-[64px] items-center justify-between gap-3 py-2 lg:min-h-[70px] lg:gap-4 lg:py-0">
+            <div class="flex min-w-0 flex-1 items-center gap-4 lg:justify-center lg:gap-8">
+                <div class="min-w-0 shrink-0">
+                    <a href="{{ route('dashboard') }}" class="flex items-baseline gap-1.5 text-ink-900 transition duration-300 hover:scale-105 hover:text-brand-500 sm:gap-2">
+                        <x-ui.icon name="shopping-cart" class="h-5 w-5 self-center text-brand-500 sm:h-6 sm:w-6" />
+                        <span class="font-display text-[1.35rem] font-semibold leading-none sm:text-[1.75rem]">Smart</span>
+                        <span class="font-display text-[1.35rem] font-semibold leading-none text-brand-500 underline sm:text-[1.75rem]">Super</span>
                         <span class="sr-only">{{ __('nav.brand_home') }}</span>
                     </a>
                 </div>
 
-                <div class="hidden items-center justify-center gap-1 lg:flex text-lg">
+                <div class="hidden items-center justify-center gap-1 text-lg lg:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard') || request()->is('/')">
                         {{ __('nav.home') }}
                     </x-nav-link>
@@ -46,7 +46,7 @@
             </div>
 
             @auth
-            <div class="hidden items-center gap-4 sm:flex">
+            <div class="hidden items-center gap-4 lg:flex">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center gap-3 rounded-full border border-brand-200 bg-white px-3 py-2 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-800 focus:outline-none focus:ring-2 focus:ring-brand-300">
@@ -83,7 +83,7 @@
                 </x-dropdown>
             </div>
             @else
-                <div class="hidden items-center gap-3 sm:flex">
+                <div class="hidden items-center gap-3 lg:flex">
                     <a href="{{ route('login') }}" class="inline-flex items-center gap-2 rounded-full bg-brand-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-600">
                         <x-ui.icon name="arrow-right-end-on-rectangle" class="h-4 w-4" />
                         <span>Acceder</span>
@@ -92,7 +92,7 @@
             @endauth
 
             <div class="flex items-center lg:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center rounded-full border border-brand-200 bg-white p-2 text-brand-700 transition hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-300" aria-label="{{ __('nav.open_navigation') }}">
+                <button @click="open = ! open" class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-brand-200 bg-white text-brand-700 transition hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-300" aria-label="{{ __('nav.open_navigation') }}">
                     <x-ui.icon name="bars-3" x-show="! open" class="h-6 w-6" />
                     <x-ui.icon name="x-mark" x-show="open" class="h-6 w-6" />
                 </button>
@@ -100,8 +100,13 @@
         </div>
     </div>
 
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden border-t border-brand-100 lg:hidden">
-        <div class="space-y-1 px-2 pb-3 pt-4">
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden border-t border-brand-100 bg-white/95 lg:hidden">
+        <div class="ss-container py-4">
+            <div class="rounded-[24px] border border-brand-100 bg-[linear-gradient(180deg,#ffffff_0%,#f7fbfa_100%)] p-3 shadow-[0_18px_36px_rgba(15,23,42,0.08)]">
+                <div class="mb-3 px-2">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">Navegación</p>
+                </div>
+                <div class="space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard') || request()->is('/')">
                 {{ __('nav.home') }}
             </x-responsive-nav-link>
@@ -132,37 +137,39 @@
                 </x-responsive-nav-link>
             @endif
             @endauth
+                </div>
+
+                @auth
+                <div class="mt-4 border-t border-brand-100 px-2 pt-4">
+                    <div class="rounded-[18px] bg-white px-4 py-4 shadow-soft">
+                        <div class="font-medium text-base text-ink-900">{{ Auth::user()->name }}</div>
+                        <div class="mt-1 font-medium text-sm text-ink-500 break-all">{{ Auth::user()->email }}</div>
+                    </div>
+
+                    <div class="mt-3 space-y-1">
+                        <x-responsive-nav-link :href="route('profile.edit')">
+                            {{ __('nav.profile') }}
+                        </x-responsive-nav-link>
+
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+
+                            <x-responsive-nav-link :href="route('logout')"
+                                    onclick="event.preventDefault(); this.closest('form').submit();">
+                                {{ __('nav.logout') }}
+                            </x-responsive-nav-link>
+                        </form>
+                    </div>
+                </div>
+                @else
+                    <div class="mt-4 border-t border-brand-100 px-2 pt-4">
+                        <a href="{{ route('login') }}" class="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[18px] bg-brand-500 px-4 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-brand-600">
+                            <x-ui.icon name="arrow-right-end-on-rectangle" class="h-4 w-4" />
+                            <span>Acceder</span>
+                        </a>
+                    </div>
+                @endauth
+            </div>
         </div>
-
-        @auth
-        <div class="border-t border-brand-100 px-4 pb-4 pt-4">
-            <div class="px-4">
-                <div class="font-medium text-base text-ink-900">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-ink-500">{{ Auth::user()->email }}</div>
-            </div>
-
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('nav.profile') }}
-                </x-responsive-nav-link>
-
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault(); this.closest('form').submit();">
-                        {{ __('nav.logout') }}
-                    </x-responsive-nav-link>
-                </form>
-            </div>
-        </div>
-        @else
-            <div class="flex flex-wrap gap-3 border-t border-brand-100 px-4 pb-4 pt-4">
-                <a href="{{ route('login') }}" class="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-900 shadow-soft transition hover:border-brand-300 hover:text-brand-800">
-                    <x-ui.icon name="arrow-right-end-on-rectangle" class="h-4 w-4" />
-                    <span>Acceder</span>
-                </a>
-            </div>
-        @endauth
     </div>
 </nav>

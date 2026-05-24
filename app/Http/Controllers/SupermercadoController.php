@@ -18,11 +18,13 @@ class SupermercadoController extends Controller
 {
     private const LIMITE_MARCADORS_MAPA = 300;
     private const RADIO_BUSQUEDA_KM = 30.0;
+    private const MAX_BUSQUEDA_LEN = 120;
+    private const MAX_DIRECCION_LEN = 180;
 
     public function index(Request $request): View
     {
-        $busqueda = trim((string) $request->string('busqueda'));
-        $direccionPostal = trim((string) $request->string('direccion_postal'));
+        $busqueda = mb_substr(trim((string) $request->string('busqueda')), 0, self::MAX_BUSQUEDA_LEN);
+        $direccionPostal = mb_substr(trim((string) $request->string('direccion_postal')), 0, self::MAX_DIRECCION_LEN);
         [$latitudUsuario, $longitudUsuario, $mensajeUbicacion] = $this->resolverUbicacionUsuario($request, $direccionPostal);
 
         $baseQuery = Supermercado::query()

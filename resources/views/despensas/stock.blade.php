@@ -6,30 +6,30 @@
     <section class="ss-section">
         <div class="ss-container">
             <section class="mb-8 overflow-hidden rounded-[24px] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
-                <div class="ss-header-gradient px-6 py-7 sm:px-8">
-                    <div class="flex flex-wrap items-start justify-between gap-5">
+                <div class="ss-header-gradient px-5 py-6 sm:px-8 sm:py-7">
+                    <div class="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-start lg:justify-between lg:gap-5">
                         <div class="min-w-0">
                             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">{{ __('despensas.stock.kicker') }}</p>
-                            <h1 class="mt-2 text-3xl font-semibold leading-tight text-ink-900 sm:text-4xl">{{ $despensa->nombre_despensa }}</h1>
-                            <p class="mt-3 max-w-2xl text-sm leading-7 text-ink-600">{{ __('despensas.stock.subtitle') }}</p>
+                            <h1 class="mt-2 text-2xl font-semibold leading-tight text-ink-900 sm:text-4xl">{{ $despensa->nombre_despensa }}</h1>
+                            <p class="mt-3 max-w-2xl text-sm leading-6 text-ink-600 sm:leading-7">{{ __('despensas.stock.subtitle') }}</p>
                         </div>
-                        <a class="ss-btn-outline self-start" href="{{ route('despensas.index') }}">{{ __('common.back') }}</a>
+                        <a class="ss-btn-outline w-full self-start sm:w-auto" href="{{ route('despensas.index') }}">{{ __('common.back') }}</a>
                     </div>
 
                     <div class="mt-6 grid gap-4 md:grid-cols-3">
                         <article class="rounded-[18px] border border-white/70 bg-white/85 px-5 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.06)] backdrop-blur">
                             <p class="text-xs font-semibold uppercase tracking-[0.16em] text-ink-500">{{ __('despensas.stock.summary.products') }}</p>
-                            <p class="mt-3 text-3xl font-semibold text-ink-900">{{ $totalProductos }}</p>
+                            <p class="mt-3 text-2xl font-semibold text-ink-900 sm:text-3xl">{{ $totalProductos }}</p>
                             <p class="mt-1 text-sm text-ink-600">{{ __('despensas.stock.summary.products_hint') }}</p>
                         </article>
                         <article class="rounded-[18px] border border-white/70 bg-white/85 px-5 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.06)] backdrop-blur">
                             <p class="text-xs font-semibold uppercase tracking-[0.16em] text-ink-500">{{ __('despensas.stock.summary.units') }}</p>
-                            <p class="mt-3 text-3xl font-semibold text-ink-900">{{ $unidadesTotales }}</p>
+                            <p class="mt-3 text-2xl font-semibold text-ink-900 sm:text-3xl">{{ $unidadesTotales }}</p>
                             <p class="mt-1 text-sm text-ink-600">{{ __('despensas.stock.summary.units_hint') }}</p>
                         </article>
                         <article class="rounded-[18px] border px-5 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.06)] {{ $productosBajos > 0 ? 'border-rose-200 bg-rose-50/90' : 'border-white/70 bg-white/85' }}">
                             <p class="text-xs font-semibold uppercase tracking-[0.16em] {{ $productosBajos > 0 ? 'text-rose-700' : 'text-ink-500' }}">{{ __('despensas.stock.summary.low') }}</p>
-                            <p class="mt-3 text-3xl font-semibold {{ $productosBajos > 0 ? 'text-rose-700' : 'text-ink-900' }}">{{ $productosBajos }}</p>
+                            <p class="mt-3 text-2xl font-semibold {{ $productosBajos > 0 ? 'text-rose-700' : 'text-ink-900' }} sm:text-3xl">{{ $productosBajos }}</p>
                             <p class="mt-1 text-sm {{ $productosBajos > 0 ? 'text-rose-700' : 'text-ink-600' }}">{{ __('despensas.stock.summary.low_hint') }}</p>
                         </article>
                     </div>
@@ -38,10 +38,10 @@
 
             <div class="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
                 <div class="min-w-0 space-y-6">
-                    <section class="rounded-[20px] bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.06)] sm:p-6">
+                    <section class="ss-panel">
                         <div class="flex flex-wrap items-start justify-between gap-4">
                             <div>
-                                <h2 class="text-xl font-semibold text-ink-900">{{ __('despensas.stock.inventory_title') }}</h2>
+                            <h2 class="text-lg font-semibold text-ink-900 sm:text-xl">{{ __('despensas.stock.inventory_title') }}</h2>
                                 <p class="mt-2 text-sm text-ink-600">{{ __('despensas.stock.inventory_text') }}</p>
                             </div>
                             <div class="flex items-center gap-2">
@@ -68,7 +68,7 @@
                             data-recommended-alert-template="{{ __('despensas.stock.recommended_alert', ['min' => '__MIN__']) }}"
                             data-add-to-list-url-template="{{ route('listas.productos.agregar', ['lista' => '__LISTA__']) }}"
                         >
-                            <label class="grid min-w-[260px] flex-1 gap-2">
+                            <label class="grid w-full min-w-0 flex-1 gap-2 sm:min-w-[260px]">
                                 <span class="text-sm font-semibold text-ink-700">{{ __('despensas.stock.search_label') }}</span>
                                 <div class="relative">
                                     <input
@@ -89,11 +89,11 @@
                                     ></div>
                                 </div>
                             </label>
-                            <button class="ss-btn-outline inline-flex min-h-[56px] items-center justify-center rounded-[16px] px-5" type="submit" aria-label="{{ __('despensas.stock.search_button_aria') }}">
+                            <button class="ss-btn-outline inline-flex min-h-[56px] w-full items-center justify-center rounded-[16px] px-5 sm:w-auto" type="submit" aria-label="{{ __('despensas.stock.search_button_aria') }}">
                                 <x-ui.icon name="magnifying-glass" class="h-5 w-5" />
                             </button>
                             @if ($busqueda !== '')
-                                <a class="ss-btn-outline min-h-[56px] rounded-[16px] px-5" href="{{ route('despensas.stock', $despensa) }}">{{ __('despensas.stock.clear') }}</a>
+                                <a class="ss-btn-outline min-h-[56px] w-full rounded-[16px] px-5 sm:w-auto" href="{{ route('despensas.stock', $despensa) }}">{{ __('despensas.stock.clear') }}</a>
                             @endif
                         </form>
                     </section>
@@ -228,3 +228,7 @@
         </dialog>
     @endif
 @endsection
+
+@push('scripts')
+    @vite('resources/js/despensas-stock-page.js')
+@endpush
