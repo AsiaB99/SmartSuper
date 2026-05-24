@@ -16,6 +16,10 @@ return new class extends Migration
             return;
         }
 
+        if (! Schema::hasTable('productos_externos') || ! Schema::hasColumn('productos_externos', 'formato')) {
+            return;
+        }
+
         Schema::table('productos_externos', function (Blueprint $table) {
             $table->string('formato', 255)->nullable()->change();
         });
@@ -27,6 +31,10 @@ return new class extends Migration
     public function down(): void
     {
         if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
+        if (! Schema::hasTable('productos_externos') || ! Schema::hasColumn('productos_externos', 'formato')) {
             return;
         }
 
