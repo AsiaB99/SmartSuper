@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +28,13 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        /** @var User $user */
+        $user = $request->user();
+
+        if (! $user->hasVerifiedEmail()) {
+            return redirect()->intended(route('verification.notice', absolute: false));
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
