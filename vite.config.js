@@ -12,6 +12,8 @@ export default defineConfig({
                 'resources/js/precios-page.js',
                 'resources/js/despensas-index.js',
                 'resources/js/listas-index.js',
+                'resources/js/supermercados-page.js',
+                'resources/js/admin-supermercados-page.js',
             ],
             refresh: true,
         }),

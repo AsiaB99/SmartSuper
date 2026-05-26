@@ -17,6 +17,7 @@ use Illuminate\Support\Collection;
 class SupermercadoController extends Controller
 {
     private const LIMITE_MARCADORS_MAPA = 300;
+    private const SUPERMERCADOS_POR_PAGINA = 6;
     private const RADIO_BUSQUEDA_KM = 30.0;
     private const MAX_BUSQUEDA_LEN = 120;
     private const MAX_DIRECCION_LEN = 180;
@@ -41,7 +42,7 @@ class SupermercadoController extends Controller
         $supermercadosMapa = collect();
         $markers = collect();
         $totalSupermercados = 0;
-        $supermercados = $this->paginarColeccion(collect(), 15, $request);
+        $supermercados = $this->paginarColeccion(collect(), self::SUPERMERCADOS_POR_PAGINA, $request);
 
         if ($ordenarPorCercania) {
             $supermercadosFiltrados = $this->buscarSupermercadosEnRadio(
@@ -53,7 +54,7 @@ class SupermercadoController extends Controller
             $totalSupermercados = $supermercadosFiltrados->count();
             $supermercadosMapa = $supermercadosFiltrados->take(self::LIMITE_MARCADORS_MAPA)->values();
             $markers = $this->crearMarkers($supermercadosMapa);
-            $supermercados = $this->paginarColeccion($supermercadosFiltrados, 15, $request);
+            $supermercados = $this->paginarColeccion($supermercadosFiltrados, self::SUPERMERCADOS_POR_PAGINA, $request);
         }
 
         return view('supermercados.index', [

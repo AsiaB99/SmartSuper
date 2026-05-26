@@ -33,7 +33,7 @@
                 @if ($esAdmin)
                     <div class="flex flex-wrap items-center gap-3">
                         <a class="inline-flex items-center rounded-full border border-brand-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-800 shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-50" href="{{ route('admin.productos.edit', $producto) }}">{{ __('common.edit') }}</a>
-                        <form action="{{ route('admin.productos.destroy', $producto) }}" method="POST" onsubmit="return confirm('{{ __('productos.index.delete_confirm') }}');">
+                        <form class="js-confirm-delete" data-confirm="{{ __('productos.index.delete_confirm') }}" action="{{ route('admin.productos.destroy', $producto) }}" method="POST">
                             @csrf
                             @method('DELETE')
                             <button class="inline-flex items-center rounded-full bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-rose-500" type="submit">{{ __('common.delete') }}</button>

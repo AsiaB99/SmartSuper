@@ -72,7 +72,7 @@ class SupermercadoControllerTest extends TestCase
             return $supermercadosMapa->count() <= 300;
         });
         $response->assertViewHas('supermercados', function ($supermercados): bool {
-            return $supermercados->count() <= 15;
+            return $supermercados->perPage() === 6;
         });
     }
 

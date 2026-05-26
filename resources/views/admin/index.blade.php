@@ -13,13 +13,15 @@
 
     <section class="ss-section">
         <div class="ss-container space-y-8">
-            <section class="ss-header-gradient rounded-lg border border-white/70 p-6 shadow-soft">
-                <p class="text-sm font-semibold uppercase text-brand-700">{{ __('common.admin') }}</p>
-                <h1 class="mt-2 font-display text-4xl text-ink-900">{{ __('admin.panel.title') }}</h1>
-                <p class="mt-3 max-w-3xl text-sm leading-7 text-ink-600">{{ __('admin.panel.subtitle') }}</p>
+            <section class="ss-header-gradient mb-8 rounded-lg border border-white/70 p-6 text-center shadow-soft">
+                <div class="mx-auto max-w-4xl">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">{{ __('common.admin') }}</p>
+                    <h1 class="mt-2 font-display text-4xl font-semibold leading-tight text-ink-900 sm:text-5xl">{{ __('admin.panel.title') }}</h1>
+                    <p class="mx-auto mt-3 max-w-3xl text-sm leading-7 text-ink-600">{{ __('admin.panel.subtitle') }}</p>
+                </div>
             </section>
 
-            <nav class="flex flex-wrap gap-3" aria-label="{{ __('admin.panel.navigation') }}">
+            <nav class="flex flex-wrap justify-center gap-3" aria-label="{{ __('admin.panel.navigation') }}">
                 @foreach ($tabLinks as $tabKey => $tabLink)
                     <a
                         href="{{ route('admin.index', $tabLink['query']) }}"
@@ -38,6 +40,9 @@
 
             @if ($tab === 'supermercados')
                 @include('admin.partials.supermercados-tab')
+                @push('scripts')
+                    @vite('resources/js/admin-supermercados-page.js')
+                @endpush
             @endif
 
             @if ($tab === 'productos')
@@ -46,7 +51,6 @@
                         <div>
                             <p class="text-sm font-semibold uppercase text-brand-700">{{ __('admin.products.kicker') }}</p>
                             <h2 class="mt-2 text-2xl font-semibold text-ink-900">{{ __('admin.products.title') }}</h2>
-                            <p class="mt-2 max-w-3xl text-sm text-ink-600">{{ __('admin.products.subtitle') }}</p>
                         </div>
                         <a class="inline-flex items-center rounded-full border border-brand-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-800 shadow-soft transition hover:bg-brand-50" href="{{ route('admin.productos-externos.index') }}">{{ __('admin.products.external_mapping') }}</a>
                     </div>
@@ -70,7 +74,7 @@
                                         <p class="mt-1 text-sm text-ink-500">{{ collect([$producto->marca, $producto->formato])->filter()->join(' · ') }}</p>
                                     @endif
                                 </div>
-                                <form action="{{ route('admin.productos.destroy', $producto) }}" method="POST" onsubmit="return confirm('{{ __('admin.products.delete_confirm') }}');">
+                                <form class="js-confirm-delete" data-confirm="{{ __('admin.products.delete_confirm') }}" action="{{ route('admin.productos.destroy', $producto) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
                                     <input type="hidden" name="productos_busqueda" value="{{ $productosBusqueda }}">
@@ -166,7 +170,7 @@
                                         <p class="mt-2 text-sm text-ink-600">{{ '@'.$usuario->nombre_usuario }}</p>
                                         <p class="mt-1 text-sm text-ink-500">{{ $usuario->email }}</p>
                                     </div>
-                                    <form method="POST" action="{{ route('admin.usuarios.destroy', $usuario) }}" onsubmit="return confirm('{{ __('admin.users.delete_confirm') }}');">
+                                    <form class="js-confirm-delete" data-confirm="{{ __('admin.users.delete_confirm') }}" method="POST" action="{{ route('admin.usuarios.destroy', $usuario) }}">
                                         @csrf
                                         @method('DELETE')
                                         <input type="hidden" name="usuarios_busqueda" value="{{ $usuariosBusqueda }}">
@@ -189,71 +193,4 @@
             @endif
         </div>
     </section>
-    @if ($tab === 'supermercados')
-        <script>
-            (() => {
-                const targetId = 'admin-supermercados-tab';
-
-                const bindEvents = () => {
-                    const tab = document.getElementById(targetId);
-                    if (!tab) {
-                        return;
-                    }
-
-                    const form = document.getElementById('admin-supermercados-search-form');
-
-                    if (form) {
-                        form.addEventListener('submit', async (event) => {
-                            event.preventDefault();
-                            const url = `${form.action}?${new URLSearchParams(new FormData(form)).toString()}`;
-                            await refreshSupermercadosTab(url);
-                        });
-                    }
-
-                    tab.querySelectorAll('.pagination a').forEach((link) => {
-                        link.addEventListener('click', async (event) => {
-                            event.preventDefault();
-                            await refreshSupermercadosTab(link.href);
-                        });
-                    });
-                };
-
-                const refreshSupermercadosTab = async (url) => {
-                    try {
-                        const response = await fetch(url, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'text/html',
-                            },
-                        });
-
-                        if (!response.ok) {
-                            window.location.href = url;
-                            return;
-                        }
-
-                        const html = await response.text();
-                        const container = document.createElement('div');
-                        container.innerHTML = html;
-
-                        const nextTab = container.querySelector(`#${targetId}`);
-                        const currentTab = document.getElementById(targetId);
-
-                        if (!nextTab || !currentTab) {
-                            window.location.href = url;
-                            return;
-                        }
-
-                        currentTab.replaceWith(nextTab);
-                        window.history.replaceState({}, '', url);
-                        bindEvents();
-                    } catch (_error) {
-                        window.location.href = url;
-                    }
-                };
-
-                bindEvents();
-            })();
-        </script>
-    @endif
 @endsection

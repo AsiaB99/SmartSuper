@@ -27,13 +27,13 @@
         <img
             src="{{ asset('img/background-index.webp') }}"
             alt=""
-            class="absolute inset-0 h-full w-full object-cover"
+            class="absolute inset-0 h-full w-full object-cover brightness-[0.82]"
             loading="eager"
             fetchpriority="high"
             decoding="async"
             aria-hidden="true"
         >
-        <div class="absolute inset-0 bg-black/50" aria-hidden="true"></div>
+        <div class="absolute inset-0 bg-black/55" aria-hidden="true"></div>
 
         <div class="relative max-w-4xl">
             <h1 class="font-display text-3xl font-semibold leading-tight sm:text-5xl lg:text-6xl">{{ __('dashboard.hero.title') }}</h1>

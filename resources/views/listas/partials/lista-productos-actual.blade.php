@@ -1,5 +1,5 @@
 @forelse ($lista->productos as $producto)
-    <article class="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-borde-suave)] p-4 last:border-b-0 sm:p-5">
+    <article class="grid gap-4 border-b border-[var(--color-borde-suave)] p-4 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-5 sm:p-5">
         <div class="flex min-w-0 items-center gap-3">
             <div class="h-14 w-14 shrink-0 overflow-hidden rounded-[14px] border border-[var(--color-borde-suave)] bg-white">
                 <img
@@ -9,14 +9,14 @@
                 >
             </div>
             <div class="min-w-0">
-                <h2 class="truncate text-lg font-semibold text-ink-900">{{ $producto->nombre_canonico }}</h2>
-                <p class="text-sm text-ink-500">{{ $producto->marca_canonica ?? __('common.product_brand_fallback') }} · {{ $producto->formato_canonico ?? __('common.product_format_fallback') }}</p>
+                <h2 class="break-words text-base font-semibold leading-6 text-ink-900 sm:text-lg">{{ $producto->nombre_canonico }}</h2>
+                <p class="mt-1 text-sm leading-5 text-ink-500">{{ $producto->marca_canonica ?? __('common.product_brand_fallback') }} · {{ $producto->formato_canonico ?? __('common.product_format_fallback') }}</p>
             </div>
         </div>
 
         @if ($puedeEditar)
-            <div class="flex flex-wrap items-center gap-3">
-                <form action="{{ route('listas.productos.actualizar', [$lista, $producto]) }}" method="POST" data-lista-producto-update>
+            <div class="flex items-center justify-between gap-3 sm:justify-end">
+                <form action="{{ route('listas.productos.actualizar', [$lista, $producto]) }}" method="POST" data-lista-producto-update class="shrink-0">
                     @csrf
                     @method('PATCH')
                     <input
@@ -31,16 +31,16 @@
                     >
                 </form>
 
-                <form action="{{ route('listas.productos.quitar', [$lista, $producto]) }}" method="POST">
+                <form action="{{ route('listas.productos.quitar', [$lista, $producto]) }}" method="POST" class="shrink-0">
                     @csrf
                     @method('DELETE')
-                    <button class="p-3 text-rose-600 transition hover:scale-110" type="submit" aria-label="{{ __('listas.products.remove_label', ['name' => $producto->nombre_producto]) }}">
+                    <button class="rounded-full p-3 text-rose-600 transition hover:bg-rose-50 hover:scale-105" type="submit" aria-label="{{ __('listas.products.remove_label', ['name' => $producto->nombre_producto]) }}">
                         <x-ui.icon name="trash" class="h-5 w-5" />
                     </button>
                 </form>
             </div>
         @else
-            <div class="rounded-full border border-[var(--color-borde-suave)] px-5 py-2 font-semibold">
+            <div class="justify-self-start rounded-full border border-[var(--color-borde-suave)] px-5 py-2 font-semibold sm:justify-self-end">
                 {{ (int) $producto->pivot->cantidad }}
             </div>
         @endif

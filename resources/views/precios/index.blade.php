@@ -14,11 +14,11 @@
                 >
                 <div class="absolute inset-0 bg-white/75" aria-hidden="true"></div>
 
-                <div class="relative flex flex-wrap items-start justify-between gap-4 sm:gap-5">
-                    <div class="max-w-2xl">
+                <div class="relative flex justify-center">
+                    <div class="max-w-2xl text-center">
                         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">{{ __('precios.index.title') }}</p>
                         <h1 class="mt-2 text-3xl font-semibold leading-tight text-ink-900 sm:text-4xl">{{ __('precios.index.title') }}</h1>
-                        <p class="mt-3 text-sm leading-6 text-ink-600 sm:leading-7">{{ __('precios.index.search_placeholder') }}</p>
+                        <p class="mx-auto mt-3 max-w-xl text-sm leading-6 text-ink-600 sm:leading-7">{{ __('precios.index.search_placeholder') }}</p>
                     </div>
 
                 </div>
