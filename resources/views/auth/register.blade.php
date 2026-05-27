@@ -8,7 +8,9 @@
 
         <div class="mb-8 grid grid-cols-2 rounded-[12px] border border-[var(--color-borde-suave)] bg-white p-1 text-center text-sm font-semibold">
             <a href="{{ route('login') }}" class="rounded-[10px] px-4 py-3 text-ink-500 transition hover:bg-brand-50">{{ __('auth.login_tab') }}</a>
-            <a href="{{ route('register') }}" class="rounded-[10px] bg-brand-500 px-4 py-3 text-white shadow-[0_4px_6px_rgba(46,204,113,0.20)]">{{ __('auth.register_tab') }}</a>
+            <a href="{{ route('register') }}" class="rounded-[10px] border border-brand-200 bg-brand-50 px-4 py-3 text-brand-700 shadow-[0_2px_4px_rgba(46,204,113,0.10)]">
+                {{ __('auth.register_tab') }}
+            </a>
         </div>
 
         <form method="POST" action="{{ route('register') }}" class="space-y-4">
